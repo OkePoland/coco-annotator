@@ -8,7 +8,6 @@ def get_tag():
 
 
 class Config:
-
     NAME = os.getenv("NAME", "COCO Annotator")
     VERSION = get_tag()
 
@@ -36,20 +35,20 @@ class Config:
     PRELOAD = False
 
     MAX_CONTENT_LENGTH = os.getenv("MAX_CONTENT_LENGTH", 1 * 1024 * 1024 * 1024)  # 1GB
-    MONGODB_HOST = os.getenv("MONGODB_HOST", "mongodb://database/flask")
+    MONGODB_HOST = os.getenv("MONGODB_HOST", r"mongodb://database/flask")
     SECRET_KEY = os.getenv("SECRET_KEY", "<--- CHANGE THIS KEY --->")
-    
+
     LOG_LEVEL = 'debug'
     WORKER_CONNECTIONS = 1000
-    
+
     TESTING = os.getenv("TESTING", False)
 
     ### Workers
-    CELERY_BROKER_URL = "amqp://user:password@messageq:5672//"
-    CELERY_RESULT_BACKEND = "mongodb://database/flask"
+    CELERY_BROKER_URL = r"amqp://user:password@messageq:5672//"
+    CELERY_RESULT_BACKEND = r"mongodb://database/flask"
 
     ### Dataset Options
-    DATASET_DIRECTORY = os.getenv("DATASET_DIRECTORY", "/datasets/")
+    DATASET_DIRECTORY = os.getenv("DATASET_DIRECTORY", r"/datasets/")
     INITIALIZE_FROM_FILE = os.getenv("INITIALIZE_FROM_FILE")
 
     ### User Options
@@ -59,8 +58,11 @@ class Config:
     ### Models
     MASK_RCNN_FILE = os.getenv("MASK_RCNN_FILE", "")
     MASK_RCNN_CLASSES = os.getenv("MASK_RCNN_CLASSES", "BG")
+    MASK_RCNN_EXCLUDED_LAYERS = os.getenv("MASK_RCNN_EXCLUDED_LAYERS",
+                                          "mrcnn_class_logits,mrcnn_bbox_fc,mrcnn_bbox,mrcnn_mask")
+    MODEL_DIR = os.getenv("MODEL_DIR", r"/workspace/models")
 
-    DEXTR_FILE = os.getenv("DEXTR_FILE", "/models/dextr_pascal-sbd.h5")
+    DEXTR_FILE = os.getenv("DEXTR_FILE", r"/models/dextr_pascal-sbd.h5")
 
 
 __all__ = ["Config"]

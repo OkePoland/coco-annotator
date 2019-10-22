@@ -9,9 +9,11 @@ import logging
 logger = logging.getLogger('gunicorn.error')
 
 
-MODEL_DIR = "/workspace/models"
+MODEL_DIR = AnnotatorConfig.MODEL_DIR
 COCO_MODEL_PATH = AnnotatorConfig.MASK_RCNN_FILE
 CLASS_NAMES = AnnotatorConfig.MASK_RCNN_CLASSES.split(',')
+EXCLUDED_LAYERS = AnnotatorConfig.MASK_RCNN_EXCLUDED_LAYERS.split(',')
+
 
 class CocoConfig(Config):
     """
@@ -34,11 +36,14 @@ class MaskRCNN():
             config=self.config
         )
         try:
-            self.model.load_weights(COCO_MODEL_PATH, by_name=True)
+            logger.info(f"Loading {COCO_MODEL_PATH}")
+            self.model.load_weights(COCO_MODEL_PATH, by_name=True,
+                                    exclude=EXCLUDED_LAYERS)
             self.model.keras_model._make_predict_function()
             logger.info(f"Loaded MaskRCNN model: {COCO_MODEL_PATH}")
-        except:
-            logger.error(f"Could not load MaskRCNN model (place 'mask_rcnn_coco.h5' in the models directory)")
+        except Exception as e:
+            logger.error(e)
+            logger.error(f"Could not load MaskRCNN model (place '{COCO_MODEL_PATH}' in the {MODEL_DIR} directory)")
             self.model = None
 
 
