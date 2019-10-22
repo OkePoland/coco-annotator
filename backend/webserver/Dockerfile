@@ -1,4 +1,4 @@
-FROM jsbroks/coco-annotator:python-env
+FROM tantael/multi-annotator:python-env
 
 WORKDIR /workspace/
 
