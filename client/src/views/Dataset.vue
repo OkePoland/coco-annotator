@@ -337,7 +337,7 @@
       <div class="modal-dialog" role="document">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title">Upload COCO Annotaitons</h5>
+            <h5 class="modal-title">Upload COCO Annotations</h5>
             <button
               type="button"
               class="close"
@@ -348,10 +348,22 @@
             </button>
           </div>
           <div class="modal-body">
+
+<div>
+  <input type="radio" id="file" name="drone" value="file" checked  v-model="file_type" >
+  <label for="file">file</label>
+   <input type="radio" id="folder" name="drone" value="folder" v-model="file_type"
+         checked>
+  <label for="folder">folder</label>
+</div>
             <form>
-              <div class="form-group">
+              <div v-if="file_type == 'file'" class="form-group">
                 <label for="coco">COCO Annotation file (.json)</label>
-                <input type="file" class="form-control-file" id="coco" />
+                <input type="file" class="form-control-file" id="coco"  multiple/>
+              </div>
+                <div v-if="file_type == 'folder'" class="form-group">
+                <label for="coco">Folder with labels</label>
+                <input type="file" class="form-control-file" id="coco" webkitdirectory allowdirs multiple/>
               </div>
             </form>
           </div>
@@ -443,6 +455,12 @@ import { mapMutations } from "vuex";
 let $ = JQuery;
 
 export default {
+    data: function() {
+       return {
+          nom: 'Nom',
+          prenom: 'Pierre'
+        }
+    },
   name: "Dataset",
   components: {
     ImageCard,
@@ -463,6 +481,7 @@ export default {
     return {
       pages: 1,
       generateLimit: 100,
+      file_type: 'file',
       limit: 52,
       imageCount: 0,
       categories: [],
