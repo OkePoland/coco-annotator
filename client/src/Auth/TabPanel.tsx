@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import Typography from "@material-ui/core/Typography";
 import TextField from "@material-ui/core/TextField";
-import { Button } from "@material-ui/core";
+import Button from "@material-ui/core/Button";
 
 import { useStyles } from "./Auth.components";
 
