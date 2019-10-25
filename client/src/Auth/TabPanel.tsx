@@ -1,152 +1,164 @@
-import React, { useState } from "react";
-import Typography from "@material-ui/core/Typography";
-import TextField from "@material-ui/core/TextField";
-import Button from "@material-ui/core/Button";
+import React, { useState } from 'react';
+import Typography from '@material-ui/core/Typography';
+import TextField from '@material-ui/core/TextField';
+import Button from '@material-ui/core/Button';
 
-import { useStyles } from "./Auth.components";
+import { useStyles } from './Auth.components';
 
 interface Props {
-  activeTab: number;
-  index: number;
+    activeTab: number;
+    index: number;
 }
 
 const TabPanel: React.FC<Props> = ({ activeTab, index }) => {
-  const classes = useStyles();
+    const classes = useStyles();
 
-  const [credentials, setCredentials] = useState({
-    fullName: "",
-    username: "",
-    password: "",
-    confirmPassword: ""
-  });
+    const [
+        { fullName, username, password, confirmPassword },
+        setCredentials,
+    ] = useState({
+        fullName: '',
+        username: '',
+        password: '',
+        confirmPassword: '',
+    });
 
-  const [error, setError] = useState("");
+    const [error, setError] = useState('');
 
-  const fullName = credentials.fullName;
-  const username = credentials.username;
-  const password = credentials.password;
-  const confirmPassword = credentials.confirmPassword;
+    const LOGIN_TAB_INDEX = 1;
+    const PASSWORD_LENGTH_LIMIT = 4;
 
-  const isValidUsername = !!username && !/^[0-9a-zA-Z_.-]+$/.test(username);
-  const isValidPassword = !!password && password.length < 5;
-  const isValidConfirmedPassword =
-    !!confirmPassword && confirmPassword !== password;
+    const isValidUsername = /^[0-9a-zA-Z_.-]+$/.test(username);
+    const isValidPassword = password.length > PASSWORD_LENGTH_LIMIT;
+    const isValidConfirmedPassword = confirmPassword === password;
 
-  const handleChange = (prop: string) => (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    setCredentials({ ...credentials, [prop]: event.target.value });
-  };
+    const handleChange = ({
+        target: { name, value },
+    }: React.ChangeEvent<HTMLInputElement>) => {
+        setCredentials(c => ({ ...c, [name]: value }));
+    };
 
-  const register = async (event: React.FormEvent) => {
-    event.preventDefault();
-    if (!username || isValidUsername) {
-      setError("Username is invalid");
-    } else if (!password || isValidPassword) {
-      setError("Password is invalid");
-    } else if (!confirmPassword || isValidConfirmedPassword) {
-      setError(`Passwords don't match`);
-    } else {
-      setError("");
-    }
-  };
+    const register = async (event: React.FormEvent) => {
+        event.preventDefault();
+        if (!isValidUsername) {
+            setError('Username is invalid');
+        } else if (!isValidPassword) {
+            setError('Password is invalid');
+        } else if (!isValidConfirmedPassword) {
+            setError("Passwords don't match");
+        } else {
+            return null;
+        }
+    };
 
-  const login = async (event: React.FormEvent) => {
-    event.preventDefault();
-    if (!username || isValidUsername) {
-      setError("Username is invalid");
-    } else if (!password || isValidPassword) {
-      setError("Password is invalid");
-    } else {
-      setError("");
-    }
-  };
+    const login = async (event: React.FormEvent) => {
+        event.preventDefault();
+        if (!isValidUsername) {
+            setError('Username is invalid');
+        } else if (!isValidPassword) {
+            setError('Password is invalid');
+        } else {
+            return null;
+        }
+    };
 
-  return (
-    <Typography
-      component="div"
-      role="tabpanel"
-      hidden={activeTab !== index}
-      id={`full-width-tabpanel-${index}`}
-      aria-labelledby={`full-width-tab-${index}`}
-    >
-      <form
-        className={classes.form}
-        noValidate
-        onSubmit={index === 1 ? register : login}
-      >
-        {index === 1 && (
-          <TextField
-            InputLabelProps={{ classes: { root: classes.label } }}
-            variant="outlined"
-            value={fullName}
-            margin="normal"
-            fullWidth
-            id="full-name"
-            label="Full Name"
-            name="full name"
-            onChange={handleChange("fullName")}
-          />
-        )}
-        <TextField
-          InputLabelProps={{ classes: { root: classes.label } }}
-          variant="outlined"
-          margin="normal"
-          value={username}
-          required
-          fullWidth
-          error={isValidUsername}
-          helperText={isValidUsername ? "Invalid username format" : ""}
-          name="username"
-          label="Username"
-          id="username"
-          onChange={handleChange("username")}
-        />
-        <TextField
-          InputLabelProps={{ classes: { root: classes.label } }}
-          variant="outlined"
-          margin="normal"
-          value={password}
-          required
-          fullWidth
-          error={isValidPassword}
-          helperText={isValidPassword ? "Minimum length of 5 characters" : ""}
-          name="password"
-          label="Password"
-          type="password"
-          id="password"
-          onChange={handleChange("password")}
-        />
-        {index === 1 && (
-          <TextField
-            InputLabelProps={{ classes: { root: classes.label } }}
-            variant="outlined"
-            margin="normal"
-            value={confirmPassword}
-            required
-            fullWidth
-            error={isValidConfirmedPassword}
-            helperText={isValidConfirmedPassword ? "Passwords don't match" : ""}
-            name="confirm password"
-            label="Confirm Password"
-            type="password"
-            id="confirm-password"
-            onChange={handleChange("confirmPassword")}
-          />
-        )}
-        {error && <p>{error}</p>}
-        <Button
-          color="primary"
-          type="submit"
-          fullWidth
-          variant="contained"
-          className={classes.submit}
+    return (
+        <Typography
+            component="div"
+            role="tabpanel"
+            hidden={activeTab !== index}
+            id={`full-width-tabpanel-${index}`}
+            aria-labelledby={`full-width-tab-${index}`}
         >
-          {index === 1 ? "Register" : "Login"}
-        </Button>
-      </form>
-    </Typography>
-  );
+            <form
+                className={classes.form}
+                noValidate
+                onSubmit={index === LOGIN_TAB_INDEX ? register : login}
+            >
+                {index === LOGIN_TAB_INDEX && (
+                    <TextField
+                        InputLabelProps={{ classes: { root: classes.label } }}
+                        variant="outlined"
+                        value={fullName}
+                        margin="normal"
+                        fullWidth
+                        id="full-name"
+                        label="Full Name"
+                        name="fullName"
+                        onChange={handleChange}
+                    />
+                )}
+                <TextField
+                    InputLabelProps={{ classes: { root: classes.label } }}
+                    variant="outlined"
+                    margin="normal"
+                    value={username}
+                    required
+                    fullWidth
+                    error={!!username && !isValidUsername}
+                    helperText={
+                        !!username && !isValidUsername
+                            ? 'Invalid username format'
+                            : null
+                    }
+                    name="username"
+                    label="Username"
+                    id="username"
+                    onChange={handleChange}
+                />
+                <TextField
+                    InputLabelProps={{ classes: { root: classes.label } }}
+                    variant="outlined"
+                    margin="normal"
+                    value={password}
+                    required
+                    fullWidth
+                    error={!!password && !isValidPassword}
+                    helperText={
+                        !!password && !isValidPassword
+                            ? 'Minimum length of 5 characters'
+                            : null
+                    }
+                    name="password"
+                    label="Password"
+                    type="password"
+                    id="password"
+                    onChange={handleChange}
+                />
+                {index === LOGIN_TAB_INDEX && (
+                    <TextField
+                        InputLabelProps={{ classes: { root: classes.label } }}
+                        variant="outlined"
+                        margin="normal"
+                        value={confirmPassword}
+                        required
+                        fullWidth
+                        error={!!confirmPassword && !isValidConfirmedPassword}
+                        helperText={
+                            !!confirmPassword && !isValidConfirmedPassword
+                                ? "Passwords don't match"
+                                : null
+                        }
+                        name="confirmPassword"
+                        label="Confirm Password"
+                        type="password"
+                        id="confirm-password"
+                        onChange={handleChange}
+                    />
+                )}
+                {error && <p>{error}</p>}
+                <Button
+                    color="primary"
+                    type="submit"
+                    fullWidth
+                    variant="contained"
+                    className={classes.submit}
+                >
+                    {index === LOGIN_TAB_INDEX ? 'Register' : 'Login'}
+                </Button>
+            </form>
+        </Typography>
+    );
 };
 
 export default TabPanel;
