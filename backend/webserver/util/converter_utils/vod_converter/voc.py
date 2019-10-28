@@ -7,10 +7,14 @@ http://host.robots.ox.ac.uk/pascal/VOC/voc2012/htmldoc/index.html
 import os
 import shutil
 import xml.etree.ElementTree as ET
-from pathlib import Path
 from lib.vod_converter.abstract import Ingestor, Egestor
 from lib.vod_converter.labels_and_aliases import output_labels
 from lib.vod_converter.validation_schemas import get_blank_image_detection_schema, get_blank_detection_schema
+import glob
+from PIL import Image
+import numpy as np
+from skimage import measure
+from pycocotools import mask
 
 
 class VOCIngestor(Ingestor):
@@ -18,11 +22,15 @@ class VOCIngestor(Ingestor):
     iii = 0
     detection_counter = 0
 
-    folder_names = {'images': 'JPEGImages', 'annotations': "Annotations", "sets": "ImageSets/Main"}
-    chosen_set = "trainval.txt"
+    folder_names = {'images': 'JPEGImages', 'annotations': "Annotations", 'segmentation_classes': "SegmentationClass",
+                    'segmentation_object': "SegmentationObject"}
 
-    def validate(self, root, folder_names, chosen_set="trainval.txt"):
-        self.chosen_set = chosen_set
+    segmentation_labels = {"1": 'aeroplane', "2": 'bicycle', "3": 'bird', "4": 'boat', "5": 'bottle',
+                           "6": 'bus', "7": 'car', "8": 'cat', "9": 'chair', "10": 'cow',
+                           "11": 'diningtable', "12": 'dog', "13": 'horse', "14": 'motorbike', "15": 'person',
+                           "16": 'pottedplant', "17": 'sheep', "18": 'sofa', "19": 'train', "20": 'tvmonitor'}
+
+    def validate(self, root, folder_names):
         if folder_names is None:
             folder_names = self.folder_names
         path = f"{root}"
@@ -30,8 +38,8 @@ class VOCIngestor(Ingestor):
         for subdir in folder_names.values():
             if not os.path.isdir(os.path.join(root, subdir)):
                 return False, f"Expected subdirectory {subdir}"
-            if not os.path.isfile(os.path.join(path, os.path.join(folder_names['sets'], chosen_set))):
-                return False, f"Expected {chosen_set} to exist within {os.path.join(path, folder_names['sets'])}"
+            # if not os.path.isfile(os.path.join(path, os.path.join(folder_names['sets'], chosen_set))):
+            #     return False, f"Expected {chosen_set} to exist within {os.path.join(path, folder_names['sets'])}"
         return True, None
 
     def ingest(self, path, folder_names=None):
@@ -41,19 +49,15 @@ class VOCIngestor(Ingestor):
         return [self._get_image_detection(path, image_name, folder_names) for image_name in image_names]
 
     def _get_image_ids(self, root, folder_names):
-        if folder_names is None:
-            path = f"{root}/{self.folder_names['sets']}/{self.chosen_set}"
-        else:
-            path = f"{root}/{folder_names['sets']}/{self.chosen_set}"
 
-        with open(path, 'r+') as f:
-            lines = f.readlines()
-            if len(lines) == 0:
-                fnames = [Path(file).stem for file in os.listdir(folder_names['images'])]
-                f.writelines(fnames)
-            else:
-                fnames = [x.replace('\n', '') for x in lines]
-            return fnames
+        if folder_names is None:
+            path = f"{root}/Annotations"
+        else:
+            path = f"{root}/{folder_names['annotations']}"
+
+        fnames = [xml_file.split("/")[-1].split(".")[0] for xml_file in glob.glob(f"{path}/*.xml")]
+
+        return fnames
 
     def _get_image_detection(self, root, image_id, folder_names):
         if self.iii % 100 == 0:
@@ -74,9 +78,13 @@ class VOCIngestor(Ingestor):
         size = xml_root.find('size')
         segmented = xml_root.find('segmented').text == '1'
         segmented_path = None
+        segmented_objects = None
         if segmented:
-            segmented_path = f"{path}/SegmentationObject/{image_id}.png"
+            segmented_path = f"{path}/{folder_names['segmentation_classes']}/{image_id}.png"
+            segmented_objects = f"{path}/{folder_names['segmentation_object']}/{image_id}.png"
             if not os.path.isfile(segmented_path):
+                raise Exception(f"Expected segmentation file {segmented_path} to exist.")
+            if not os.path.isfile(segmented_objects):
                 raise Exception(f"Expected segmentation file {segmented_path} to exist.")
         image_width = int(size.find('width').text)
         image_height = int(size.find('height').text)
@@ -91,22 +99,66 @@ class VOCIngestor(Ingestor):
         single_img_detection["image"]["height"] = image_height
         single_img_detection["image"]["file_name"] = f"{image_id}.jpg"
 
-        detections = [self._get_detection(node, image_id) for node in xml_root.findall('object')]
-
-        single_img_detection["detections"] = detections
-
-        # return {
-        #     'image': {
-        #         'id': image_id,
-        #         'path': image_path,
-        #         'segmented_path': segmented_path,
-        #         'width': image_width,
-        #         'height': image_height
-        #     },
-        #     'detections': [self._get_detection(node) for node in xml_root.findall('object')]
-        # }
+        single_img_detection["detections"] = self._get_detections(xml_root, image_id, segmented_path, segmented_objects, image_width, image_height)
 
         return single_img_detection
+
+    def _get_detections(self, xml_root, img_id, segmented_classes, segmented_objects, image_width, image_height):
+        if segmented_classes is None:
+            return [self._get_detection(node, img_id) for node in xml_root.findall('object')]
+        else:
+            detections = []
+
+            sub_masks = self.create_sub_masks(Image.open(segmented_objects))
+
+            class_segmentation_array = np.asarray(Image.open(segmented_classes), dtype="uint8")
+
+            for label, single_mask in sub_masks.items():
+                array_mask = np.asarray(single_mask, dtype="uint8")
+                contours = measure.find_contours(array_mask, 0.5)
+
+                curr_detection = get_blank_detection_schema()
+
+                curr_detection["segmentation"] = []
+                for contour in contours:
+                    contour = np.flip(contour, axis=1)
+                    segmentation = contour.ravel().tolist()
+                    try:
+                        rs = mask.frPyObjects([segmentation], image_height, image_width)
+                        if mask.area(rs)[0] > 25:
+                            curr_detection["segmentation"].append(segmentation)
+                        else:
+                            continue
+                    except Exception as e:
+                        print(f"Cannot calculate area of polygon: {e}")
+                        continue
+
+                if curr_detection["segmentation"]:
+                    curr_detection["area"] = int(sum(mask.area(mask.frPyObjects(curr_detection["segmentation"],
+                                                                                image_height, image_width))))
+                else:
+                    continue
+
+                encoded_ground_truth = mask.encode(np.asfortranarray(array_mask))
+                ground_truth_bounding_box = mask.toBbox(encoded_ground_truth)
+
+                curr_detection["id"] = self.detection_counter
+                self.detection_counter += 1
+                curr_detection["image_id"] = img_id
+                curr_detection["label"] = self._get_class_label(array_mask, class_segmentation_array)
+
+                bbox = ground_truth_bounding_box.tolist()
+                curr_detection["left"] = bbox[0]
+                curr_detection["top"] = bbox[1]
+                curr_detection["right"] = bbox[2] + bbox[0]
+                curr_detection["bottom"] = bbox[3] + bbox[1]
+                curr_detection["iscrowd"] = False
+                curr_detection["isbbox"] = False
+                curr_detection["keypoints"] = []
+
+                detections.append(curr_detection)
+
+            return detections
 
     def _get_detection(self, node, img_id):
         curr_detection = get_blank_detection_schema()
@@ -126,15 +178,38 @@ class VOCIngestor(Ingestor):
         curr_detection["isbbox"] = True
         curr_detection["keypoints"] = []
 
-        # return {
-        #     'label': node.find('name').text,
-        #     'top': float(bndbox.find('ymin').text) - 1,
-        #     'left': float(bndbox.find('xmin').text) - 1,
-        #     'right': float(bndbox.find('xmax').text) - 1,
-        #     'bottom': float(bndbox.find('ymax').text) - 1,
-        # }
-
         return curr_detection
+
+    @staticmethod
+    def create_sub_masks(mask_image):
+        width, height = mask_image.size
+
+        sub_masks = {}
+        for x in range(width):
+            for y in range(height):
+                pixel = mask_image.getpixel((x, y))
+
+                if pixel != 0 and pixel != 255:
+                    pixel_str = str(pixel)
+                    if sub_masks.get(pixel_str) is None:
+                        sub_masks[pixel_str] = Image.new('1', (width, height))
+
+                    sub_masks[pixel_str].putpixel((x, y), 1)
+
+        return sub_masks
+
+    def _get_class_label(self, object_mask, class_segmentation_mask):
+        object_pixels = np.where((object_mask != 0) & (object_mask != 255))
+        labels = []
+        for x, y in zip(*object_pixels):
+            labels.append(class_segmentation_mask[x][y])
+
+        if len(set(labels)) != 1:
+            print(f"Error with finding class from class segmentation mask, not all pixels has the same label, found "
+                  f"labels: {set(labels)}")
+            return None
+
+        return self.segmentation_labels[str(labels[0])]
 
 
 class VOCEgestor(Egestor):

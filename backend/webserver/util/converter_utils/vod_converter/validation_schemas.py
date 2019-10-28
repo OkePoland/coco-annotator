@@ -32,7 +32,7 @@ In raw_detection_schema:
     "id": Mandatory (int or string)
     "image_id": Mandatory (int or string)
     "label": Mandatory (string)
-    "segmentation": Optional (list) or can be left as None, if left as None and isbbox=True, it will be automatically
+    "segmentation": Optional (list of lists, for each subsegment one sublist) or can be left as None, if left as None and isbbox=True, it will be automatically
                     fulfilled with points of bbox to ensure compatibility with COCO Annotator.
                     How to fill list:
                     * If iscrowd=0 then polygons are used and list should be consecutive x and y coordinates of

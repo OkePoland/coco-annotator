@@ -10,7 +10,6 @@ can output the data to the filesystem.
 
 See `main.py` for the supported types, and `voc.py` and `kitti.py` for reference.
 """
-import os
 
 from jsonschema import validate as raw_validate
 from jsonschema.exceptions import ValidationError as SchemaError
@@ -25,7 +24,7 @@ import lib.vod_converter.citycam as voc_city
 import lib.vod_converter.mio as mio
 import lib.vod_converter.caltech as caltech
 import lib.vod_converter.detrac as detrac
-from lib.vod_converter.validation_schemas import IMAGE_DETECTION_SCHEMA, IMAGE_SCHEMA, DETECTION_SCHEMA
+from lib.vod_converter.validation_schemas import IMAGE_DETECTION_SCHEMA
 
 
 def validate_schema(data, schema):
@@ -55,7 +54,8 @@ EGESTORS = {
 }
 
 
-def convert(*, from_path, ingestor_key, to_path, egestor_key, select_only_known_labels, filter_images_without_labels, folder_names):
+def convert(*, from_path, ingestor_key, to_path, egestor_key, select_only_known_labels, filter_images_without_labels,
+            folder_names):
     """
     Converts between data formats, validating that the converted data matches
     `IMAGE_DETECTION_SCHEMA` along the way.
@@ -64,6 +64,10 @@ def convert(*, from_path, ingestor_key, to_path, egestor_key, select_only_known_
     :param ingestor_key: `Ingestor` to read in data
     :param to_path: '/path/to/write/to'
     :param egestor_key: `Egestor` to write out data
+    :param select_only_known_labels: Bool indicating if an annotation with unknown label should be passed to Egestor
+    :param filter_images_without_labels: Bool indicating if an image detection without any annotation should be passed
+            to Egestor
+    :param folder_names: List of folders' names that are passed to Egestor
     :return: (success, message)
     """
     ingestor = INGESTORS[ingestor_key]
@@ -136,6 +140,7 @@ def convert_labels(*, image_detections, expected_labels,
         try:
             for detection in image_detection['detections']:
                 label = detection['label']
+
                 fallback_label = label if not select_only_known_labels else None
                 final_label = convert_dict.get(label.lower(), fallback_label)
                 if final_label:

@@ -84,17 +84,8 @@ class CaltechIngestor(Ingestor):
                             image_path = f"{root}/images/" + image_id + ".png"
                             image_width, image_height = self._image_dimensions(image_path)
 
-                            detections = self._get_detections(frame_dict, image_id)
-                            # single_img_detection.append({
-                            #     'image': {
-                            #         'id': image_id,
-                            #         'path': image_path,
-                            #         'segmented_path': None,
-                            #         'width': image_width,
-                            #         'height': image_height
-                            #     },
-                            #     'detections': detections
-                            # })
+                            detections = self._get_detections(frame_dict, image_id, image_width, image_height)
+
                             single_img_detection["image"]["id"] = image_id
                             single_img_detection["image"]["dataset_id"] = None
                             single_img_detection["image"]["path"] = image_path
@@ -120,31 +111,22 @@ class CaltechIngestor(Ingestor):
         print(f"Unable to load {failed_loads} images")
         return annotations
 
-    def _get_detections(self, frame, img_id):
+    def _get_detections(self, frame, img_id, image_width, image_height):
         detections = []
         for i, annotation in enumerate(frame):
             curr_detection = get_blank_detection_schema()
             try:
-                # x1 = annotation["pos"][0]
-                # y1 = annotation["pos"][1]
-                # x2 = x1 + annotation["pos"][2]
-                # y2 = y1 + annotation["pos"][3]
-                # label = annotation["lbl"]
-                # detections.append({
-                #     'label': annotation["lbl"],
-                #     'left': annotation["pos"][0],
-                #     'right': annotation["pos"][0] + annotation["pos"][2],
-                #     'top': annotation["pos"][1],
-                #     'bottom': annotation["pos"][1] + annotation["pos"][3]
-                # })
+
                 curr_detection["id"] = i
                 curr_detection["image_id"] = img_id
                 curr_detection["label"] = annotation["lbl"]
                 curr_detection["segmentation"] = None
-                curr_detection["top"] = annotation["pos"][1]
-                curr_detection["left"] = annotation["pos"][0]
-                curr_detection["right"] = annotation["pos"][0] + annotation["pos"][2]
-                curr_detection["bottom"] = annotation["pos"][1] + annotation["pos"][3]
+                curr_detection["left"] = annotation["pos"][0] if annotation["pos"][0] >= 0 else 0
+                curr_detection["top"] = annotation["pos"][1] if annotation["pos"][1] >= 0 else 0
+                curr_detection["right"] = annotation["pos"][0] + annotation["pos"][2] \
+                    if annotation["pos"][0] + annotation["pos"][2] <= image_width else image_width
+                curr_detection["bottom"] = annotation["pos"][1] + annotation["pos"][3] \
+                    if annotation["pos"][1] + annotation["pos"][3] <= image_height else image_height
                 curr_detection["iscrowd"] = False
                 curr_detection["isbbox"] = True
                 curr_detection["keypoints"] = []
@@ -155,6 +137,7 @@ class CaltechIngestor(Ingestor):
                 print(e)
         return detections
 
-    def _image_dimensions(self, path):
+    @staticmethod
+    def _image_dimensions(path):
         with Image.open(path) as image:
             return image.width, image.height
