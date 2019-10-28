@@ -499,14 +499,14 @@ class DatasetCoco(Resource):
         """ Adds coco formatted annotations to the dataset """
         args = coco_upload.parse_args()
         coco = args['coco']
-        logger.info("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ")
+        logger.info("TEST_TEST ")
         for el in coco:
             logger.info(el)
-            logger.info(str(type(el)))
         dataset = current_user.datasets.filter(id=dataset_id).first()
         if dataset is None:
             return {'message': 'Invalid dataset ID'}, 400
 
+        # Right now working only for a single file
         return dataset.import_coco(json.load(coco[0]))
 
 
