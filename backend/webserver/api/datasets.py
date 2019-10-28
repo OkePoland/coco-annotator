@@ -4,7 +4,7 @@ from flask_login import login_required, current_user
 from werkzeug.datastructures import FileStorage
 from mongoengine.errors import NotUniqueError
 from threading import Thread
-
+import logging
 from google_images_download import google_images_download as gid
 
 from ..util.pagination_util import Pagination
@@ -21,7 +21,7 @@ from database import (
 import datetime
 import json
 import os
-
+logger = logging.getLogger('gunicorn.error')
 api = Namespace('dataset', description='Dataset related operations')
 
 
@@ -41,7 +41,7 @@ delete_data.add_argument('fully', default=False, type=bool,
                          help="Fully delete dataset (no undo)")
 
 coco_upload = reqparse.RequestParser()
-coco_upload.add_argument('coco', location='files', type=FileStorage, required=True, help='Json coco')
+coco_upload.add_argument('coco', location='files', type=FileStorage, required=True, help='Json coco', action='append')
 
 export = reqparse.RequestParser()
 export.add_argument('categories', type=str, default=None, required=False, help='Ids of categories to export')
@@ -469,7 +469,7 @@ class DatasetExport(Resource):
         """ Adds coco formatted annotations to the dataset """
         args = coco_upload.parse_args()
         coco = args['coco']
-
+        logger.info("Loading ")
         dataset = current_user.datasets.filter(id=dataset_id).first()
         if dataset is None:
             return {'message': 'Invalid dataset ID'}, 400
@@ -499,10 +499,14 @@ class DatasetCoco(Resource):
         """ Adds coco formatted annotations to the dataset """
         args = coco_upload.parse_args()
         coco = args['coco']
-
+        logger.info("TEST_TEST ")
+        for el in coco:
+            logger.info(el)
         dataset = current_user.datasets.filter(id=dataset_id).first()
         if dataset is None:
             return {'message': 'Invalid dataset ID'}, 400
+
+
 
         return dataset.import_coco(json.load(coco))
 

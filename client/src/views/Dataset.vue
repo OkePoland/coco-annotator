@@ -660,13 +660,13 @@ export default {
     },
     importCOCO() {
       let uploaded = document.getElementById("coco");
-      Dataset.uploadCoco(this.dataset.id, uploaded.files[0])
+      Dataset.uploadCoco(this.dataset.id, uploaded.files)
         .then(response => {
           let id = response.data.id;
           this.importing.id = id;
         })
         .catch(error => {
-          this.axiosReqestError("Importing COCO", error.response.data.message);
+          this.axiosReqestError("Importing COCO_HERE", error.response.data.message);
         })
         .finally(() => this.removeProcess(process));
     },
