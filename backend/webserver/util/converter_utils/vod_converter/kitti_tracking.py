@@ -55,7 +55,7 @@ from collections import defaultdict
 
 from PIL import Image
 
-from lib.vod_converter.abstract import Ingestor
+from .abstract import Ingestor
 
 LABEL_F_PATTERN = re.compile('[0-9]+\.txt')
 

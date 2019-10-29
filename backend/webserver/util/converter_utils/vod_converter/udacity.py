@@ -11,7 +11,7 @@ from collections import defaultdict
 
 from PIL import Image
 
-from lib.vod_converter.abstract import Ingestor
+from .abstract import Ingestor
 
 
 class UdacityCrowdAIIngestor(Ingestor):

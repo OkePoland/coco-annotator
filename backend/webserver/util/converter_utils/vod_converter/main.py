@@ -16,7 +16,7 @@ import lib.vod_converter.coco as coco
 import lib.vod_converter.voc as voc
 import lib.vod_converter.caltech as caltech
 
-logger = logging.getLogger()
+logger = logging.getLogger('gunicorn.error')
 logger.setLevel(logging.INFO)
 
 INGESTORS = {
@@ -35,11 +35,11 @@ EGESTORS = {
 }
 
 
-def main(*, from_path, from_key, to_path, to_key, select_only_known_labels, filter_images_without_labels):
+def main(*, from_path, from_key, to_path, to_key):
     success, msg = converter.convert(from_path=from_path, ingestor_key=from_key,
                                      to_path=to_path, egestor_key=to_key,
-                                     select_only_known_labels=select_only_known_labels,
-                                     filter_images_without_labels=filter_images_without_labels, folder_names=None)
+                                     select_only_known_labels=False,
+                                     filter_images_without_labels=True, folder_names=None)
     if success:
         print(f"Successfully converted from {from_key} to {to_key}.")
     else:

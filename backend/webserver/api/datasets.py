@@ -6,8 +6,9 @@ from mongoengine.errors import NotUniqueError
 from threading import Thread
 import logging
 from google_images_download import google_images_download as gid
-
+from ..util.converter_utils.util_functions import check_coco, convert_to_coco
 from ..util.pagination_util import Pagination
+from ..util.converter_utils.vod_converter import converter
 from ..util import query_util, coco_util, profile
 
 from database import (
@@ -21,6 +22,20 @@ from database import (
 import datetime
 import json
 import os
+
+
+INGESTORS = [
+    'mio',
+    'pedx',
+    'citycam',
+    #'coco',
+    'daimler',
+    'kitti',
+    'kitti-tracking',
+    'voc',
+    'detrac',
+    'caltech']
+
 logger = logging.getLogger('gunicorn.error')
 api = Namespace('dataset', description='Dataset related operations')
 
@@ -470,6 +485,7 @@ class DatasetExport(Resource):
         args = coco_upload.parse_args()
         coco = args['coco']
         logger.info("Loading ")
+
         dataset = current_user.datasets.filter(id=dataset_id).first()
         if dataset is None:
             return {'message': 'Invalid dataset ID'}, 400
@@ -502,12 +518,31 @@ class DatasetCoco(Resource):
         logger.info("TEST_TEST ")
         for el in coco:
             logger.info(el)
+
+        to_key = 'coco'
+
+        for from_key in INGESTORS:
+
+            success, file = converter.convert(labels=coco, ingestor_key=from_key,
+                                             egestor_key=to_key,
+                                             select_only_known_labels=False,
+                                             filter_images_without_labels=True, folder_names=None)
+            if success:
+                logger.info(f"Successfully converted from {from_key} to {to_key}.")
+                coco = file
+                break
+            else:
+                logger.info(f"Failed to convert from {from_key} to {to_key}")
+
+
+
         dataset = current_user.datasets.filter(id=dataset_id).first()
         if dataset is None:
             return {'message': 'Invalid dataset ID'}, 400
 
+
         # Right now working only for a single file
-        return dataset.import_coco(json.load(coco[0]))
+        return dataset.import_coco(coco)
 
 
 @api.route('/coco/<int:import_id>')

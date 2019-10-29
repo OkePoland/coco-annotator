@@ -1,11 +1,13 @@
 
 from flask_login import current_user
+import logging
 from mongoengine import *
 from config import Config
-
 from .tasks import TaskModel
 
 import os
+
+
 
 
 class DatasetModel(DynamicDocument):
@@ -46,7 +48,6 @@ class DatasetModel(DynamicDocument):
             .exclude('password', 'id', 'preferences')
 
     def import_coco(self, coco_json):
-
         from workers.tasks import import_annotations
 
         task = TaskModel(

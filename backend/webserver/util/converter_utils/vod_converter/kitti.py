@@ -36,8 +36,8 @@ import shutil
 
 from PIL import Image
 
-from lib.vod_converter.abstract import Ingestor, Egestor
-from lib.vod_converter.labels_and_aliases import output_labels
+from .abstract import Ingestor, Egestor
+from .labels_and_aliases import output_labels
 
 
 class KITTIIngestor(Ingestor):

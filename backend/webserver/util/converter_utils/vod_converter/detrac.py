@@ -8,8 +8,8 @@ import json
 
 from PIL import Image
 import xml.etree.ElementTree as ET
-from lib.vod_converter.abstract import Ingestor, Egestor
-from lib.vod_converter.validation_schemas import get_blank_detection_schema, get_blank_image_detection_schema
+from .abstract import Ingestor, Egestor
+from .validation_schemas import get_blank_detection_schema, get_blank_image_detection_schema
 
 class DETRACIngestor(Ingestor):
     def validate(self, path, folder_names):

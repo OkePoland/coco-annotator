@@ -20,10 +20,10 @@ license{
 import os
 import json
 from PIL import Image
-from lib.vod_converter.labels_and_aliases import output_labels
-from lib.vod_converter.abstract import Ingestor, Egestor
+from .labels_and_aliases import output_labels
+from .abstract import Ingestor, Egestor
 from pycocotools import mask
-from lib.vod_converter.validation_schemas import get_blank_detection_schema, get_blank_image_detection_schema
+from .validation_schemas import get_blank_detection_schema, get_blank_image_detection_schema
 import collections
 
 
@@ -136,13 +136,9 @@ class COCOEgestor(Egestor):
     def expected_labels(self):
         return output_labels
 
-    def egest(self, *, image_detections, root, folder_names):
+    def egest(self, *, image_detections, folder_names):
 
         print("Processing data by COCO Egestor...")
-        images_dir = f"{root}/images"
-        os.makedirs(images_dir, exist_ok=True)
-        with open(f"{root}/{self.default_label_file}", "w") as file:
-            pass
 
         labels = {"images": [], "categories": self.generate_categories(), "annotations": []}
 
@@ -197,7 +193,7 @@ class COCOEgestor(Egestor):
                     ]
                 else:
                     new_detection["segmentation"] = detection["segmentation"]
-
+                detection['area'] = None
                 if detection["area"] is None:
                     try:
                         # rs = mask.frPyObjects(new_detection['segmentation'], new_image["height"], new_image["width"])
@@ -214,8 +210,7 @@ class COCOEgestor(Egestor):
                 labels["annotations"].append(new_detection)
 
         print("Saving json file...")
-        with open(f"{root}/{self.default_label_file}", "w") as annotation_file:
-            json.dump(labels, annotation_file)
+        return labels
 
     def generate_categories(self):
         categories = []

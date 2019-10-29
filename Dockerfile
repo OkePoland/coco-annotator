@@ -24,6 +24,8 @@ RUN python set_path.py
 
 COPY --from=build-stage /workspace/client/dist /workspace/dist
 
+RUN pip install --upgrade pip
+
 ENV FLASK_ENV=production
 ENV DEBUG=false
 

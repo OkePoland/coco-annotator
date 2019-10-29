@@ -8,9 +8,9 @@ import os
 import shutil
 import xml.etree.ElementTree as ET
 from pathlib import Path
-from lib.vod_converter.abstract import Ingestor, Egestor
-from lib.vod_converter.labels_and_aliases import output_labels
-from lib.vod_converter.validation_schemas import get_blank_image_detection_schema, get_blank_detection_schema
+from .abstract import Ingestor, Egestor
+from .labels_and_aliases import output_labels
+from .validation_schemas import get_blank_image_detection_schema, get_blank_detection_schema
 
 
 class VOC_CITY_Ingestor(Ingestor):

@@ -13,11 +13,11 @@ from database import (
 import numpy as np
 import time
 import json
-import os
 
-from webserver.util.converter_utils.util_functions import check_coco, convert_to_coco
 from celery import shared_task
 from ..socket import create_socket
+#from webserver.util.converter_utils.util_functions import convert_to_coco
+
 
 
 @shared_task
@@ -123,11 +123,7 @@ def export_annotations(task_id, dataset_id, categories):
 @shared_task
 def import_annotations(task_id, dataset_id, coco_json):
 
-    is_coco, coco_json = check_coco(coco_json)
-    if not is_coco:
-        coco_json = convert_to_coco(coco_json)
 
-    
     task = TaskModel.objects.get(id=task_id)
     dataset = DatasetModel.objects.get(id=dataset_id)
 
@@ -154,6 +150,17 @@ def import_annotations(task_id, dataset_id, coco_json):
     ])
     progress = 0
 
+
+
+
+    #TUTAJ
+    text = "EMPTY"
+    #coco_json, text = convert_to_coco(coco_json)
+    #TUTAJ
+
+
+
+    task.info(text)
     task.info("===== Importing Categories =====")
     # category id mapping  ( file : database )
     categories_id = {}

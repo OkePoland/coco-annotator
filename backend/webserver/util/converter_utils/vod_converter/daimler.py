@@ -30,7 +30,7 @@ import shutil
 import json
 from PIL import Image
 
-from lib.vod_converter.abstract import Ingestor, Egestor
+from .abstract import Ingestor, Egestor
 
 
 daimler_dict = {

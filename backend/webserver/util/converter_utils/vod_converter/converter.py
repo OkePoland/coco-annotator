@@ -13,19 +13,20 @@ See `main.py` for the supported types, and `voc.py` and `kitti.py` for reference
 
 from jsonschema import validate as raw_validate
 from jsonschema.exceptions import ValidationError as SchemaError
-
-import lib.vod_converter.pedx as pedx
-import lib.vod_converter.coco as coco
-import lib.vod_converter.daimler as daimler
-import lib.vod_converter.kitti as kitti
-import lib.vod_converter.kitti_tracking as kitti_tracking
-import lib.vod_converter.voc as voc
-import lib.vod_converter.citycam as voc_city
-import lib.vod_converter.mio as mio
-import lib.vod_converter.caltech as caltech
-import lib.vod_converter.detrac as detrac
-from lib.vod_converter.validation_schemas import IMAGE_DETECTION_SCHEMA
-
+from ..vod_converter import pedx as pedx
+from ..vod_converter import coco as coco
+from ..vod_converter import daimler as daimler
+from ..vod_converter import kitti as kitti
+from ..vod_converter import kitti_tracking as kitti_tracking
+from ..vod_converter import voc as voc
+from ..vod_converter import citycam as voc_city
+from ..vod_converter import mio as mio
+from ..vod_converter import caltech as caltech
+from ..vod_converter import detrac as detrac
+from ..vod_converter.validation_schemas import IMAGE_DETECTION_SCHEMA
+import logging
+logger = logging.getLogger('gunicorn.error')
+print = logger.info
 
 def validate_schema(data, schema):
     """Wraps default implementation but accepting tuples as arrays too.
@@ -54,8 +55,9 @@ EGESTORS = {
 }
 
 
-def convert(*, from_path, ingestor_key, to_path, egestor_key, select_only_known_labels, filter_images_without_labels,
+def convert(*, labels, ingestor_key, egestor_key, select_only_known_labels, filter_images_without_labels,
             folder_names):
+
     """
     Converts between data formats, validating that the converted data matches
     `IMAGE_DETECTION_SCHEMA` along the way.
@@ -70,14 +72,15 @@ def convert(*, from_path, ingestor_key, to_path, egestor_key, select_only_known_
     :param folder_names: List of folders' names that are passed to Egestor
     :return: (success, message)
     """
+    print("start")
     ingestor = INGESTORS[ingestor_key]
     egestor = EGESTORS[egestor_key]
-    from_valid, from_msg = ingestor.validate(from_path, folder_names)
+    from_valid, from_msg = ingestor.validate(labels, folder_names)
 
     if not from_valid:
         return from_valid, from_msg
 
-    image_detections = ingestor.ingest(from_path, folder_names)
+    image_detections = ingestor.ingest(labels, folder_names)
 
     validate_image_detections(image_detections)
 
@@ -86,8 +89,8 @@ def convert(*, from_path, ingestor_key, to_path, egestor_key, select_only_known_
         select_only_known_labels=select_only_known_labels,
         filter_images_without_labels=filter_images_without_labels)
 
-    egestor.egest(image_detections=image_detections, root=to_path, folder_names=folder_names)
-    return True, ''
+    ready_file = egestor.egest(image_detections=image_detections, folder_names=folder_names)
+    return True, ready_file
 
 
 def validate_image_detections(image_detections):
@@ -99,7 +102,7 @@ def validate_image_detections(image_detections):
         try:
             validate_schema(image_detection, IMAGE_DETECTION_SCHEMA)
         except SchemaError as se:
-            print(se)
+            #print(se)
             image_detections.remove(image_detection)
             continue
         image = image_detection['image']
