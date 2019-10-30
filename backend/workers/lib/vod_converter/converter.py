@@ -13,17 +13,17 @@ See `main.py` for the supported types, and `voc.py` and `kitti.py` for reference
 
 from jsonschema import validate as raw_validate
 from jsonschema.exceptions import ValidationError as SchemaError
-from ..vod_converter import pedx as pedx
-from ..vod_converter import coco as coco
-from ..vod_converter import daimler as daimler
-from ..vod_converter import kitti as kitti
-from ..vod_converter import kitti_tracking as kitti_tracking
-from ..vod_converter import voc as voc
-from ..vod_converter import citycam as voc_city
-from ..vod_converter import mio as mio
-from ..vod_converter import caltech as caltech
-from ..vod_converter import detrac as detrac
-from ..vod_converter.validation_schemas import IMAGE_DETECTION_SCHEMA
+from .pedx import *
+from .coco import *
+from .daimler import *
+from .kitti import *
+from .kitti_tracking import *
+from .voc import *
+from .citycam import *
+# from .mio import *        something is wrong with mio file, probably imports fault
+from .caltech import *
+from .detrac import *
+from .validation_schemas import IMAGE_DETECTION_SCHEMA
 import logging
 logger = logging.getLogger('gunicorn.error')
 print = logger.info
@@ -37,21 +37,22 @@ def validate_schema(data, schema):
 
 
 INGESTORS = {
-    'pedx': pedx.PEDXIngestor(),
-    'citycam': voc_city.VOC_CITY_Ingestor(),
-    'coco': coco.COCOIngestor(),
-    'mio': mio.MIOIngestor(),
-    'daimler': daimler.DAIMLERIngestor(),
-    'kitti': kitti.KITTIIngestor(),
-    'kitti-tracking': kitti_tracking.KITTITrackingIngestor(),
-    'voc': voc.VOCIngestor(),
-    'detrac': detrac.DETRACIngestor(),
-    'caltech': caltech.CaltechIngestor()}
+    'pedx': PEDXIngestor(),
+    'citycam': VOC_CITY_Ingestor(),
+    'coco': COCOIngestor(),
+    # 'mio': MIOIngestor(),
+    'daimler': DAIMLERIngestor(),
+    'kitti': KITTIIngestor(),
+    'kitti-tracking': KITTITrackingIngestor(),
+    'voc': VOCIngestor(),
+    'detrac': DETRACIngestor(),
+    'caltech': CaltechIngestor()
+    }
 
 EGESTORS = {
-    'voc': voc.VOCEgestor(),
-    'kitti': kitti.KITTIEgestor(),
-    'coco': coco.COCOEgestor()
+    'voc': VOCEgestor(),
+    'kitti': KITTIEgestor(),
+    'coco': COCOEgestor()
 }
 
 

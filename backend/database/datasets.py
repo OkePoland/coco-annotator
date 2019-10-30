@@ -49,6 +49,8 @@ class DatasetModel(DynamicDocument):
 
     def import_coco(self, coco_json):
         from workers.tasks import import_annotations
+        
+        logger = logging.getLogger('gunicorn.error')
 
         task = TaskModel(
             name="Import COCO format into {}".format(self.name),
@@ -56,9 +58,9 @@ class DatasetModel(DynamicDocument):
             group="Annotation Import"
         )
         task.save()
-
+        logger.info("/database/datasets jeszcze dziala")
         cel_task = import_annotations.delay(task.id, self.id, coco_json)
-
+        logger.info("czy tutaj jeszcze dziala????????")
         return {
             "celery_id": cel_task.id,
             "id": task.id,
