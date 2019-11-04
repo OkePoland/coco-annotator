@@ -137,7 +137,7 @@ class COCOEgestor(Egestor):
     def expected_labels(self):
         return output_labels
 
-    def egest(self, *, image_detections, folder_names):
+    def egest(self, *, image_detections, root, folder_names):
 
         print("Processing data by COCO Egestor...")
 
@@ -215,7 +215,9 @@ class COCOEgestor(Egestor):
         print("Saving json file...")
         logger.info('ZAKONCZYLEM EGESTOWANIE COCO')
         logger.info(str(type(labels)))
-        return labels
+
+        encoded_labels = json.dumps(labels)
+        return encoded_labels
 
     def generate_categories(self):
         categories = []
