@@ -56,7 +56,7 @@ EGESTORS = {
 }
 
 
-def convert(*, labels, ingestor_key, egestor_key, select_only_known_labels, filter_images_without_labels,
+def convert(*, from_path, ingestor_key, to_path, egestor_key, select_only_known_labels, filter_images_without_labels,
             folder_names):
 
     """
@@ -76,12 +76,12 @@ def convert(*, labels, ingestor_key, egestor_key, select_only_known_labels, filt
     print("start")
     ingestor = INGESTORS[ingestor_key]
     egestor = EGESTORS[egestor_key]
-    from_valid, from_msg = ingestor.validate(labels, folder_names)
+    from_valid, from_msg = ingestor.validate(from_path, folder_names)
 
     if not from_valid:
         return from_valid, from_msg
 
-    image_detections = ingestor.ingest(labels, folder_names)
+    image_detections = ingestor.ingest(from_path, folder_names)
 
     validate_image_detections(image_detections)
 
@@ -90,8 +90,8 @@ def convert(*, labels, ingestor_key, egestor_key, select_only_known_labels, filt
         select_only_known_labels=select_only_known_labels,
         filter_images_without_labels=filter_images_without_labels)
 
-    ready_file = egestor.egest(image_detections=image_detections, folder_names=folder_names)
-    return True, ready_file
+    egestor.egest(image_detections=image_detections, root=to_path, folder_names=folder_names)
+    return True, ''
 
 
 def validate_image_detections(image_detections):

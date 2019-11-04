@@ -40,7 +40,7 @@ def convert_to_coco(ann_file):
     to_key = 'coco'
     
     for from_key in INGESTORS:
-        success, file = converter.convert(labels=ann_file, ingestor_key=from_key,
+        success, file = converter.convert(from_path=ann_file, ingestor_key=from_key,
                                         egestor_key=to_key,
                                         select_only_known_labels=False,
                                         filter_images_without_labels=True, folder_names=None)
