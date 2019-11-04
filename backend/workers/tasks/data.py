@@ -13,6 +13,8 @@ import numpy as np
 import time
 import json
 import logging
+import sys
+import os
 
 from celery import shared_task
 from ..socket import create_socket
@@ -305,8 +307,10 @@ def convert_dataset(task_id, dataset_id, coco_json, dataset_name):
     else:
         task.info("Input dataset in COCO, uploading...")
     task.set_progress(50, socket=socket)
-    task.info("===== Creating commands for next workers =====")
-    # json_file_size =
+    task.info("===== Splitting json string =====")
+
+    json_string_size = sys.getsizeof(coco_json)
+    task.info(f"Json size = {json_string_size}")
 
     load_annotations_task = TaskModel(
         name="Import COCO format into {}".format(dataset_name),
