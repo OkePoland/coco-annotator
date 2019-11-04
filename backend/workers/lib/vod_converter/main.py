@@ -1,5 +1,5 @@
 """
-Converts between visual object detection dataset formats. See `converter_for_annotator.py` for more info.
+Converts between visual object detection dataset formats. See `converter.py` for more info.
 
 To add support for additional data formats, define a module with an `converter.Ingestor` and/or
 `converter.Egestor` implementation and add them to the `INGESTORS` and `EGESTORS` dicts below.
