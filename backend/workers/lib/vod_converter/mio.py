@@ -44,8 +44,8 @@ class MIOIngestor(Ingestor):
                 return False, f"Expected gt_train.csv file within {path}"
             return True, None
 
-    def ingest(self, path, folder_names, labels, use_for_annotator):
-        return self._get_image_detection(path, folder_names, labels, use_for_annotator)
+    def ingest(self, path, folder_names, labels_files, use_for_annotator):
+        return self._get_image_detection(path, folder_names, labels_files, use_for_annotator)
 
     def _get_image_detection(self, root, folder_names, file, use_for_annotator):
         image_detection_schema = []
