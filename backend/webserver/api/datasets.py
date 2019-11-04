@@ -500,37 +500,18 @@ class DatasetCoco(Resource):
     def post(self, dataset_id):
         """ Adds coco formatted annotations to the dataset """
         args = coco_upload.parse_args()
-        coco = args['coco']
-        logger.info("TEST_TEST ")
-        # for el in coco:
-        #     logger.info(el)
-
-        # to_key = 'coco'
-
-        # for from_key in INGESTORS:
-
-        #     success, file = converter.convert(labels=coco, ingestor_key=from_key,
-        #                                      egestor_key=to_key,
-        #                                      select_only_known_labels=False,
-        #                                      filter_images_without_labels=True, folder_names=None)
-        #     if success:
-        #         logger.info(f"Successfully converted from {from_key} to {to_key}.")
-        #         coco = file
-        #         break
-        #     else:
-        #         logger.info(f"Failed to convert from {from_key} to {to_key}")
-
-
+        ann_path = args['coco']
+        # logger.info("TEST_TEST ")
 
         dataset = current_user.datasets.filter(id=dataset_id).first()
         if dataset is None:
             return {'message': 'Invalid dataset ID'}, 400
 
-
         # Right now working only for a single file
-        c_bytes = coco[0].read()
-        c_string = c_bytes.decode('utf-8')
-        return dataset.import_coco(c_string)
+        # c_bytes = coco[0].read()
+        # c_string = c_bytes.decode('utf-8')
+        
+        return dataset.import_coco(ann_path)
 
 
 @api.route('/coco/<int:import_id>')
