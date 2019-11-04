@@ -320,8 +320,8 @@ def convert_dataset(task_id, dataset_id, coco_json, dataset_name):
         task.info("Json string to large")
         task.info("===== Splitting json string =====")
         # TODO: Split labels
-        # list_of_json_strings = split_coco_labels(coco_json, max_byte_size=14000000)
-        list_of_json_strings = [coco_json]
+        list_of_json_strings = split_coco_labels(coco_json, max_byte_size=14000000)
+        # list_of_json_strings = [coco_json]
     else:
         task.info("Correct size of json string")
         list_of_json_strings = [coco_json]
