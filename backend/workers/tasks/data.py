@@ -124,7 +124,7 @@ def import_annotations(task_id, dataset_id, coco_json):
     # logger = logging.getLogger('gunicorn.error')
     is_coco, coco_json = check_coco(coco_json)
     if not is_coco:
-        coco_json = convert_to_coco(coco_json)
+        coco_json, _ = convert_to_coco(coco_json)
     task = TaskModel.objects.get(id=task_id)
     dataset = DatasetModel.objects.get(id=dataset_id)
 
