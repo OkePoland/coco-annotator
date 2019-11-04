@@ -136,7 +136,7 @@ class COCOEgestor(Egestor):
     def expected_labels(self):
         return output_labels
 
-    def egest(self, *, image_detections, folder_names):
+    def egest(self, *, image_detections, root, folder_names):
 
         print("Processing data by COCO Egestor...")
 
