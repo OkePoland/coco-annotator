@@ -35,7 +35,7 @@ class Egestor:
         """
         raise NotImplementedError()
 
-    def egest(self, *, image_detections, root, folder_names):
+    def egest(self, *, image_detections, root, folder_names, use_for_annotator):
         """
         Output data to the filesystem.
 

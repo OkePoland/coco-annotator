@@ -136,9 +136,14 @@ class COCOEgestor(Egestor):
     def expected_labels(self):
         return output_labels
 
-    def egest(self, *, image_detections, root, folder_names):
+    def egest(self, *, image_detections, root, folder_names, use_for_annotator):
 
         print("Processing data by COCO Egestor...")
+        if use_for_annotator:
+            images_dir = f"{root}/images"
+            os.makedirs(images_dir, exist_ok=True)
+            with open(f"{root}/{self.default_label_file}", "w") as file:
+                pass
 
         labels = {"images": [], "categories": self.generate_categories(), "annotations": []}
 
@@ -210,7 +215,13 @@ class COCOEgestor(Egestor):
                 labels["annotations"].append(new_detection)
 
         print("Saving json file...")
-        return labels
+        if use_for_annotator:
+            with open(f"{root}/{self.default_label_file}", "w") as annotation_file:
+                json.dump(labels, annotation_file)
+            return True
+        else:
+            encoded_labels = json.dumps(labels)
+            return encoded_labels
 
     def generate_categories(self):
         categories = []

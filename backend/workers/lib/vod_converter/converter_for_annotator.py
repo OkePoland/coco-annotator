@@ -82,7 +82,8 @@ def convert(*, labels, ingestor_key, egestor_key, select_only_known_labels, filt
     if not from_valid:
         return from_valid, from_msg
 
-    image_detections = ingestor.ingest(path=None, folder_names=folder_names, labels=labels, use_for_annotator=use_for_annotator)
+    image_detections = ingestor.ingest(path=None, folder_names=folder_names, labels=labels,
+                                       use_for_annotator=use_for_annotator)
 
     validate_image_detections(image_detections)
 
@@ -91,7 +92,8 @@ def convert(*, labels, ingestor_key, egestor_key, select_only_known_labels, filt
         select_only_known_labels=select_only_known_labels,
         filter_images_without_labels=filter_images_without_labels)
 
-    ready_file = egestor.egest(image_detections=image_detections, root="", folder_names=folder_names)
+    ready_file = egestor.egest(image_detections=image_detections, root=None, folder_names=folder_names,
+                               use_for_annotator=use_for_annotator)
     return True, ready_file
 
 
