@@ -16,20 +16,16 @@ INGESTORS = [
 
 
 def check_coco(ann_file):
-    '''
-    Not working yet
-    '''
     # logger = logging.getLogger('gunicorn.error')
     try:
-        # f = open(ann_file)
         with open(ann_file) as f:
             c_json = json.load(f)
-
-    except Exception as error:
+    except:
         return False, ann_file
-    # for cat in c_json:
-    #     logger.info(str(cat))
-    return True, c_json
+    if all(x in c_json.keys() for x in ['images', 'categories', 'annotations']):
+        return True, c_json
+    else:
+        return False, ann_file
 
 
 def convert_to_coco(ann_file):
