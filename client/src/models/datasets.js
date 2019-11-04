@@ -36,13 +36,14 @@ export default {
   getCoco(id) {
     return axios.get(`${baseURL}/${id}/coco`);
   },
-  uploadCoco(id, files) {
+  uploadCoco(id, files, path_string) {
 
     let form = new FormData();
      for (var i = 0; i < files.length; i++) {
             let file = files.item(i);
             form.append('coco', file, file.name);
         }
+     form.append('path_string', path_string)
     //form.append("coco", files.item(0));
 
     return axios.post(`${baseURL}/${id}/coco`, form, {

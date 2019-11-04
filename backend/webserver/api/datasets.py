@@ -42,7 +42,10 @@ delete_data.add_argument('fully', default=False, type=bool,
                          help="Fully delete dataset (no undo)")
 
 coco_upload = reqparse.RequestParser()
-coco_upload.add_argument('coco', location='files', type=FileStorage, required=True, help='Json coco', action='append')
+coco_upload.add_argument('coco', location='files', type=FileStorage, required=False, help='Json coco', action='append')
+
+path_string = reqparse.RequestParser()
+path_string.add_argument('path_string', type=str, required=False, help='Path to labels ')
 
 export = reqparse.RequestParser()
 export.add_argument('categories', type=str, default=None, required=False, help='Ids of categories to export')
@@ -501,7 +504,15 @@ class DatasetCoco(Resource):
         """ Adds coco formatted annotations to the dataset """
         args = coco_upload.parse_args()
         coco = args['coco']
+        args = path_string.parse_args()
+        path = args['path_string']
         logger.info("TEST_TEST ")
+        logger.info(coco)
+        logger.info("TEST_TEST 2")
+        logger.info(path)
+        if coco==None and path != '/datasets/':
+            pass
+            #HERE PUT THE CODE
         # for el in coco:
         #     logger.info(el)
 
