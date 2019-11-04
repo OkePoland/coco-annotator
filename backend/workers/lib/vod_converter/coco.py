@@ -25,6 +25,7 @@ from .abstract import Ingestor, Egestor
 from pycocotools import mask
 from .validation_schemas import get_blank_detection_schema, get_blank_image_detection_schema
 import collections
+import logging
 
 
 class COCOIngestor(Ingestor):
@@ -140,6 +141,8 @@ class COCOEgestor(Egestor):
 
         print("Processing data by COCO Egestor...")
 
+        logger = logging.getLogger('gunicorn.error')
+
         labels = {"images": [], "categories": self.generate_categories(), "annotations": []}
 
         detection_counter = 0
@@ -210,6 +213,8 @@ class COCOEgestor(Egestor):
                 labels["annotations"].append(new_detection)
 
         print("Saving json file...")
+        logger.info('ZAKONCZYLEM EGESTOWANIE COCO')
+        logger.info(str(type(labels)))
         return labels
 
     def generate_categories(self):
