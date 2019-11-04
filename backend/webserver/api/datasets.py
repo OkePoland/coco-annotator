@@ -49,6 +49,10 @@ path_string.add_argument('path_string', type=str, required=False, help='Path to 
 
 export = reqparse.RequestParser()
 export.add_argument('categories', type=str, default=None, required=False, help='Ids of categories to export')
+export.add_argument('export_format', type=str, default=None, required=False, help='Format of expected export')
+export.add_argument('validation_size', type=int, default=None, required=False, help='Dize of validation dataset')
+
+
 
 update_dataset = reqparse.RequestParser()
 update_dataset.add_argument('categories', location='json', type=list, help="New list of categories")
@@ -453,7 +457,10 @@ class DatasetExport(Resource):
 
         args = export.parse_args()
         categories = args.get('categories')
-        
+        export_format = args.get('export_format')
+        validation_size = args.get('validation_size')
+        logger.info(export_format)
+        logger.info(validation_size)
         if len(categories) == 0:
             categories = []
 
@@ -464,9 +471,13 @@ class DatasetExport(Resource):
         
         if not dataset:
             return {'message': 'Invalid dataset ID'}, 400
-        
-        return dataset.export_coco(categories=categories)
-    
+        if export_format == "coco":
+            return dataset.export_coco(categories=categories)
+        elif export_format == "tfrecord":
+            return dataset.export_tf_record(categories=categories, validation_set_size=validation_size)
+        else:
+            logger.info("Unknown format")
+
     @api.expect(coco_upload)
     @login_required
     def post(self, dataset_id):

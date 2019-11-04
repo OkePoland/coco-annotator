@@ -102,6 +102,28 @@ class DatasetModel(DynamicDocument):
             "name": task.name
         }
 
+    def export_tf_record(self, categories=None, validation_set_size=0, style="TF Record"):
+
+        from workers.tasks import export_annotations_to_tf_record
+
+        if categories is None or len(categories) == 0:
+            categories = self.categories
+
+        task = TaskModel(
+            name=f"Exporting {self.name} into {style} format",
+            dataset_id=self.id,
+            group="Annotation Export"
+        )
+        task.save()
+
+        cel_task = export_annotations_to_tf_record.delay(task.id, self.id, categories, validation_set_size)
+
+        return {
+            "celery_id": cel_task.id,
+            "id": task.id,
+            "name": task.name
+        }
+
     def scan(self):
 
         from workers.tasks import scan_dataset

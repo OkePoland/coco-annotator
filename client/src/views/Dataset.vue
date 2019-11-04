@@ -233,7 +233,7 @@
               Importing
             </div>
           </div>
-          <div v-else>Import COCO</div>
+          <div v-else>Import Labels</div>
         </button>
 
         <button
@@ -249,7 +249,7 @@
               Exporting
             </div>
           </div>
-          <div v-else>Export COCO</div>
+          <div v-else>Export Dataset</div>
         </button>
       </div>
       <hr>
@@ -422,6 +422,21 @@
                   :typeahead-activation-threshold="0"
                 ></TagsInput>
               </div>
+
+                       <div>
+  <input type="radio" id="coco_format" name="type" value="coco" checked  v-model="exporting.format">
+  <label for="coco_format">Coco</label>
+   <input type="radio" id="tf_record_format" name="type" value="tfrecord" v-model="exporting.format">
+  <label for="tf_record_format">Tfrecord</label>
+                        </div>
+                  <div v-if="exporting.format == 'coco'" class="form-group">
+                <label>COCO Annotation file (.json)</label>
+              </div>
+                <div v-if="exporting.format == 'tfrecord'" class="form-group">
+                <label>Tfrecord files</label>
+                    <input v-model='exporting.validation' id="tfrecord_validation_size" type="number"  class="form-control" placeholder="Numer of images in validation subset">
+
+              </div>
             </form>
           </div>
           <div class="modal-footer">
@@ -524,6 +539,8 @@ export default {
         id: null
       },
       exporting: {
+        validation: '',
+        format: 'coco',
         categories: [],
         progress: 0,
         id: null
@@ -645,7 +662,7 @@ export default {
     },
     exportCOCO() {
       $("#exportDataset").modal("hide");
-      Dataset.exportingCOCO(this.dataset.id, this.exporting.categories)
+      Dataset.exportingCOCO(this.dataset.id, this.exporting.categories, this.exporting.format, this.exporting.validation)
         .then(response => {
           let id = response.data.id;
           this.exporting.id = id;
