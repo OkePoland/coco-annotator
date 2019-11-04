@@ -350,13 +350,21 @@
           <div class="modal-body">
 
 <div>
-  <input type="radio" id="file" name="drone" value="file" checked  v-model="file_type" >
-  <label for="file">file</label>
-   <input type="radio" id="folder" name="drone" value="folder" v-model="file_type"
-         checked>
-  <label for="folder">folder</label>
+
+  <input type="radio" id="file" name="type" value="file" checked  v-model="file_type" >
+  <label for="file">File</label>
+  <input type="radio" id="path" name="type" value="path" v-model="file_type">
+  <label for="path">Path</label>
+   <input type="radio" id="folder" name="type" value="folder" v-model="file_type">
+  <label for="folder">Folder</label>
+
 </div>
             <form>
+              <div v-if="file_type == 'path'" class="form-group">
+                <label for="path_string">Path to your labels:</label>
+                 <br/>
+                 <input v-model=path_to_labels id="path_string" type="text"  class="form-control">
+              </div>
               <div v-if="file_type == 'file'" class="form-group">
                 <label for="coco">COCO Annotation file (.json)</label>
                 <input type="file" class="form-control-file" id="coco"  multiple/>
@@ -365,6 +373,7 @@
                 <label for="coco">Folder with labels</label>
                 <input type="file" class="form-control-file" id="coco" webkitdirectory allowdirs multiple/>
               </div>
+
             </form>
           </div>
           <div class="modal-footer">
@@ -482,6 +491,7 @@ export default {
       pages: 1,
       generateLimit: 100,
       file_type: 'file',
+      path_to_labels: '/datasets/',
       limit: 52,
       imageCount: 0,
       categories: [],
@@ -659,8 +669,9 @@ export default {
       $("#cocoUpload").modal("show");
     },
     importCOCO() {
+
       let uploaded = document.getElementById("coco");
-      Dataset.uploadCoco(this.dataset.id, uploaded.files)
+      Dataset.uploadCoco(this.dataset.id, uploaded.files, this.path_to_labels)
         .then(response => {
           let id = response.data.id;
           this.importing.id = id;

@@ -42,7 +42,10 @@ delete_data.add_argument('fully', default=False, type=bool,
                          help="Fully delete dataset (no undo)")
 
 coco_upload = reqparse.RequestParser()
-coco_upload.add_argument('coco', location='files', type=FileStorage, required=True, help='Json coco', action='append')
+coco_upload.add_argument('coco', location='files', type=FileStorage, required=False, help='Json coco', action='append')
+
+path_string = reqparse.RequestParser()
+path_string.add_argument('path_string', type=str, required=False, help='Path to labels ')
 
 export = reqparse.RequestParser()
 export.add_argument('categories', type=str, default=None, required=False, help='Ids of categories to export')
@@ -500,17 +503,44 @@ class DatasetCoco(Resource):
     def post(self, dataset_id):
         """ Adds coco formatted annotations to the dataset """
         args = coco_upload.parse_args()
-        ann_path = args['coco']
+        coco = args['coco']
+        args = path_string.parse_args()
+        path = args['path_string']
         logger.info("TEST_TEST ")
+        logger.info(coco)
+        logger.info("TEST_TEST 2")
+        logger.info(path)
+        if coco==None and path != '/datasets/':
+            pass
+            #HERE PUT THE CODE
+        # for el in coco:
+        #     logger.info(el)
+
+        # to_key = 'coco'
+
+        # for from_key in INGESTORS:
+
+        #     success, file = converter.convert(labels=coco, ingestor_key=from_key,
+        #                                      egestor_key=to_key,
+        #                                      select_only_known_labels=False,
+        #                                      filter_images_without_labels=True, folder_names=None)
+        #     if success:
+        #         logger.info(f"Successfully converted from {from_key} to {to_key}.")
+        #         coco = file
+        #         break
+        #     else:
+        #         logger.info(f"Failed to convert from {from_key} to {to_key}")
+
+
 
         dataset = current_user.datasets.filter(id=dataset_id).first()
         if dataset is None:
             return {'message': 'Invalid dataset ID'}, 400
 
+
         # Right now working only for a single file
-        c_bytes = ann_path[0].read()
+        c_bytes = coco[0].read()
         c_string = c_bytes.decode('utf-8')
-        
         return dataset.import_coco(c_string)
 
 
