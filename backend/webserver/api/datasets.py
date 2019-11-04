@@ -501,17 +501,17 @@ class DatasetCoco(Resource):
         """ Adds coco formatted annotations to the dataset """
         args = coco_upload.parse_args()
         ann_path = args['coco']
-        # logger.info("TEST_TEST ")
+        logger.info("TEST_TEST ")
 
         dataset = current_user.datasets.filter(id=dataset_id).first()
         if dataset is None:
             return {'message': 'Invalid dataset ID'}, 400
 
         # Right now working only for a single file
-        # c_bytes = coco[0].read()
-        # c_string = c_bytes.decode('utf-8')
+        c_bytes = ann_path[0].read()
+        c_string = c_bytes.decode('utf-8')
         
-        return dataset.import_coco(ann_path)
+        return dataset.import_coco(c_string)
 
 
 @api.route('/coco/<int:import_id>')

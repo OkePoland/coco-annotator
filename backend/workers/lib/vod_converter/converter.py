@@ -28,6 +28,7 @@ import logging
 logger = logging.getLogger('gunicorn.error')
 print = logger.info
 
+
 def validate_schema(data, schema):
     """Wraps default implementation but accepting tuples as arrays too.
 
