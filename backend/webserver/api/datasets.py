@@ -49,6 +49,10 @@ path_string.add_argument('path_string', type=str, required=False, help='Path to 
 
 export = reqparse.RequestParser()
 export.add_argument('categories', type=str, default=None, required=False, help='Ids of categories to export')
+export.add_argument('export_format', type=str, default=None, required=False, help='Format of expected export')
+export.add_argument('validation_size', type=int, default=None, required=False, help='Dize of validation dataset')
+
+
 
 update_dataset = reqparse.RequestParser()
 update_dataset.add_argument('categories', location='json', type=list, help="New list of categories")
@@ -453,7 +457,11 @@ class DatasetExport(Resource):
 
         args = export.parse_args()
         categories = args.get('categories')
-        
+        format = args.get('export_format')
+        validation_size = args.get('validation_size')
+        logger.info("XDDDDDDDD ")
+        logger.info(format)
+        logger.info(validation_size)
         if len(categories) == 0:
             categories = []
 
@@ -512,7 +520,13 @@ class DatasetCoco(Resource):
         logger.info(path)
         if coco==None and path != '/datasets/':
             pass
-            #HERE PUT THE CODE
+            xd = open(path)
+            logger.info(xd)
+
+
+
+
+
         # for el in coco:
         #     logger.info(el)
 
