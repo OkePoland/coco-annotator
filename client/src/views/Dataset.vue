@@ -233,7 +233,7 @@
               Importing
             </div>
           </div>
-          <div v-else>Import COCO</div>
+          <div v-else>Import Labels</div>
         </button>
 
         <button
@@ -249,7 +249,7 @@
               Exporting
             </div>
           </div>
-          <div v-else>Export COCO</div>
+          <div v-else>Export Dataset</div>
         </button>
       </div>
       <hr>
