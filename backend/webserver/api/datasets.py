@@ -506,12 +506,13 @@ class DatasetCoco(Resource):
         coco = args['coco']
         args = path_string.parse_args()
         path = args['path_string']
-        logger.info("TEST_TEST ")
-        logger.info(coco)
-        logger.info("TEST_TEST 2")
-        logger.info(path)
+        
+        dataset = current_user.datasets.filter(id=dataset_id).first()
+        if dataset is None:
+            return {'message': 'Invalid dataset ID'}, 400
+        
         if coco==None and path != '/datasets/':
-            pass
+            return dataset.import_coco(path)
             #HERE PUT THE CODE
         # for el in coco:
         #     logger.info(el)
@@ -530,12 +531,6 @@ class DatasetCoco(Resource):
         #         break
         #     else:
         #         logger.info(f"Failed to convert from {from_key} to {to_key}")
-
-
-
-        dataset = current_user.datasets.filter(id=dataset_id).first()
-        if dataset is None:
-            return {'message': 'Invalid dataset ID'}, 400
 
 
         # Right now working only for a single file

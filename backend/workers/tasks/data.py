@@ -301,15 +301,12 @@ def convert_dataset(task_id, dataset_id, coco_json, dataset_name):
     socket = create_socket()
 
     task.info("===== Beginning Conversion =====")
-    # logger = logging.getLogger('gunicorn.error')
+    logger = logging.getLogger('gunicorn.error')
     task.set_progress(0, socket=socket)
-
-    is_coco, coco_json = check_coco(coco_json)
-    if not is_coco:
-        task.info("Input dataset not in COCO, converting to COCO...")
-        coco_json, _ = convert_to_coco(coco_json)
-    else:
-        task.info("Input dataset in COCO, uploading...")
+    task.info('Trying to import your dataset...')
+    coco_json, success = convert_to_coco(coco_json)
+    if not success:
+        task.info('Format not supported')
     task.set_progress(50, socket=socket)
 
     task.info(f"Checking size of json string, max size = {max_json_string_size}")

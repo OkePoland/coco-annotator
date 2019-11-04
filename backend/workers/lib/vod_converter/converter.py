@@ -81,18 +81,18 @@ def convert(*, from_path, ingestor_key, to_path, egestor_key, select_only_known_
 
     if not from_valid:
         return from_valid, from_msg
-
+    logger.info('CHECKPOINT 1')
     image_detections = ingestor.ingest(from_path, folder_names)
-
+    logger.info('CHECKPOINT 2')
     validate_image_detections(image_detections)
-
+    logger.info('CHECKPOINT 3')
     image_detections = convert_labels(
         image_detections=image_detections, expected_labels=egestor.expected_labels(),
         select_only_known_labels=select_only_known_labels,
         filter_images_without_labels=filter_images_without_labels)
-
-    egestor.egest(image_detections=image_detections, root=to_path, folder_names=folder_names)
-    return True, ''
+    logger.info('CHECKPOINT 4')
+    encoded_labels = egestor.egest(image_detections=image_detections, root=to_path, folder_names=folder_names)
+    return True, encoded_labels
 
 
 def validate_image_detections(image_detections):
@@ -130,15 +130,19 @@ def validate_image_detections(image_detections):
 def convert_labels(*, image_detections, expected_labels,
                    select_only_known_labels, filter_images_without_labels):
     print("Converting labels...")
+    logger = logging.getLogger('gunicorn.error')
     convert_dict = {}
     for label, aliases in expected_labels.items():
         convert_dict[label.lower()] = label
         for alias in aliases:
             convert_dict[alias.lower()] = label
-
+    print('Still here')
+    logger.info('PATRZ TUTAJ')
+    logger.info(str(type(image_detections)))
+    print('dlugosc: ' + str(type(image_detections)))
     final_image_detections = []
     for i, image_detection in enumerate(image_detections):
-        if i % 100 == 0:
+        if i >= 0:
             print(f"Converted {i} labels")
 
         detections = []

@@ -29,6 +29,7 @@ import os
 import shutil
 import json
 from PIL import Image
+import logging
 
 from .abstract import Ingestor, Egestor
 
@@ -59,11 +60,13 @@ class DAIMLERIngestor(Ingestor):
         return self._get_image_detection(path, image_ext='png', folder_names=folder_names)
 
     def _get_image_detection(self, root, folder_names,  image_ext='png', ):
-        try:
-            image_detection_schema = []
-            labels = os.listdir((f"{root}/labels"))
-            path = os.path.join(root, 'labels')
-            for filename in labels:
+        logger = logging.getLogger('gunicorn.error')
+        # image_width, image_height = 100, 100
+        image_detection_schema = []
+        labels = os.listdir((f"{root}/labels"))
+        path = os.path.join(root, 'labels')
+        for filename in labels:
+            try:
                 path = os.path.join(root+'/labels', filename)
                 with open(path) as f:
                     data = json.load(f)
@@ -77,6 +80,8 @@ class DAIMLERIngestor(Ingestor):
                     except Exception as e:
                         print(e)
                         continue
+                    logger.info('id: ')
+                    logger.info(str(image_id))
                     image_detection_schema.append({
                         'image': {
                             'id': image_id,
@@ -87,9 +92,9 @@ class DAIMLERIngestor(Ingestor):
                         },
                         'detections': detections
                     })
-            return image_detection_schema
-        except Exception as e:
-            print(e)
+            except:
+                continue
+        return image_detection_schema
 
     def _get_detections(self, children):
         detections = []

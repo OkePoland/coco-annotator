@@ -61,7 +61,7 @@ LABEL_F_PATTERN = re.compile('[0-9]+\.txt')
 
 
 class KITTITrackingIngestor(Ingestor):
-    def validate(self, path):
+    def validate(self, path, folder_names):
         expected_dirs = [
             'image_02',
             'label_02'
