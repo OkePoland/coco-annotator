@@ -1,4 +1,3 @@
-
 from database import (
     fix_ids,
     ImageModel,
@@ -19,9 +18,9 @@ from celery import shared_task
 from ..socket import create_socket
 from workers.lib import check_coco, convert_to_coco
 
+
 @shared_task
 def export_annotations(task_id, dataset_id, categories):
-    
     task = TaskModel.objects.get(id=task_id)
     dataset = DatasetModel.objects.get(id=dataset_id)
 
@@ -32,10 +31,10 @@ def export_annotations(task_id, dataset_id, categories):
 
     db_categories = CategoryModel.objects(id__in=categories, deleted=False) \
         .only(*CategoryModel.COCO_PROPERTIES)
-    db_images = ImageModel.objects(deleted=False, annotated=True, dataset_id=dataset.id)\
+    db_images = ImageModel.objects(deleted=False, annotated=True, dataset_id=dataset.id) \
         .only(*ImageModel.COCO_PROPERTIES)
     db_annotations = AnnotationModel.objects(deleted=False, category_id__in=categories)
-    
+
     total_items = db_categories.count()
 
     coco = {
@@ -63,18 +62,18 @@ def export_annotations(task_id, dataset_id, categories):
         task.info(f"Adding category: {category.get('name')}")
         coco.get('categories').append(category)
         category_names.append(category.get('name'))
-        
+
         progress += 1
-        task.set_progress((progress/total_items)*100, socket=socket)
-    
+        task.set_progress((progress / total_items) * 100, socket=socket)
+
     total_annotations = db_annotations.count()
     total_images = db_images.count()
     for image in fix_ids(db_images):
 
         progress += 1
-        task.set_progress((progress/total_items)*100, socket=socket)  
+        task.set_progress((progress / total_items) * 100, socket=socket)
 
-        annotations = db_annotations.filter(image_id=image.get('id'))\
+        annotations = db_annotations.filter(image_id=image.get('id')) \
             .only(*AnnotationModel.COCO_PROPERTIES)
         annotations = fix_ids(annotations)
         num_annotations = 0
@@ -92,13 +91,13 @@ def export_annotations(task_id, dataset_id, categories):
                     arr = np.array(annotation.get('keypoints', []))
                     arr = arr[2::3]
                     annotation['num_keypoints'] = len(arr[arr > 0])
-                
+
                 num_annotations += 1
                 coco.get('annotations').append(annotation)
-                
+
         task.info(f"Exporting {num_annotations} annotations for image {image.get('id')}")
         coco.get('images').append(image)
-    
+
     task.info(f"Done export {total_annotations} annotations and {total_images} images from {dataset.name}")
 
     timestamp = time.time()
@@ -121,10 +120,7 @@ def export_annotations(task_id, dataset_id, categories):
 
 @shared_task
 def import_annotations(task_id, dataset_id, coco_json):
-    # logger = logging.getLogger('gunicorn.error')
-    is_coco, coco_json = check_coco(coco_json)
-    if not is_coco:
-        coco_json, _ = convert_to_coco(coco_json)
+
     task = TaskModel.objects.get(id=task_id)
     dataset = DatasetModel.objects.get(id=dataset_id)
 
@@ -163,7 +159,7 @@ def import_annotations(task_id, dataset_id, coco_json):
 
         if category_model is None:
             task.warning(f"{category_name} category not found (creating a new one)")
-            
+
             new_category = CategoryModel(
                 name=category_name,
                 keypoint_edges=category.get('skeleton', []),
@@ -180,7 +176,7 @@ def import_annotations(task_id, dataset_id, coco_json):
 
         # update progress
         progress += 1
-        task.set_progress((progress/total_items)*100, socket=socket)
+        task.set_progress((progress / total_items) * 100, socket=socket)
 
     dataset.update(set__categories=dataset.categories)
 
@@ -196,7 +192,7 @@ def import_annotations(task_id, dataset_id, coco_json):
 
         # update progress
         progress += 1
-        task.set_progress((progress/total_items)*100, socket=socket)
+        task.set_progress((progress / total_items) * 100, socket=socket)
 
         image_model = images.filter(file_name__exact=image_filename).all()
 
@@ -226,7 +222,7 @@ def import_annotations(task_id, dataset_id, coco_json):
         isbbox = annotation.get('isbbox', False)
 
         progress += 1
-        task.set_progress((progress/total_items)*100, socket=socket)
+        task.set_progress((progress / total_items) * 100, socket=socket)
 
         has_segmentation = len(segmentation) > 0
         has_keypoints = len(keypoints) > 0
@@ -262,7 +258,7 @@ def import_annotations(task_id, dataset_id, coco_json):
                 annotation_model.segmentation = segmentation
                 annotation_model.area = area
                 annotation_model.bbox = bbox
-            
+
             if has_keypoints:
                 annotation_model.keypoints = keypoints
 
@@ -275,7 +271,6 @@ def import_annotations(task_id, dataset_id, coco_json):
             task.info(f"Annotation already exists (i:{image_id}, c:{category_id})")
 
     for image_id in images_id:
-        
         image_model = images_id[image_id]
         category_ids = categories_by_image[image_id]
         all_category_ids = list(image_model.category_ids)
@@ -284,11 +279,66 @@ def import_annotations(task_id, dataset_id, coco_json):
         image_model.update(
             set__annotated=True,
             set__category_ids=list(set(all_category_ids)),
-            set__num_annotations=AnnotationModel\
+            set__num_annotations=AnnotationModel \
                 .objects(image_id=image_id, area__gt=0, deleted=False).count()
         )
 
     task.set_progress(100, socket=socket)
 
 
-__all__ = ["export_annotations", "import_annotations"]
+@shared_task
+def convert_dataset(task_id, dataset_id, coco_json, dataset_name):
+    task = TaskModel.objects.get(id=task_id)
+    dataset = DatasetModel.objects.get(id=dataset_id)
+
+    task.update(status="PROGRESS")
+    socket = create_socket()
+
+    task.info("===== Beginning Conversion =====")
+    # logger = logging.getLogger('gunicorn.error')
+    task.set_progress(0, socket=socket)
+
+    is_coco, coco_json = check_coco(coco_json)
+    if not is_coco:
+        task.info("Input dataset not in COCO, converting to COCO...")
+        coco_json, _ = convert_to_coco(coco_json)
+    else:
+        task.info("Input dataset in COCO, uploading...")
+    task.set_progress(50, socket=socket)
+    task.info("===== Creating commands for next workers =====")
+    # json_file_size =
+
+    load_annotations_task = TaskModel(
+        name="Import COCO format into {}".format(dataset_name),
+        dataset_id=dataset_id,
+        group="Annotation Import"
+    )
+    load_annotations_task.save()
+    cel_test_task = import_annotations.delay(load_annotations_task.id, dataset_id, coco_json)
+
+    task.set_progress(100, socket=socket)
+    task.info("===== Finished =====")
+
+
+@shared_task
+def test_task(task_id, dataset_id, name):
+    task = TaskModel.objects.get(id=task_id)
+    dataset = DatasetModel.objects.get(id=dataset_id)
+
+    task.update(status="PROGRESS")
+    socket = create_socket()
+
+    task.info(f"Test task {name}")
+
+    progress = 0
+
+    task.info(f"Test task {name}{name}")
+
+    timestamp = time.time()
+
+    task.info(f"End task {name}{name}")
+
+    task.set_progress(100, socket=socket)
+
+
+__all__ = ["export_annotations", "import_annotations", "test_task", "convert_dataset"]

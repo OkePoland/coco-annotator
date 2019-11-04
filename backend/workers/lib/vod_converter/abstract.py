@@ -1,5 +1,5 @@
 class Ingestor:
-    def validate(self, path, folder_names, labels_files, use_for_annotator):
+    def validate(self, path, folder_names):
         """
         Validate that a path contains files / directories expected for a given data format.
 
@@ -12,7 +12,7 @@ class Ingestor:
         """
         return True, None
 
-    def ingest(self, path, folder_names, labels_files, use_for_annotator):
+    def ingest(self, path, folder_names):
         """
         Read in data from the filesytem.
         :param path: '/path/to/data/'
@@ -35,7 +35,7 @@ class Egestor:
         """
         raise NotImplementedError()
 
-    def egest(self, *, image_detections, root, folder_names, use_for_annotator):
+    def egest(self, *, image_detections, root, folder_names):
         """
         Output data to the filesystem.
 
@@ -44,7 +44,6 @@ class Egestor:
 
         :param image_detections: an array of dicts conforming to `IMAGE_DETECTION_SCHEMA`
         :param root: '/path/to/output/data/'
-        :param folder_names: list of required folders under root
         """
         raise NotImplementedError()
 

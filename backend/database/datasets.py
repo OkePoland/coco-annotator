@@ -8,8 +8,6 @@ from .tasks import TaskModel
 import os
 
 
-
-
 class DatasetModel(DynamicDocument):
     
     id = SequenceField(primary_key=True)
@@ -48,17 +46,34 @@ class DatasetModel(DynamicDocument):
             .exclude('password', 'id', 'preferences')
 
     def import_coco(self, coco_json):
-        from workers.tasks import import_annotations
+        from workers.tasks import import_annotations, convert_dataset
         
         logger = logging.getLogger('gunicorn.error')
 
+        # task = TaskModel(
+        #     name="Import COCO format into {}".format(self.name),
+        #     dataset_id=self.id,
+        #     group="Annotation Import"
+        # )
+        # task.save()
+        # cel_task = import_annotations.delay(task.id, self.id, coco_json, self.id)
+
         task = TaskModel(
-            name="Import COCO format into {}".format(self.name),
+            name="Convert input dataset",
             dataset_id=self.id,
-            group="Annotation Import"
+            group="Annotation Conversion"
         )
         task.save()
-        cel_task = import_annotations.delay(task.id, self.id, coco_json)
+        cel_task = convert_dataset.delay(task.id, self.id, coco_json, self.name)
+
+        # tt_task = TaskModel(
+        #     name="TEST TASK",
+        #     dataset_id=self.id,
+        #     group="TESTING"
+        # )
+        # tt_task.save()
+        # cel_test_task = test_task.delay(tt_task.id, self.id, "in dataset")
+
         return {
             "celery_id": cel_task.id,
             "id": task.id,
