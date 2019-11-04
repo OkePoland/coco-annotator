@@ -3,7 +3,7 @@ import logging
 from .vod_converter import converter
 
 INGESTORS = [
-    # 'mio',
+    'mio',
     'pedx',
     'citycam',
     #'coco',
@@ -16,9 +16,6 @@ INGESTORS = [
 
 
 def check_coco(ann_file):
-    '''
-    Not working yet
-    '''
     # logger = logging.getLogger('gunicorn.error')
     try:
         # f = open(ann_file)
@@ -26,9 +23,10 @@ def check_coco(ann_file):
 
     except Exception as error:
         return False, ann_file
-    # for cat in c_json:
-    #     logger.info(str(cat))
-    return True, c_json
+    if all(x in c_json.keys() for x in ['images', 'categories', 'annotations']):
+        return True, c_json
+    else:
+        return False, ann_file
 
 
 def convert_to_coco(ann_file):
