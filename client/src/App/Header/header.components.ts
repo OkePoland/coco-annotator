@@ -11,14 +11,7 @@ export const useStyles = makeStyles((theme: AugmentedTheme) => ({
     drawer: {
         backgroundColor: theme.header,
     },
-    title: {
-        fontSize: 20,
-        fontWeight: 'bold',
-    },
-    version: {
-        fontSize: 10,
-    },
-    navBar: {
+    navList: {
         textAlign: 'center',
     },
     connectionDot: {

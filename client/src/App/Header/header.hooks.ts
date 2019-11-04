@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 
 import { NavItem, staticNavItems } from '../navItems';
 
@@ -71,15 +71,14 @@ const useLoadingState = (): LoadingState => {
 const useMenuItems = (): Array<NavItem> => {
     const extraPage = false;
 
-    const items: Array<NavItem> = useMemo(() => {
-        if (extraPage) {
-            const extraItem: NavItem = { title: 'dataset1', href: '#' };
-            const items = [...staticNavItems];
-            items.splice(1, 0, extraItem);
-            return items;
-        }
-        return staticNavItems;
-    }, [extraPage]);
-
-    return items;
+    let menuItems: Array<NavItem> = [];
+    if (extraPage) {
+        const extraItem: NavItem = { title: 'dataset1', href: '#' };
+        const items = [...staticNavItems];
+        items.splice(1, 0, extraItem);
+        menuItems = items;
+    } else {
+        menuItems = staticNavItems;
+    }
+    return menuItems;
 };
