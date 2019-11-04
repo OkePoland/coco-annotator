@@ -457,10 +457,9 @@ class DatasetExport(Resource):
 
         args = export.parse_args()
         categories = args.get('categories')
-        format = args.get('export_format')
+        export_format = args.get('export_format')
         validation_size = args.get('validation_size')
-        logger.info("XDDDDDDDD ")
-        logger.info(format)
+        logger.info(export_format)
         logger.info(validation_size)
         if len(categories) == 0:
             categories = []
@@ -472,9 +471,13 @@ class DatasetExport(Resource):
         
         if not dataset:
             return {'message': 'Invalid dataset ID'}, 400
-        
-        return dataset.export_coco(categories=categories)
-    
+        if export_format == "coco":
+            return dataset.export_coco(categories=categories)
+        elif export_format == "tfrecord":
+            return dataset.export_tf_record(categories=categories, validation_set_size=validation_size)
+        else:
+            logger.info("Unknown format")
+
     @api.expect(coco_upload)
     @login_required
     def post(self, dataset_id):

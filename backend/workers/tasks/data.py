@@ -15,6 +15,7 @@ import json
 import logging
 import sys
 import os
+import zipfile
 
 from celery import shared_task
 from ..socket import create_socket
@@ -116,6 +117,127 @@ def export_annotations(task_id, dataset_id, categories):
 
     task.info("Creating export object")
     export = ExportModel(dataset_id=dataset.id, path=file_path, tags=["COCO", *category_names])
+    export.save()
+
+    task.set_progress(100, socket=socket)
+
+
+@shared_task
+def export_annotations_to_tf_record(task_id, dataset_id, categories, validation_set_size):
+    task = TaskModel.objects.get(id=task_id)
+    dataset = DatasetModel.objects.get(id=dataset_id)
+
+    task.update(status="PROGRESS")
+    socket = create_socket()
+
+    task.info("===== Beginning Export (TF Record Format) =====")
+
+    # Getting coco annotations
+    task.info("===== Getting COCO annotations =====")
+
+    db_categories = CategoryModel.objects(id__in=categories, deleted=False) \
+        .only(*CategoryModel.COCO_PROPERTIES)
+    db_images = ImageModel.objects(deleted=False, annotated=True, dataset_id=dataset.id) \
+        .only(*ImageModel.COCO_PROPERTIES)
+    db_annotations = AnnotationModel.objects(deleted=False, category_id__in=categories)
+
+    total_items = db_categories.count()
+
+    coco = {
+        'images': [],
+        'categories': [],
+        'annotations': []
+    }
+
+    total_items += db_images.count()
+    progress = 0
+
+    # iterate though all categoires and upsert
+    category_names = []
+    for category in fix_ids(db_categories):
+
+        if len(category.get('keypoint_labels', [])) > 0:
+            category['keypoints'] = category.pop('keypoint_labels', [])
+            category['skeleton'] = category.pop('keypoint_edges', [])
+        else:
+            if 'keypoint_edges' in category:
+                del category['keypoint_edges']
+            if 'keypoint_labels' in category:
+                del category['keypoint_labels']
+
+        task.info(f"Adding category: {category.get('name')}")
+        coco.get('categories').append(category)
+        category_names.append(category.get('name'))
+
+        progress += 1
+        task.set_progress((progress / total_items) * 100, socket=socket)
+
+    total_annotations = db_annotations.count()
+    total_images = db_images.count()
+    for image in fix_ids(db_images):
+
+        progress += 1
+        task.set_progress((progress / total_items) * 100, socket=socket)
+
+        annotations = db_annotations.filter(image_id=image.get('id')) \
+            .only(*AnnotationModel.COCO_PROPERTIES)
+        annotations = fix_ids(annotations)
+        num_annotations = 0
+        for annotation in annotations:
+
+            has_keypoints = len(annotation.get('keypoints', [])) > 0
+            has_segmentation = len(annotation.get('segmentation', [])) > 0
+
+            if has_keypoints or has_segmentation:
+
+                if not has_keypoints:
+                    if 'keypoints' in annotation:
+                        del annotation['keypoints']
+                else:
+                    arr = np.array(annotation.get('keypoints', []))
+                    arr = arr[2::3]
+                    annotation['num_keypoints'] = len(arr[arr > 0])
+
+                num_annotations += 1
+                coco.get('annotations').append(annotation)
+
+        task.info(f"Exporting {num_annotations} annotations for image {image.get('id')}")
+        coco.get('images').append(image)
+
+    task.info(f"Done export {total_annotations} annotations and {total_images} images from {dataset.name}")
+
+    # TODO: Convert COCO to TF Record
+
+
+    timestamp = time.time()
+    directory = f"{dataset.directory}.exports/"
+
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+
+    files_paths = []
+    for i in range(5):
+
+        file_path = f"{directory}file{i}_{timestamp}.txt"
+        files_paths.append(file_path)
+        task.info(f"Writing export to file {file_path}")
+        with open(file_path, 'w') as fp:
+            fp.write("abc")
+            fp.write(str(validation_set_size))
+
+        task.info("Creating export object")
+        export = ExportModel(dataset_id=dataset.id, path=file_path, tags=["TF Record"])
+        export.save()
+
+    zip_path = f"{directory}tf_record_zip-{timestamp}.zip"
+    with zipfile.ZipFile(zip_path, 'w') as zipObj:
+        for file_path in files_paths:
+            zipObj.write(file_path, os.path.basename(file_path))
+
+    for file_path in files_paths:
+        os.remove(file_path)
+
+    export = ExportModel(dataset_id=dataset.id, path=zip_path, tags=["TF Record", *category_names])
     export.save()
 
     task.set_progress(100, socket=socket)
@@ -319,9 +441,7 @@ def convert_dataset(task_id, dataset_id, coco_json, dataset_name):
     if json_string_size > max_json_string_size:
         task.info("Json string to large")
         task.info("===== Splitting json string =====")
-        # TODO: Split labels
         list_of_json_strings = split_coco_labels(coco_json, max_byte_size=14000000)
-        # list_of_json_strings = [coco_json]
     else:
         task.info("Correct size of json string")
         list_of_json_strings = [coco_json]
@@ -343,25 +463,4 @@ def convert_dataset(task_id, dataset_id, coco_json, dataset_name):
     task.info("===== Finished =====")
 
 
-@shared_task
-def test_task(task_id, dataset_id, name):
-    task = TaskModel.objects.get(id=task_id)
-    dataset = DatasetModel.objects.get(id=dataset_id)
-
-    task.update(status="PROGRESS")
-    socket = create_socket()
-
-    task.info(f"Test task {name}")
-
-    progress = 0
-
-    task.info(f"Test task {name}{name}")
-
-    timestamp = time.time()
-
-    task.info(f"End task {name}{name}")
-
-    task.set_progress(100, socket=socket)
-
-
-__all__ = ["export_annotations", "import_annotations", "test_task", "convert_dataset"]
+__all__ = ["export_annotations", "import_annotations", "convert_dataset", "export_annotations_to_tf_record"]
