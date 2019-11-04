@@ -20,7 +20,8 @@ def check_coco(ann_file):
     '''
     # logger = logging.getLogger('gunicorn.error')
     try:
-        c_json = json.loads(ann_file)
+        f = open(ann_file)
+        c_json = json.load(f)
     except:
         return False, ann_file
     # for cat in c_json:
