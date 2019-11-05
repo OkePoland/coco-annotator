@@ -59,7 +59,9 @@ class KITTIIngestor(Ingestor):
         if len(image_ids):
             first_image_id = image_ids[0]
             image_ext = self.find_image_ext(path, first_image_id)
-        return [self._get_image_detection(path, image_name, image_ext=image_ext, folder_names=folder_names) for image_name in image_ids]
+        tmp = [self._get_image_detection(path, image_name, image_ext=image_ext, folder_names=folder_names) for image_name in image_ids]
+        print('size: ' + str(len(tmp)))
+        return tmp
 
     def find_image_ext(self, root, image_id):
         for image_ext in ['png', 'jpg']:
@@ -75,24 +77,26 @@ class KITTIIngestor(Ingestor):
     def _get_image_detection(self, root, image_id, *, image_ext='png', folder_names):
         try:
             detections_fpath = f"{root}/labels/{image_id}.txt"
-            detections = self._get_detections(detections_fpath)
+            detections = self._get_detections(detections_fpath, image_id)
             detections = [det for det in detections if det['left'] < det['right'] and det['top'] < det['bottom']]
             image_path = f"{root}/images/{image_id}.{image_ext}"
             image_width, image_height = _image_dimensions(image_path)
             return {
                 'image': {
                     'id': image_id,
+                    'dataset_id': None,
                     'path': image_path,
                     'segmented_path': None,
                     'width': image_width,
-                    'height': image_height
+                    'height': image_height,
+                    'file_name': image_id + '.' + image_ext
                 },
                 'detections': detections
             }
         except Exception as e:
             print(e)
 
-    def _get_detections(self, detections_fpath):
+    def _get_detections(self, detections_fpath, image_id):
         detections = []
         with open(detections_fpath) as f:
             f_csv = csv.reader(f, delimiter=' ')
@@ -103,11 +107,18 @@ class KITTIIngestor(Ingestor):
                     x1, y1, x2, y2 = map(float, row[4:8])
                     label = row[0]
                     detections.append({
+                        'id': image_id,
+                        'image_id': image_id,
                         'label': label,
                         'left': x1,
                         'right': x2,
                         'top': y1,
-                        'bottom': y2
+                        'bottom': y2,
+                        'area': None,
+                        'segmentation': None,
+                        'isbbox': True,
+                        'iscrowd': False,
+                        'keypoints': []
                     })
                 except ValueError as ve:
                     print(row)
