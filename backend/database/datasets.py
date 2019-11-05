@@ -6,7 +6,7 @@ from config import Config
 from .tasks import TaskModel
 
 import os
-
+import json
 
 class DatasetModel(DynamicDocument):
     
@@ -80,18 +80,19 @@ class DatasetModel(DynamicDocument):
             "name": task.name
         }
 
-    def import_coco_from_single_json(self, coco_json_string):
-        from workers.tasks import import_annotations, load_annotation_file
+    def import_coco_from_json_files(self, coco_json_strings):
+        from workers.tasks import load_annotation_files
 
         logger = logging.getLogger('gunicorn.error')
 
         task = TaskModel(
-            name="Load annotation file",
+            name="Load annotation files",
             dataset_id=self.id,
             group="Annotation Conversion"
         )
         task.save()
-        cel_task = load_annotation_file.delay(task.id, self.id, coco_json_string, self.name)
+
+        cel_task = load_annotation_files.delay(task.id, self.id, coco_json_strings, self.name)
 
         return {
             "celery_id": cel_task.id,

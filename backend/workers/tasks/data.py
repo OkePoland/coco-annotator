@@ -374,7 +374,7 @@ def import_annotations(task_id, dataset_id, encoded_coco_json):
 
 
 @shared_task
-def load_annotation_file(task_id, dataset_id, coco_json_string, dataset_name):
+def load_annotation_files(task_id, dataset_id, coco_json_strings, dataset_name):
     """
     Task loading single json file, splitting it if necessary and starting importing it on
     other workers
@@ -389,32 +389,35 @@ def load_annotation_file(task_id, dataset_id, coco_json_string, dataset_name):
     socket = create_socket()
     task.set_progress(0, socket=socket)
 
-    task.info("Beginning Loading")
-    task.info(f"Checking size of json string, max size = {max_json_string_size}")
-    json_string_size = sys.getsizeof(coco_json_string)
-    task.info(f"Json string size = {json_string_size}")
-    task.set_progress(25, socket=socket)
+    task.info("===== Beginning Loading =====")
+    total_files = len(coco_json_strings)
+    for file_index, single_json_string in enumerate(coco_json_strings):
 
-    if json_string_size > max_json_string_size:
-        task.info("Json string to large")
-        task.info("===== Splitting json string =====")
-        list_of_json_strings = split_coco_labels(coco_json_string, max_byte_size=14000000)
-    else:
-        task.info("Correct size of json string")
-        list_of_json_strings = [coco_json_string]
+        task.info(f"Processing file nr {file_index}")
+        task.info(f"Checking size of json string, max allowed size = {max_json_string_size}")
+        json_string_size = sys.getsizeof(single_json_string)
+        task.info(f"Current file size = {json_string_size}")
 
-    task.set_progress(75, socket=socket)
+        if json_string_size > max_json_string_size:
+            task.info("Json string to large")
+            task.info("===== Splitting json string =====")
+            list_of_json_strings = split_coco_labels(single_json_string, max_byte_size=14000000)
+        else:
+            task.info("Correct size of json string")
+            list_of_json_strings = [single_json_string]
 
-    task.info("===== Outsourcing import annotations tasks to other workers =====")
-    for i, json_substring in enumerate(list_of_json_strings):
-        load_annotations_task = TaskModel(
-            name="Import COCO format into {}".format(dataset_name),
-            dataset_id=dataset_id,
-            group="Annotation Import"
-        )
-        load_annotations_task.save()
-        task.info(f"Sending json subfile to worker {i}")
-        cel_test_task = import_annotations.delay(load_annotations_task.id, dataset_id, json_substring)
+        task.info("===== Outsourcing import annotations tasks to other workers =====")
+        for substring_index, json_substring in enumerate(list_of_json_strings):
+            load_annotations_task = TaskModel(
+                name="Import COCO format into {}".format(dataset_name),
+                dataset_id=dataset_id,
+                group="Annotation Import"
+            )
+            load_annotations_task.save()
+            task.info(f"Sending json subfile from file nr {file_index} to workers queue")
+            cel_test_task = import_annotations.delay(load_annotations_task.id, dataset_id, json_substring)
+
+        task.set_progress((file_index+1)*100/total_files, socket=socket)
 
     task.set_progress(100, socket=socket)
     task.info("===== Finished =====")
@@ -468,4 +471,4 @@ def convert_dataset(task_id, dataset_id, coco_json, dataset_name):
 
 
 __all__ = ["export_annotations", "import_annotations", "convert_dataset", "export_annotations_to_tf_record",
-           "load_annotation_file"]
+           "load_annotation_files"]

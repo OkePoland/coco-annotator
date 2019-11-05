@@ -544,10 +544,14 @@ class DatasetCoco(Resource):
         #     else:
         #         logger.info(f"Failed to convert from {from_key} to {to_key}")
 
-        # Right now working only for a single file
-        c_bytes = coco[0].read()
-        c_string = c_bytes.decode('utf-8')
-        return dataset.import_coco_from_single_json(c_string)
+        # Decoding from File Storage format to json strings
+        coco_json_files = []
+        for file_storage in coco:
+            coco_json_bytes = file_storage.read()
+            coco_json_string = coco_json_bytes.decode('utf-8')
+            coco_json_files.append(coco_json_string)
+
+        return dataset.import_coco_from_json_files(coco_json_files)
 
 
 @api.route('/coco/<int:import_id>')
