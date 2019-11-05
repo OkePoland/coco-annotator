@@ -94,7 +94,8 @@ def export_annotations_to_tf_record(task_id, dataset_id, categories, validation_
         os.makedirs(out_directory)
 
     task.info("===== Converting to TF Record =====")
-    convert_coco_to_tfrecord(image_dir, json.dumps(coco), out_directory, validation_set_size, task, include_masks=True)
+    paths_to_tfrecords = convert_coco_to_tfrecord(image_dir, json.dumps(coco), out_directory, validation_set_size, task, include_masks=True)
+    task.info(f"Paths: {paths_to_tfrecords}")
 
     # files_paths = []
     # for i in range(5):

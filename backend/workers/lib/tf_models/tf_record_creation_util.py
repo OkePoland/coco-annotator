@@ -43,4 +43,4 @@ def open_sharded_output_tfrecords(exit_stack, base_path, num_shards):
         for file_name in tf_record_output_filenames
     ]
 
-    return tfrecords
+    return tfrecords, tf_record_output_filenames

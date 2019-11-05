@@ -207,7 +207,7 @@ def _create_tf_record_from_coco_annotations(
     # with contextlib2.ExitStack() as tf_record_close_stack, \
     # tf.gfile.GFile(annotations_file, 'r') as fid:
     with contextlib2.ExitStack() as tf_record_close_stack:
-        output_tfrecords = tf_record_creation_util.open_sharded_output_tfrecords(
+        output_tfrecords, results_paths = tf_record_creation_util.open_sharded_output_tfrecords(
             tf_record_close_stack, output_path, num_shards)
         # groundtruth_data = json.load(fid)
         images = groundtruth_data['images']
@@ -243,6 +243,8 @@ def _create_tf_record_from_coco_annotations(
             output_tfrecords[shard_idx].write(tf_example.SerializeToString())
         task.info(f'Finished writing, skipped {total_num_annotations_skipped} annotations.')
 
+    return results_paths
+
 
 def _split_dataset(annotations_file, val_size):
     # TODO: Optimize
@@ -274,22 +276,23 @@ def convert_coco_to_tfrecord(image_dir, annotations_file, output_dir, val_size, 
     train_annotation, val_annotation = _split_dataset(annotations_file, val_size)
 
     task.info("Creating train set")
-    _create_tf_record_from_coco_annotations(
+    results_paths_train = _create_tf_record_from_coco_annotations(
         task,
         train_annotation,
         image_dir,
         train_output_path,
         include_masks,
-        num_shards=100)
+        num_shards=1)
 
     task.info("Creating val set")
-    _create_tf_record_from_coco_annotations(
+    results_paths_val =_create_tf_record_from_coco_annotations(
         task,
         val_annotation,
         image_dir,
         val_output_path,
         include_masks,
-        num_shards=10)
+        num_shards=1)
+
 
     """
     _create_tf_record_from_coco_annotations(
@@ -298,3 +301,6 @@ def convert_coco_to_tfrecord(image_dir, annotations_file, output_dir, val_size, 
         testdev_output_path,
         FLAGS.include_masks,
         num_shards=100)"""
+
+    all_paths = results_paths_train + results_paths_val
+    return all_paths
