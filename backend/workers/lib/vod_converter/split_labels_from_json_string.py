@@ -4,7 +4,7 @@ import collections
 import math
 
 
-def split_coco_labels(json_string, max_byte_size=14000000):
+def split_coco_labels(json_string, max_byte_size):
     """
     Splitting input json string into smaller json strings
     :param json_string: JSON string (decoded)
