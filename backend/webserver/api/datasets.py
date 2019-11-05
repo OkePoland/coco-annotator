@@ -21,7 +21,6 @@ import datetime
 import json
 import os
 
-
 logger = logging.getLogger('gunicorn.error')
 api = Namespace('dataset', description='Dataset related operations')
 

@@ -21,9 +21,8 @@ from celery import shared_task
 from ..socket import create_socket
 from workers.lib import check_coco, convert_to_coco
 from workers.lib.vod_converter.split_labels_from_json_string import split_coco_labels
-# from workers.lib.tf_models.create_tf_record_from_coco import convert_coco_to_tfrecord
 
-max_json_string_size = 12000000
+max_json_string_size = 16000000
 
 
 @shared_task
@@ -41,6 +40,7 @@ def export_annotations(task_id, dataset_id, categories):
 
     task.info("Beginning Export (COCO Format)")
 
+    task.info("===== Getting COCO labels =====")
     coco, category_names = collect_coco_annotations(task, categories, dataset, socket)
     timestamp = time.time()
     directory = f"{dataset.directory}.exports/"
@@ -67,6 +67,11 @@ def export_annotations_to_tf_record(task_id, dataset_id, categories, validation_
     to a single ZIP file accessible from:
     Datasets->Chosen Dataset -> Exports
     """
+    # logger = logging.getLogger('gunicorn.error')
+    #
+    # logger.info("OOOOOOOO")
+    from workers.lib.tf_models.create_tf_record_from_coco import convert_coco_to_tfrecord
+
     task = TaskModel.objects.get(id=task_id)
     dataset = DatasetModel.objects.get(id=dataset_id)
 
@@ -76,44 +81,45 @@ def export_annotations_to_tf_record(task_id, dataset_id, categories, validation_
     task.info("===== Beginning Export (TF Record Format) =====")
 
     # Getting coco annotations
-    # coco, category_names = collect_coco_annotations(task, categories, dataset, socket)
-
-    # TODO: Convert COCO to TF Record
+    task.info("===== Getting COCO labels =====")
+    coco, category_names = collect_coco_annotations(task, categories, dataset, socket)
 
     timestamp = time.time()
-    directory = f"{dataset.directory}.exports/"
+    out_directory = f"{dataset.directory}.exports/"
+    image_dir = f"{dataset.directory}"
+    # task.info(image_dir)
+    #
+    # print(image_dir)
+    if not os.path.exists(out_directory):
+        os.makedirs(out_directory)
 
-    if not os.path.exists(directory):
-        os.makedirs(directory)
+    task.info("===== Converting to TF Record =====")
+    convert_coco_to_tfrecord(image_dir, json.dumps(coco), out_directory, validation_set_size, task, include_masks=True)
 
-    """
-    convert_coco_to_tfrecord(image_dir, json.dumbs(coco), directory, validation_set_size)
-    """
-
-    files_paths = []
-    for i in range(5):
-
-        file_path = f"{directory}file{i}_{timestamp}.txt"
-        files_paths.append(file_path)
-        task.info(f"Writing export to file {file_path}")
-        with open(file_path, 'w') as fp:
-            fp.write("abc")
-            fp.write(str(validation_set_size))
-
-        # task.info("Creating export object")
-        # export = ExportModel(dataset_id=dataset.id, path=file_path, tags=["TF Record"])
-        # export.save()
-
-    zip_path = f"{directory}tf_record_zip-{timestamp}.zip"
-    with zipfile.ZipFile(zip_path, 'w') as zipObj:
-        for file_path in files_paths:
-            zipObj.write(file_path, os.path.basename(file_path))
-
-    for file_path in files_paths:
-        os.remove(file_path)
-
-    export = ExportModel(dataset_id=dataset.id, path=zip_path, tags=["TF Record"])
-    export.save()
+    # files_paths = []
+    # for i in range(5):
+    #
+    #     file_path = f"{out_directory}file{i}_{timestamp}.txt"
+    #     files_paths.append(file_path)
+    #     task.info(f"Writing export to file {file_path}")
+    #     with open(file_path, 'w') as fp:
+    #         fp.write("abc")
+    #         fp.write(str(validation_set_size))
+    #
+    #     # task.info("Creating export object")
+    #     # export = ExportModel(dataset_id=dataset.id, path=file_path, tags=["TF Record"])
+    #     # export.save()
+    #
+    # zip_path = f"{out_directory}tf_record_zip-{timestamp}.zip"
+    # with zipfile.ZipFile(zip_path, 'w') as zipObj:
+    #     for file_path in files_paths:
+    #         zipObj.write(file_path, os.path.basename(file_path))
+    #
+    # for file_path in files_paths:
+    #     os.remove(file_path)
+    #
+    # export = ExportModel(dataset_id=dataset.id, path=zip_path, tags=["TF Record"])
+    # export.save()
 
     task.set_progress(100, socket=socket)
 
@@ -163,14 +169,14 @@ def collect_coco_annotations(task, categories, dataset, socket):
         category_names.append(category.get('name'))
 
         progress += 1
-        task.set_progress((progress / total_items) * 100, socket=socket)
+        task.set_progress((progress / total_items) * 50, socket=socket)
 
     total_annotations = db_annotations.count()
     total_images = db_images.count()
     for image in fix_ids(db_images):
 
         progress += 1
-        task.set_progress((progress / total_items) * 100, socket=socket)
+        task.set_progress((progress / total_items) * 50, socket=socket)
 
         annotations = db_annotations.filter(image_id=image.get('id')) \
             .only(*AnnotationModel.COCO_PROPERTIES)
