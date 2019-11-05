@@ -80,6 +80,25 @@ class DatasetModel(DynamicDocument):
             "name": task.name
         }
 
+    def import_coco_from_single_json(self, coco_json_string):
+        from workers.tasks import import_annotations, load_annotation_file
+
+        logger = logging.getLogger('gunicorn.error')
+
+        task = TaskModel(
+            name="Load annotation file",
+            dataset_id=self.id,
+            group="Annotation Conversion"
+        )
+        task.save()
+        cel_task = load_annotation_file.delay(task.id, self.id, coco_json_string, self.name)
+
+        return {
+            "celery_id": cel_task.id,
+            "id": task.id,
+            "name": task.name
+        }
+
     def export_coco(self, categories=None, style="COCO"):
 
         from workers.tasks import export_annotations

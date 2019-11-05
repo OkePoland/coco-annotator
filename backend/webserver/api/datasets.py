@@ -524,7 +524,8 @@ class DatasetCoco(Resource):
         
         if coco==None and path != '/datasets/':
             return dataset.import_coco(path)
-            #HERE PUT THE CODE
+
+        # HERE PUT THE CODE
         # for el in coco:
         #     logger.info(el)
 
@@ -543,11 +544,10 @@ class DatasetCoco(Resource):
         #     else:
         #         logger.info(f"Failed to convert from {from_key} to {to_key}")
 
-
         # Right now working only for a single file
         c_bytes = coco[0].read()
         c_string = c_bytes.decode('utf-8')
-        return dataset.import_coco(c_string)
+        return dataset.import_coco_from_single_json(c_string)
 
 
 @api.route('/coco/<int:import_id>')
