@@ -8,12 +8,14 @@ networks:
 
 services:
   frontend:
-    container_name: annotator_client
+    container_name: multi_annotator_client
     build:
       context: .
       dockerfile: ./client/Dockerfile
     ports:
-      - "8080:8080"
+      - 0.0.0.0:3000:3000
+      - 0.0.0.0:8080:8080
+
     volumes:
       - "./client:/workspace/client"
     networks:

@@ -16,10 +16,15 @@ export const useStyles = makeStyles((theme: Theme) => ({
     submit: {
         margin: theme.spacing(3, 0, 2),
     },
+    title: {
+        paddingTop: 16,
+        paddingBottom: 24,
+    },
+    body: {
+        paddingTop: 16,
+    },
     container: {
-        display: 'flex',
-        flexDirection: 'row',
-        padding: 55,
+        padding: 80,
     },
     tab: {
         color: theme.palette.primary.dark,

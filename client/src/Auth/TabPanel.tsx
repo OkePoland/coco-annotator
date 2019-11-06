@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
-import Typography from '@material-ui/core/Typography';
-import TextField from '@material-ui/core/TextField';
+import React from 'react';
 import Button from '@material-ui/core/Button';
+import TextField from '@material-ui/core/TextField';
+import Typography from '@material-ui/core/Typography';
 
 import { useStyles } from './Auth.components';
+import useTabPanel, { LOGIN_TAB_INDEX } from './tabPanel.hooks';
 
 interface Props {
     activeTab: number;
@@ -12,55 +13,16 @@ interface Props {
 
 const TabPanel: React.FC<Props> = ({ activeTab, index }) => {
     const classes = useStyles();
-
-    const [
-        { fullName, username, password, confirmPassword },
-        setCredentials,
-    ] = useState({
-        fullName: '',
-        username: '',
-        password: '',
-        confirmPassword: '',
-    });
-
-    const [error, setError] = useState('');
-
-    const LOGIN_TAB_INDEX = 1;
-    const PASSWORD_LENGTH_LIMIT = 4;
-
-    const isValidUsername = /^[0-9a-zA-Z_.-]+$/.test(username);
-    const isValidPassword = password.length > PASSWORD_LENGTH_LIMIT;
-    const isValidConfirmedPassword = confirmPassword === password;
-
-    const handleChange = ({
-        target: { name, value },
-    }: React.ChangeEvent<HTMLInputElement>) => {
-        setCredentials(c => ({ ...c, [name]: value }));
-    };
-
-    const register = async (event: React.FormEvent) => {
-        event.preventDefault();
-        if (!isValidUsername) {
-            setError('Username is invalid');
-        } else if (!isValidPassword) {
-            setError('Password is invalid');
-        } else if (!isValidConfirmedPassword) {
-            setError("Passwords don't match");
-        } else {
-            return null;
-        }
-    };
-
-    const login = async (event: React.FormEvent) => {
-        event.preventDefault();
-        if (!isValidUsername) {
-            setError('Username is invalid');
-        } else if (!isValidPassword) {
-            setError('Password is invalid');
-        } else {
-            return null;
-        }
-    };
+    const {
+        error,
+        userDetails: { fullName, username, password, confirmPassword },
+        isValidUsername,
+        isValidPassword,
+        isValidConfirmedPassword,
+        handleChange,
+        handleLogin,
+        handleRegister,
+    } = useTabPanel();
 
     return (
         <Typography
@@ -73,7 +35,9 @@ const TabPanel: React.FC<Props> = ({ activeTab, index }) => {
             <form
                 className={classes.form}
                 noValidate
-                onSubmit={index === LOGIN_TAB_INDEX ? register : login}
+                onSubmit={
+                    index === LOGIN_TAB_INDEX ? handleRegister : handleLogin
+                }
             >
                 {index === LOGIN_TAB_INDEX && (
                     <TextField
@@ -146,7 +110,7 @@ const TabPanel: React.FC<Props> = ({ activeTab, index }) => {
                         onChange={handleChange}
                     />
                 )}
-                {error && <p>{error}</p>}
+                {error && <Typography paragraph>{error}</Typography>}
                 <Button
                     color="primary"
                     type="submit"
