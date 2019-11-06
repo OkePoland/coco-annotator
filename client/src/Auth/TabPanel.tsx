@@ -41,7 +41,6 @@ const TabPanel: React.FC<Props> = ({ activeTab, index }) => {
             >
                 {index === LOGIN_TAB_INDEX && (
                     <TextField
-                        InputLabelProps={{ classes: { root: classes.label } }}
                         variant="outlined"
                         value={fullName}
                         margin="normal"
@@ -53,7 +52,6 @@ const TabPanel: React.FC<Props> = ({ activeTab, index }) => {
                     />
                 )}
                 <TextField
-                    InputLabelProps={{ classes: { root: classes.label } }}
                     variant="outlined"
                     margin="normal"
                     value={username}
@@ -71,7 +69,6 @@ const TabPanel: React.FC<Props> = ({ activeTab, index }) => {
                     onChange={handleChange}
                 />
                 <TextField
-                    InputLabelProps={{ classes: { root: classes.label } }}
                     variant="outlined"
                     margin="normal"
                     value={password}
@@ -91,7 +88,6 @@ const TabPanel: React.FC<Props> = ({ activeTab, index }) => {
                 />
                 {index === LOGIN_TAB_INDEX && (
                     <TextField
-                        InputLabelProps={{ classes: { root: classes.label } }}
                         variant="outlined"
                         margin="normal"
                         value={confirmPassword}
