@@ -7,6 +7,13 @@ category1_id = 0
 category2_id = 0
 category3_id = 0
 
+# class TestMy:
+#
+#     def test_my(self, client):
+#         url = 'http://127.0.0.1:8080/api/' + 'undo/list/'
+#         resp = client.get(url)
+#         assert resp.status_code == 200
+
 
 class TestCategory:
 
@@ -77,7 +84,6 @@ class TestCategory:
     @pytest.mark.run(after='test_post_categories')
     def test_post_already_existing_category(self, client):
         pass
-
 
 class TestCategoryId:
 

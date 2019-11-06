@@ -4,11 +4,11 @@ from .vod_converter import converter
 import os
 
 INGESTORS = [
-    #'mio',
+    # 'mio',
     'pedx',
     'citycam',
     'coco',
-    'daimler',
+    # 'daimler',    TODO: daimler needs more strict validation
     'kitti',
     'kitti-tracking',
     'voc',
