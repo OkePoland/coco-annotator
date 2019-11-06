@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 
 import { onRegister, onLogin } from './auth.api';
+import { useNavigation } from 'react-navi';
 
 interface UserDetails {
     fullName: string;
@@ -24,6 +25,7 @@ export const LOGIN_TAB_INDEX = 1;
 export const PASSWORD_LENGTH_LIMIT = 4;
 
 const useTabPanel = (): TabPanelState => {
+    let navigation = useNavigation();
     const [
         { fullName, username, password, confirmPassword },
         setCredentials,
@@ -59,6 +61,8 @@ const useTabPanel = (): TabPanelState => {
 
             if (response && response.error) {
                 setError(response.error);
+            } else {
+                navigation.navigate('/');
             }
         }
     };
@@ -77,6 +81,8 @@ const useTabPanel = (): TabPanelState => {
 
             if (response && response.error) {
                 setError(response.error);
+            } else {
+                navigation.navigate('/');
             }
         }
     };

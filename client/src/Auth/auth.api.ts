@@ -62,7 +62,7 @@ interface ServerInfoApiResponse {
 
 export const getServerInfo = async () => {
     const response = await Api.get<ServerInfoApiResponse>(serverInfoURL);
-    const totalUsers = response.total_users;
+    const totalUsers = response.data.total_users;
     return totalUsers;
 };
 
