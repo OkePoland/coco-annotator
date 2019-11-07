@@ -101,40 +101,18 @@ def export_annotations_to_tf_record(task_id, dataset_id, categories, validation_
     task.info(f"Created {len(tf_records_files_path)} TF Record files")
 
     zip_path = f"{out_directory}tf_record_zip-{timestamp}.zip"
+
+    task.info(f"Writing TF Records to zip file")
     with zipfile.ZipFile(zip_path, 'w') as zipObj:
         for tf_record_file in tf_records_files_path:
             zipObj.write(tf_record_file, os.path.basename(tf_record_file))
 
+    # Clean exports
     for tf_record_file in tf_records_files_path:
         os.remove(tf_record_file)
 
     export = ExportModel(dataset_id=dataset.id, path=zip_path, tags=["TF Record", *category_names])
     export.save()
-
-    # files_paths = []
-    # for i in range(5):
-    #
-    #     file_path = f"{out_directory}file{i}_{timestamp}.txt"
-    #     files_paths.append(file_path)
-    #     task.info(f"Writing export to file {file_path}")
-    #     with open(file_path, 'w') as fp:
-    #         fp.write("abc")
-    #         fp.write(str(validation_set_size))
-    #
-    #     # task.info("Creating export object")
-    #     # export = ExportModel(dataset_id=dataset.id, path=file_path, tags=["TF Record"])
-    #     # export.save()
-    #
-    # zip_path = f"{out_directory}tf_record_zip-{timestamp}.zip"
-    # with zipfile.ZipFile(zip_path, 'w') as zipObj:
-    #     for file_path in files_paths:
-    #         zipObj.write(file_path, os.path.basename(file_path))
-    #
-    # for file_path in files_paths:
-    #     os.remove(file_path)
-    #
-    # export = ExportModel(dataset_id=dataset.id, path=zip_path, tags=["TF Record"])
-    # export.save()
 
     task.set_progress(100, socket=socket)
 

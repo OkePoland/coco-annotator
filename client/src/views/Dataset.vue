@@ -166,7 +166,14 @@
               class="btn btn-sm btn-block btn-danger"
               @click="resetMetadata"
             >
-              Rest All Metadata
+              Reset All Metadata
+            </button>
+
+            <button
+              class="btn btn-sm btn-block btn-danger"
+              @click="resetMetadata"
+            >
+              Rest All Annotations
             </button>
           </div>
         </div>
