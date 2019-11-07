@@ -171,9 +171,9 @@
 
             <button
               class="btn btn-sm btn-block btn-danger"
-              @click="resetMetadata"
+              @click="resetAnnotations"
             >
-              Rest All Annotations
+              Reset All Annotations
             </button>
           </div>
         </div>
@@ -637,6 +637,15 @@ export default {
       
       if (r) {
         Dataset.resetMetadata(this.dataset.id);
+      }
+    },
+    resetAnnotations() {
+      let r = confirm("You can not undo reseting of all metadata in"
+        + "this dataset. This includes metadata of images"
+        + "and annotations.");
+
+      if (r) {
+        Dataset.resetAnnotations(this.dataset.id);
       }
     },
     getStats() {

@@ -69,5 +69,8 @@ export default {
   },
   resetMetadata(id) {
     return axios.get(`${baseURL}/${id}/reset/metadata`);
+  },
+  resetAnnotations(id) {
+    return axios.get(`${baseURL}/${id}/reset/annotations`);
   }
 };

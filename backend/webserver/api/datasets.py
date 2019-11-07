@@ -167,6 +167,29 @@ class DatasetCleanMeta(Resource):
         return {'success': True}
 
 
+@api.route('/<int:dataset_id>/reset/annotations')
+class DatasetCleanAnnotations(Resource):
+
+    @login_required
+    def get(self, dataset_id):
+        args = dataset_generate.parse_args()
+
+        dataset = current_user.datasets.filter(id=dataset_id, deleted=False).first()
+        if dataset is None:
+            return {"message": "Invalid dataset id"}, 400
+
+        # AnnotationModel.objects(dataset_id=dataset.id)\
+        #     .update(metadata=dataset.default_annotation_metadata)
+        # ImageModel.objects(dataset_id=dataset.id)\
+        #     .update(metadata={})
+
+        # TODO: Clean annotations for chosen dataset
+
+        logger.info(f"Cleaning Annotations")
+
+        return {'success': True}
+
+
 @api.route('/<int:dataset_id>/stats')
 class DatasetStats(Resource):
 
