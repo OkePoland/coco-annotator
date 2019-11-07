@@ -30,9 +30,11 @@ export default {
   scan(id) {
     return axios.get(`${baseURL}/${id}/scan`);
   },
-  exportingCOCO(id, categories, format, validation) {
-    if (validation=="") validation = 0
-    return axios.get(`${baseURL}/${id}/export?categories=${categories}&export_format=${format}&validation_size=${validation}`);
+  exportingCOCO(id, categories, format, validation, tfrecord_train_num_shards, tfrecord_val_num_shards) {
+    if (validation==="") validation = 0;
+    if (tfrecord_train_num_shards==null) tfrecord_train_num_shards = 1;
+    if (tfrecord_val_num_shards==null) tfrecord_val_num_shards = 1;
+    return axios.get(`${baseURL}/${id}/export?categories=${categories}&export_format=${format}&validation_size=${validation}&tfrecord_train_num_shards=${tfrecord_train_num_shards}&tfrecord_val_num_shards=${tfrecord_val_num_shards}`);
   },
   getCoco(id) {
     return axios.get(`${baseURL}/${id}/coco`);

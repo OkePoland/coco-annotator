@@ -49,8 +49,9 @@ path_string.add_argument('path_string', type=str, required=False, help='Path to 
 export = reqparse.RequestParser()
 export.add_argument('categories', type=str, default=None, required=False, help='Ids of categories to export')
 export.add_argument('export_format', type=str, default=None, required=False, help='Format of expected export')
-export.add_argument('validation_size', type=int, default=None, required=False, help='Dize of validation dataset')
-
+export.add_argument('validation_size', type=int, default=None, required=False, help='Size of validation dataset')
+export.add_argument('tfrecord_train_num_shards', type=int, default=1, required=False, help='Size of validation dataset')
+export.add_argument('tfrecord_val_num_shards', type=int, default=1, required=False, help='Size of validation dataset')
 
 
 update_dataset = reqparse.RequestParser()
@@ -458,8 +459,13 @@ class DatasetExport(Resource):
         categories = args.get('categories')
         export_format = args.get('export_format')
         validation_size = args.get('validation_size')
-        logger.info(export_format)
-        logger.info(validation_size)
+        tfrecord_train_num_shards = args.get('tfrecord_train_num_shards')
+        tfrecord_val_num_shards = args.get('tfrecord_val_num_shards')
+        logger.info(f"Export format: {export_format}")
+        # logger.info(validation_size)
+        # logger.info("ABC")
+        # logger.info(tfrecord_train_num_shards)
+        # logger.info(tfrecord_val_num_shards)
         if len(categories) == 0:
             categories = []
 
@@ -473,7 +479,8 @@ class DatasetExport(Resource):
         if export_format == "coco":
             return dataset.export_coco(categories=categories)
         elif export_format == "tfrecord":
-            return dataset.export_tf_record(categories=categories, validation_set_size=validation_size)
+            return dataset.export_tf_record(train_shards=tfrecord_train_num_shards, val_shards=tfrecord_val_num_shards,
+                                            categories=categories, validation_set_size=validation_size)
         else:
             logger.info("Unknown format")
 

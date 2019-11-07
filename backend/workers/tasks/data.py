@@ -61,14 +61,14 @@ def export_annotations(task_id, dataset_id, categories):
 
 
 @shared_task
-def export_annotations_to_tf_record(task_id, dataset_id, categories, validation_set_size):
+def export_annotations_to_tf_record(task_id, dataset_id, categories, validation_set_size, train_shards, val_shards):
     """
     Loads COCO annotations from chosen dataset, converts them to tf record format and exports them
     to a single ZIP file accessible from:
     Datasets->Chosen Dataset -> Exports
     """
     # logger = logging.getLogger('gunicorn.error')
-    #
+
     # logger.info("OOOOOOOO")
     from workers.lib.tf_models.create_tf_record_from_coco import convert_coco_to_tfrecord
 
@@ -94,8 +94,22 @@ def export_annotations_to_tf_record(task_id, dataset_id, categories, validation_
         os.makedirs(out_directory)
 
     task.info("===== Converting to TF Record =====")
-    paths_to_tfrecords = convert_coco_to_tfrecord(image_dir, json.dumps(coco), out_directory, validation_set_size, task, include_masks=True)
-    task.info(f"Paths: {paths_to_tfrecords}")
+    task.info(f"Number of train shards: {train_shards}")
+    task.info(f"Number of validation shards: {val_shards}")
+    tf_records_files_path = convert_coco_to_tfrecord(image_dir, json.dumps(coco), out_directory, validation_set_size,
+                                                     task, train_shards, val_shards, include_masks=True)
+    task.info(f"Created {len(tf_records_files_path)} TF Record files")
+
+    zip_path = f"{out_directory}tf_record_zip-{timestamp}.zip"
+    with zipfile.ZipFile(zip_path, 'w') as zipObj:
+        for tf_record_file in tf_records_files_path:
+            zipObj.write(tf_record_file, os.path.basename(tf_record_file))
+
+    for tf_record_file in tf_records_files_path:
+        os.remove(tf_record_file)
+
+    export = ExportModel(dataset_id=dataset.id, path=zip_path, tags=["TF Record", *category_names])
+    export.save()
 
     # files_paths = []
     # for i in range(5):

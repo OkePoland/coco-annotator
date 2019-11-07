@@ -44,6 +44,7 @@ from workers.lib.tf_models import dataset_util
 from workers.lib.tf_models import label_map_util
 from workers.lib.tf_models import my_contextlib2 as contextlib2
 
+
 # flags = tf.app.flags
 # tf.flags.DEFINE_boolean('include_masks', False,
 #                         'Whether to include instance segmentations masks '
@@ -261,11 +262,13 @@ def _split_dataset(annotations_file, val_size):
     return train_data, val_data
 
 
-def convert_coco_to_tfrecord(image_dir, annotations_file, output_dir, val_size, task, include_masks=False):
+def convert_coco_to_tfrecord(image_dir, annotations_file, output_dir, val_size, task, train_shards, val_shards,
+                             include_masks=False):
     assert image_dir, '`image_dir` missing.'
     assert annotations_file, '`annotations_file` missing.'
     assert output_dir, '`output_dir` missing.'
-    assert val_size, '`val_size` missing'
+    if val_size != 0:
+        assert val_size, '`val_size` missing'
 
     if not tf.gfile.IsDirectory(output_dir):
         tf.gfile.MakeDirs(output_dir)
@@ -276,23 +279,22 @@ def convert_coco_to_tfrecord(image_dir, annotations_file, output_dir, val_size, 
     train_annotation, val_annotation = _split_dataset(annotations_file, val_size)
 
     task.info("Creating train set")
-    results_paths_train = _create_tf_record_from_coco_annotations(
+    train_files_path = _create_tf_record_from_coco_annotations(
         task,
         train_annotation,
         image_dir,
         train_output_path,
         include_masks,
-        num_shards=1)
+        num_shards=train_shards)
 
     task.info("Creating val set")
-    results_paths_val =_create_tf_record_from_coco_annotations(
+    val_files_path = _create_tf_record_from_coco_annotations(
         task,
         val_annotation,
         image_dir,
         val_output_path,
         include_masks,
-        num_shards=1)
-
+        num_shards=val_shards)
 
     """
     _create_tf_record_from_coco_annotations(
@@ -302,5 +304,5 @@ def convert_coco_to_tfrecord(image_dir, annotations_file, output_dir, val_size, 
         FLAGS.include_masks,
         num_shards=100)"""
 
-    all_paths = results_paths_train + results_paths_val
-    return all_paths
+    tf_record_files_path = train_files_path + val_files_path
+    return tf_record_files_path
