@@ -331,7 +331,7 @@ def import_annotations(task_id, dataset_id, encoded_coco_json):
             category_model_id = categories_id[category_id]
             image_categories = categories_by_image[image_id]
         except KeyError:
-            task.warning(f"Could not find image assoicated with annotation {annotation.get('id')}")
+            task.warning(f"Could not find image associated with annotation {annotation.get('id')}")
             continue
 
         annotation_model = AnnotationModel.objects(
