@@ -24,6 +24,7 @@ Example usage:
       --output_dir="${OUTPUT_DIR}"
       --val_size = SIZE_OF_WANTED_VAL_DATASET
 """
+
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -42,34 +43,7 @@ import tensorflow as tf
 from workers.lib.tf_models import tf_record_creation_util
 from workers.lib.tf_models import dataset_util
 from workers.lib.tf_models import label_map_util
-from workers.lib.tf_models import my_contextlib2 as contextlib2
-
-
-# flags = tf.app.flags
-# tf.flags.DEFINE_boolean('include_masks', False,
-#                         'Whether to include instance segmentations masks '
-#                         '(PNG encoded) in the result. default: False.')
-# tf.flags.DEFINE_string('train_image_dir',
-#                        '/home/bielinski/Desktop/Datasets/Pascal_voc/VOCtrainval_11-May-2012/VOCdevkit/VOC2012/JPEGImages',
-#                        'Training image directory.')
-# tf.flags.DEFINE_string('val_image_dir',
-#                        '/home/bielinski/Desktop/Datasets/Pascal_voc/VOCtrainval_11-May-2012/VOCdevkit/VOC2012/JPEGImages',
-#                        'Validation image directory.')
-# tf.flags.DEFINE_string('test_image_dir', '',
-#                        'Test image directory.')
-# tf.flags.DEFINE_string('train_annotations_file',
-#                        '/home/bielinski/Desktop/Datasets/Pascal_voc/coco_from_pascal/pascal_voc_from_my_annotator.json',
-#                        'Training annotations JSON file.')
-# tf.flags.DEFINE_string('val_annotations_file', '',
-#                        'Validation annotations JSON file.')
-# tf.flags.DEFINE_string('testdev_annotations_file', '',
-#                        'Test-dev annotations JSON file.')
-# tf.flags.DEFINE_string('output_dir', '/tmp/', 'Output data directory.')
-# tf.flags.DEFINE_integer('val_size', 100, 'Size of validaton dataset')
-#
-# FLAGS = flags.FLAGS
-#
-# tf.logging.set_verbosity(tf.logging.INFO)
+import contextlib2
 
 
 def create_tf_example(image,

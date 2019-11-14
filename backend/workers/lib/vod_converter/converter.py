@@ -20,7 +20,7 @@ from .kitti import *
 from .kitti_tracking import *
 from .voc import *
 from .citycam import *
-# from .mio import *        something is wrong with mio file, probably imports fault
+from .mio import *        # something is wrong with mio file, probably imports fault
 from .caltech import *
 from .detrac import *
 from .validation_schemas import IMAGE_DETECTION_SCHEMA
@@ -41,7 +41,7 @@ INGESTORS = {
     'pedx': PEDXIngestor(),
     'citycam': VOC_CITY_Ingestor(),
     'coco': COCOIngestor(),
-    # 'mio': MIOIngestor(),
+    'mio': MIOIngestor(),
     'daimler': DAIMLERIngestor(),
     'kitti': KITTIIngestor(),
     'kitti-tracking': KITTITrackingIngestor(),
