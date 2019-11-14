@@ -9,6 +9,7 @@ from .events import Event, SessionEvent
 from .datasets import DatasetModel
 from .annotations import AnnotationModel
 
+
 class ImageModel(DynamicDocument):
 
     COCO_PROPERTIES = ["id", "width", "height", "file_name", "path", "license",\

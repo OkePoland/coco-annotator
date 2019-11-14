@@ -5,7 +5,7 @@ WORKDIR /workspace/
 # Install python package dependices
 COPY ./backend/ /workspace/
 
-RUN python -m pip --version
+RUN pip install -r requirements.txt
 
 EXPOSE 5555
 CMD celery -A workers worker -l info

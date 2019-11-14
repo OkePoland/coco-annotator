@@ -178,14 +178,15 @@ class DatasetCleanAnnotations(Resource):
         if dataset is None:
             return {"message": "Invalid dataset id"}, 400
 
-        # AnnotationModel.objects(dataset_id=dataset.id)\
-        #     .update(metadata=dataset.default_annotation_metadata)
-        # ImageModel.objects(dataset_id=dataset.id)\
-        #     .update(metadata={})
-
-        # TODO: Clean annotations for chosen dataset
-
         logger.info(f"Cleaning Annotations")
+
+        AnnotationModel.objects(dataset_id=dataset.id).delete()
+
+        logger.info("Refreshing Images")
+        ImageModel.objects(dataset_id=dataset.id).update(
+            set__annotated=False,
+            set__num_annotations=0
+        )
 
         return {'success': True}
 
