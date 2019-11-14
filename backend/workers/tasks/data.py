@@ -53,6 +53,14 @@ def export_annotations(task_id, dataset_id, categories):
     with open(file_path, 'w') as fp:
         json.dump(coco, fp)
 
+    # task.info(f"Writing TF Records to zip file")
+    # zip_path = f"{directory}tf_record_zip-{timestamp}.zip"
+    # with zipfile.ZipFile(zip_path, 'w') as zipObj:
+    #     zipObj.write(file_path, os.path.basename(file_path))
+    #
+    # # Clean exports
+    # os.remove(file_path)
+
     task.info("Creating export object")
     export = ExportModel(dataset_id=dataset.id, path=file_path, tags=["COCO", *category_names])
     export.save()

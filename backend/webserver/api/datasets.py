@@ -460,12 +460,14 @@ class DatasetExports(Resource):
 
         dict_export = []
         for export in exports:
-
+            # file_path = export.path
+            extension = str(export.path).split(".")[-1]
             time_delta = datetime.datetime.utcnow() - export.created_at
             dict_export.append({
                 'id': export.id,
                 'ago': query_util.td_format(time_delta),
-                'tags': export.tags
+                'tags': export.tags,
+                "extension": extension
             })
 
         return dict_export
@@ -485,10 +487,7 @@ class DatasetExport(Resource):
         tfrecord_train_num_shards = args.get('tfrecord_train_num_shards')
         tfrecord_val_num_shards = args.get('tfrecord_val_num_shards')
         logger.info(f"Export format: {export_format}")
-        # logger.info(validation_size)
-        # logger.info("ABC")
-        # logger.info(tfrecord_train_num_shards)
-        # logger.info(tfrecord_val_num_shards)
+
         if len(categories) == 0:
             categories = []
 

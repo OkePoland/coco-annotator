@@ -1,7 +1,6 @@
 from flask import send_file
 from flask_restplus import Namespace, Resource, reqparse
 from flask_login import login_required, current_user
-import logging
 
 import datetime
 from ..util import query_util
@@ -49,14 +48,13 @@ class DatasetExports(Resource):
         export.delete()
         return {'success': True}
 
-# TODO: Get either json or zip
+
 @api.route('/<int:export_id>/download')
 class DatasetExports(Resource):
 
     @login_required
     def get(self, export_id):
         """ Returns exports """
-
         export = ExportModel.objects(id=export_id).first()
         if export is None:
             return {"message": "Invalid export ID"}, 400

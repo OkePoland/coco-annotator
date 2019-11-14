@@ -46,7 +46,7 @@ export default {
             let file = files.item(i);
             form.append('coco', file, file.name);
         }
-     form.append('path_string', path_string)
+     form.append('path_string', path_string);
     //form.append("coco", files.item(0));
 
     return axios.post(`${baseURL}/${id}/coco`, form, {

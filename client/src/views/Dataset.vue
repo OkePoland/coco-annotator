@@ -80,7 +80,7 @@
                   <button 
                     class="btn btn-sm btn-success"
                     style="float: right; margin: 2px; padding: 2px"
-                    @click="downloadExport(exp.id)"
+                    @click="downloadExport(exp.id, exp.extension)"
                   >
                     Download
                   </button>
@@ -622,8 +622,8 @@ export default {
         this.users = response.data;
       });
     },
-    downloadExport(id) {
-      Export.download(id, this.dataset.name);
+    downloadExport(id, extension) {
+      Export.download(id, this.dataset.name, extension);
     },
     getExports() {
       Dataset.getExports(this.dataset.id).then(response => {
