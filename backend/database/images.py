@@ -85,6 +85,9 @@ class ImageModel(DynamicDocument):
         AnnotationModel.objects(image_id=self.id).delete()
         return super(ImageModel, self).delete(*args, **kwargs)
 
+    def get_datasetid(self):
+        return self.dataset_id
+
     def thumbnail(self):
         """
         Generates (if required) and returns thumbnail
