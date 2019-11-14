@@ -4,17 +4,23 @@ import { Router, View, NotFoundBoundary } from 'react-navi';
 
 import { theme } from '../common/theme';
 import routes from './routes';
+import { GlobalProvider } from '../common/contexts/GlobalContext';
+import { SocketProvider } from '../common/contexts/SocketContext';
 
 const App: React.FC = () => (
-    <ThemeProvider theme={theme}>
-        <Router routes={routes}>
-            <Suspense fallback={null}>
-                <NotFoundBoundary render={renderNotFound}>
-                    <View />
-                </NotFoundBoundary>
-            </Suspense>
-        </Router>
-    </ThemeProvider>
+    <SocketProvider>
+        <GlobalProvider>
+            <ThemeProvider theme={theme}>
+                <Router routes={routes}>
+                    <Suspense fallback={null}>
+                        <NotFoundBoundary render={renderNotFound}>
+                            <View />
+                        </NotFoundBoundary>
+                    </Suspense>
+                </Router>
+            </ThemeProvider>
+        </GlobalProvider>
+    </SocketProvider>
 );
 
 const renderNotFound = () => (
