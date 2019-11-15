@@ -1,3 +1,8 @@
+# TODO: Fix annotation counting
+
+# TODO: images id in images in image detection and in annotations in image detection are the same, but not the same as
+#  in models from db
+
 from database import (
     fix_ids,
     ImageModel,
@@ -375,9 +380,9 @@ def import_annotations(task_id, dataset_id, encoded_coco_json):
         image_model.update(
             set__annotated=True,
             set__category_ids=list(set(all_category_ids)),
-            set__num_annotations=AnnotationModel \
-                .objects(image_id=image_id, area__gt=0, deleted=False).count()
+            set__num_annotations=AnnotationModel.objects(image_id=image_model.id, area__gt=0, deleted=False).count()
         )
+    task.warning(AnnotationModel.objects().count())
 
     task.set_progress(100, socket=socket)
 
@@ -426,7 +431,7 @@ def load_annotation_files(task_id, dataset_id, coco_json_strings, dataset_name):
             task.info(f"Sending json subfile nr {substring_index} from file nr {file_index} to workers queue")
             cel_test_task = import_annotations.delay(load_annotations_task.id, dataset_id, json_substring)
 
-        task.set_progress((file_index+1)*100/total_files, socket=socket)
+        task.set_progress((file_index + 1) * 100 / total_files, socket=socket)
 
     task.set_progress(100, socket=socket)
     task.info("===== Finished =====")
