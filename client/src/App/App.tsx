@@ -8,19 +8,19 @@ import { GlobalProvider } from '../common/contexts/GlobalContext';
 import { SocketProvider } from '../common/contexts/SocketContext';
 
 const App: React.FC = () => (
-    <SocketProvider>
-        <GlobalProvider>
-            <ThemeProvider theme={theme}>
-                <Router routes={routes}>
+    <ThemeProvider theme={theme}>
+        <Router routes={routes}>
+            <SocketProvider>
+                <GlobalProvider>
                     <Suspense fallback={null}>
                         <NotFoundBoundary render={renderNotFound}>
                             <View />
                         </NotFoundBoundary>
                     </Suspense>
-                </Router>
-            </ThemeProvider>
-        </GlobalProvider>
-    </SocketProvider>
+                </GlobalProvider>
+            </SocketProvider>
+        </Router>
+    </ThemeProvider>
 );
 
 const renderNotFound = () => (
