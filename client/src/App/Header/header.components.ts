@@ -20,11 +20,14 @@ export const useStyles = makeStyles((theme: AugmentedTheme) => ({
         width: '9px',
         borderRadius: '50%',
     },
-    successDot: {
+    connectedDot: {
         backgroundColor: theme.success,
     },
-    errorDot: {
+    disconnectedDot: {
         backgroundColor: theme.error,
+    },
+    unknownDot: {
+        backgroundColor: theme.palette.background.paper,
     },
     mobileMenuButton: {
         float: 'right',
@@ -46,7 +49,7 @@ export const useStyles = makeStyles((theme: AugmentedTheme) => ({
     successText: {
         color: theme.success,
     },
-    errorText: {
+    loadingText: {
         color: theme.error,
     },
 }));

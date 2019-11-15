@@ -2,22 +2,31 @@ import React from 'react';
 import clsx from 'clsx';
 import Tooltip from '@material-ui/core/Tooltip';
 
-import { BackendState, BackendStatus } from './header.hooks';
 import { useStyles } from './header.components';
 
 interface ConnectionDotProps {
-    state: BackendState;
+    connected: boolean | null;
 }
 
-const ConnectionDot: React.FC<ConnectionDotProps> = ({ state }) => {
+const ConnectionDot: React.FC<ConnectionDotProps> = ({ connected }) => {
     const classes = useStyles();
     const cn = clsx(
         classes.connectionDot,
-        state.status === BackendStatus.SUCCESS && classes.successDot,
-        state.status === BackendStatus.ERROR && classes.errorDot,
+        connected != null
+            ? connected
+                ? classes.connectedDot
+                : classes.disconnectedDot
+            : classes.unknownDot,
     );
+    const message =
+        connected != null
+            ? connected
+                ? 'Connected to backend'
+                : 'Could not connect to backend'
+            : 'Connection unknown';
+
     return (
-        <Tooltip title={state.message}>
+        <Tooltip title={message}>
             <i className={cn} />
         </Tooltip>
     );
