@@ -5,13 +5,13 @@ import os
 
 INGESTORS = [
     # 'mio',
-    'pedx',
+    'pedx',         # tested and working
     'citycam',
-    'coco',
+    'coco',         # tested and working
     # 'daimler',    TODO: daimler needs more strict validation
-    'kitti',
+    'kitti',        # tested and working
     'kitti-tracking',
-    'voc',
+    'voc',          # tested and working
     'detrac',
     'caltech']
 
@@ -34,9 +34,6 @@ def check_coco(ann_file):
 
 
 def convert_to_coco(ann_file):
-    '''
-    It should return json file (json.load)
-    '''
     logger = logging.getLogger('gunicorn.error')
     to_key = 'coco'
     success = False

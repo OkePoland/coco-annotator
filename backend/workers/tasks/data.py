@@ -321,7 +321,10 @@ def import_annotations(task_id, dataset_id, encoded_coco_json):
         task.set_progress((progress / total_items) * 100, socket=socket)
 
         has_segmentation = len(segmentation) > 0
-        has_keypoints = len(keypoints) > 0
+        try:
+            has_keypoints = len(keypoints) > 0
+        except:
+            has_keypoints = False
         if not has_segmentation and not has_keypoints:
             task.warning(f"Annotation {annotation.get('id')} has no segmentation or keypoints")
             continue

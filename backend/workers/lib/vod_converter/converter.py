@@ -104,42 +104,38 @@ def validate_image_detections(image_detections):
         try:
             validate_schema(image_detection, IMAGE_DETECTION_SCHEMA)
         except SchemaError as se:
-            #print(se)
+            print(se)
             image_detections.remove(image_detection)
             continue
         image = image_detection['image']
         for detection in image_detection['detections']:
-            try:
-                if detection['right'] > image['width']:
-                    # os.remove(image['path'])
-                    raise ValueError(f"Image {image} has out of bounds bounding box {detection}")
-                if detection['bottom'] > image['height']:
-                    # os.remove(image['path'])
-                    raise ValueError(f"Image {image} has out of bounds bounding box {detection}")
-                if detection['right'] <= detection['left'] or detection['bottom'] <= detection['top']:
-                    # os.remove(image['path'])
-                    raise ValueError(f"Image {image} has zero dimension bbox {detection}")
-            except Exception as ve:
-                print(ve)
-                image_detections.remove(image_detection)
-                deleted_img_detections += 1
-                break
+            if detection['isbbox'] is True:
+                try:
+                    if detection['right'] > image['width']:
+                        # os.remove(image['path'])
+                        raise ValueError(f"Image {image} has out of bounds bounding box {detection}")
+                    if detection['bottom'] > image['height']:
+                        # os.remove(image['path'])
+                        raise ValueError(f"Image {image} has out of bounds bounding box {detection}")
+                    if detection['right'] <= detection['left'] or detection['bottom'] <= detection['top']:
+                        # os.remove(image['path'])
+                        raise ValueError(f"Image {image} has zero dimension bbox {detection}")
+                except Exception as ve:
+                    print(ve)
+                    image_detections.remove(image_detection)
+                    deleted_img_detections += 1
+                    break
     print(f"Deleted labels for {deleted_img_detections} images")
 
 
 def convert_labels(*, image_detections, expected_labels,
                    select_only_known_labels, filter_images_without_labels):
     print("Converting labels...")
-    logger = logging.getLogger('gunicorn.error')
     convert_dict = {}
     for label, aliases in expected_labels.items():
         convert_dict[label.lower()] = label
         for alias in aliases:
             convert_dict[alias.lower()] = label
-    print('Still here')
-    logger.info('PATRZ TUTAJ')
-    logger.info(str(type(image_detections)))
-    print('dlugosc: ' + str(type(image_detections)))
     final_image_detections = []
     for i, image_detection in enumerate(image_detections):
         if i >= 0:
