@@ -365,21 +365,24 @@
               </div>
               <div>
 
-  <input type="radio" id="file" name="type" value="file" checked  v-model="file_type" >
-  <label for="file">File</label>
+  <!-- <input type="radio" id="file" name="type" value="file" checked  v-model="file_type" >
+  <label for="file">File</label> -->
+                <br/><b>or</b><br/><br/>
+   <!--
    <input type="radio" id="folder" name="type" value="folder" v-model="file_type">
   <label for="folder">Folder</label>
-
+  -->
 </div>
               <div v-if="file_type == 'file'" class="form-group">
                 <label for="coco">COCO Annotation file (.json)</label>
                 <input type="file" class="form-control-file" id="coco"  multiple/>
               </div>
+              <!--
                 <div v-if="file_type == 'folder'" class="form-group">
                 <label for="coco">Folder with labels</label>
                 <input type="file" class="form-control-file" id="coco" webkitdirectory allowdirs multiple/>
               </div>
-
+              -->
             </form>
           </div>
           <div class="modal-footer">
