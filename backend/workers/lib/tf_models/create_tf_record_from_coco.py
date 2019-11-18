@@ -84,8 +84,9 @@ def create_tf_example(image,
     image_width = image['width']
     filename = image['file_name']
     image_id = image['id']
+    # image_dir = image['path'].replace(image['file_name'], '')
 
-    full_path = os.path.join(image_dir, filename)
+    full_path = image['path']
     with tf.gfile.GFile(full_path, 'rb') as fid:
         encoded_jpg = fid.read()
     encoded_jpg_io = io.BytesIO(encoded_jpg)
