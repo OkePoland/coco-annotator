@@ -1,10 +1,10 @@
 import { map, Matcher, redirect } from 'navi';
 
 import { AuthService } from './authService';
-import { IUser } from './auth.api';
+import { UserInfo } from '../common/types';
 
 export interface Context {
-    currentUser: IUser;
+    currentUser: UserInfo;
     authService: AuthService;
 }
 

@@ -1,5 +1,6 @@
 import { AxiosRequestConfig } from 'axios';
 
+import { UserInfo, AppInfo } from '../common/types';
 import Api from '../common/api';
 
 const loginURL = '/user/login';
@@ -11,20 +12,8 @@ interface Credentials {
     password: string;
 }
 
-export interface IUser {
-    id: {
-        $oid: string;
-    };
-    is_admin: boolean;
-    last_seen?: {
-        $date: Date;
-    };
-    online: boolean;
-    username: string;
-}
-
 interface ApiResponse {
-    user?: IUser;
+    user?: UserInfo;
     success: boolean;
     error?: string;
 }
@@ -55,19 +44,9 @@ export const onLogin = async (data: Credentials): Promise<ApiResponse> => {
     return { error: response.message, success: response.success };
 };
 
-interface ServerInfo {
-    allow_registration: boolean;
-    login_enabled: boolean;
-    git: {
-        tag: string;
-    };
-    total_users: number;
-    name: string;
-}
-
 export const getServerInfo = async () => {
     const {
         data: { total_users },
-    } = await Api.get<ServerInfo>(serverInfoURL);
+    } = await Api.get<AppInfo>(serverInfoURL);
     return total_users;
 };

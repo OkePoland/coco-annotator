@@ -1,21 +1,21 @@
 import { Dispatch, SetStateAction } from 'react';
 
-import { IUser } from './auth.api';
+import { UserInfo } from '../common/types';
 import { setUserData, USER_DATA_KEY, removeUserData } from './auth.utils';
 
 export interface AuthService {
-    login: (data: IUser) => Promise<void>;
-    getCurrentUser: () => IUser | null;
+    login: (data: UserInfo) => Promise<void>;
+    getCurrentUser: () => UserInfo | null;
     deleteCurrentUser: () => void;
     logout: () => void;
-    subscribe: (cb: Dispatch<SetStateAction<IUser | null>>) => void;
+    subscribe: (cb: Dispatch<SetStateAction<UserInfo | null>>) => void;
 }
 
 const authFactory = (): AuthService => {
     let callback:
-        | Dispatch<SetStateAction<IUser | null>>
+        | Dispatch<SetStateAction<UserInfo | null>>
         | undefined = undefined;
-    let currentUser: IUser | null = null;
+    let currentUser: UserInfo | null = null;
 
     return {
         async login(data) {
