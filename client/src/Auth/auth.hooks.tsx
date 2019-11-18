@@ -1,32 +1,34 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 import { getServerInfo } from './auth.api';
 
 interface AuthState {
     activeTab: number;
     showLoginForm: boolean;
-    handleChange: (event: React.ChangeEvent<{}>, newValue: number) => void;
+    changeTabPanel: (event: React.ChangeEvent<{}>, newValue: number) => void;
 }
 
 const useAuth = (): AuthState => {
-    const [activeTab, setActiveTab] = useState<number>(0);
     const [users, setUsers] = useState<number | undefined>(0);
-
     const showLoginForm = users !== 0;
+    const [activeTab, setActiveTab] = useState<number>(showLoginForm ? 0 : 1);
 
-    const fetchUsersInfo = async () => {
-        const usersInfo = await getServerInfo();
-        setUsers(usersInfo);
-    };
-    fetchUsersInfo();
+    useEffect(() => {
+        const fetchUsersInfo = async () => {
+            const usersInfo = await getServerInfo();
+            setUsers(usersInfo);
+        };
+        fetchUsersInfo();
+    }, []);
 
-    const handleChange = (event: React.ChangeEvent<{}>, newValue: number) => {
+    const changeTabPanel = (event: React.ChangeEvent<{}>, newValue: number) => {
         setActiveTab(newValue);
     };
+
     return {
         activeTab,
         showLoginForm,
-        handleChange,
+        changeTabPanel,
     };
 };
 

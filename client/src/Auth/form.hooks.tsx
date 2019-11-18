@@ -1,16 +1,17 @@
-import React, { useState } from 'react';
-
-import { onRegister, onLogin } from './auth.api';
+import React, { useState, useEffect } from 'react';
 import { useNavigation } from 'react-navi';
 
-interface UserDetails {
+import { AuthService } from './authService';
+import { onRegister, onLogin } from './auth.api';
+
+export interface UserDetails {
     fullName: string;
     username: string;
     password: string;
     confirmPassword: string;
 }
 
-interface TabPanelState {
+interface FormState {
     userDetails: UserDetails;
     error: string;
     isValidUsername: boolean;
@@ -21,10 +22,9 @@ interface TabPanelState {
     handleRegister: (event: React.FormEvent<Element>) => Promise<void>;
 }
 
-export const LOGIN_TAB_INDEX = 1;
 export const PASSWORD_LENGTH_LIMIT = 4;
 
-const useTabPanel = (): TabPanelState => {
+const useForm = (activeTab: number, authService: AuthService): FormState => {
     let navigation = useNavigation();
     const [
         { fullName, username, password, confirmPassword },
@@ -48,6 +48,15 @@ const useTabPanel = (): TabPanelState => {
         setCredentials(c => ({ ...c, [name]: value }));
     };
 
+    useEffect(() => {
+        setCredentials({
+            fullName: '',
+            username: '',
+            password: '',
+            confirmPassword: '',
+        });
+    }, [activeTab]);
+
     const handleRegister = async (event: React.FormEvent) => {
         event.preventDefault();
         if (!isValidUsername) {
@@ -61,7 +70,8 @@ const useTabPanel = (): TabPanelState => {
 
             if (response && response.error) {
                 setError(response.error);
-            } else {
+            } else if (response.user) {
+                await authService.login(response.user);
                 navigation.navigate('/');
             }
         }
@@ -81,11 +91,13 @@ const useTabPanel = (): TabPanelState => {
 
             if (response && response.error) {
                 setError(response.error);
-            } else {
+            } else if (response.user) {
+                await authService.login(response.user);
                 navigation.navigate('/');
             }
         }
     };
+
     return {
         error,
         userDetails: { fullName, username, password, confirmPassword },
@@ -98,4 +110,4 @@ const useTabPanel = (): TabPanelState => {
     };
 };
 
-export default useTabPanel;
+export default useForm;

@@ -27,4 +27,7 @@ export const useStyles = makeStyles((theme: AugmentedTheme) => ({
     indicator: {
         backgroundColor: theme.indicator,
     },
+    label: {
+        backgroundColor: theme.palette.background.paper,
+    },
 }));

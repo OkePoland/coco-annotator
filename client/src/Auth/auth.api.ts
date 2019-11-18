@@ -5,52 +5,57 @@ import Api from '../common/api';
 const loginURL = '/user/login';
 const registerURL = '/user/register';
 const serverInfoURL = '/info/';
-const userInfoURL = '/user/';
 
 interface Credentials {
     username: string;
     password: string;
 }
 
-interface RegisterResponse {
-    error: string;
+export interface IUser {
+    id: {
+        $oid: string;
+    };
+    is_admin: boolean;
+    last_seen?: {
+        $date: Date;
+    };
+    online: boolean;
+    username: string;
 }
 
-export const onRegister = async (
-    data: Credentials,
-): Promise<RegisterResponse | undefined> => {
+interface ApiResponse {
+    user?: IUser;
+    success: boolean;
+    error?: string;
+}
+
+export const onRegister = async (data: Credentials): Promise<ApiResponse> => {
     const requestConfig: AxiosRequestConfig = {
         method: 'post',
         url: registerURL,
         data,
     };
-    const response = await Api.request<RegisterResponse>(requestConfig);
-    if (response && response.data) {
-        return response.data;
+    const { data: response } = await Api.request<ApiResponse>(requestConfig);
+    if (response && response.user) {
+        return { user: response.user, success: response.success };
     }
-    return { error: response };
+    return { error: response.message, success: response.success };
 };
 
-interface LoginResponse {
-    error?: string;
-}
-
-export const onLogin = async (
-    data: Credentials,
-): Promise<LoginResponse | undefined> => {
+export const onLogin = async (data: Credentials): Promise<ApiResponse> => {
     const requestConfig: AxiosRequestConfig = {
         method: 'post',
         url: loginURL,
         data,
     };
-    const response = await Api.request<LoginResponse>(requestConfig);
-    if (response && response.data) {
-        return response.data;
+    const { data: response } = await Api.request<ApiResponse>(requestConfig);
+    if (response && response.user) {
+        return { user: response.user, success: response.success };
     }
-    return { error: response };
+    return { error: response.message, success: response.success };
 };
 
-interface ServerInfoApiResponse {
+interface ServerInfo {
     allow_registration: boolean;
     login_enabled: boolean;
     git: {
@@ -61,17 +66,8 @@ interface ServerInfoApiResponse {
 }
 
 export const getServerInfo = async () => {
-    const response = await Api.get<ServerInfoApiResponse>(serverInfoURL);
-    const totalUsers = response.data.total_users;
-    return totalUsers;
-};
-
-interface UserInfoResponse {
-    success: boolean;
-    message: string;
-}
-
-export const getUserInfo = async () => {
-    const response = await Api.get<UserInfoResponse>(userInfoURL);
-    return response;
+    const {
+        data: { total_users },
+    } = await Api.get<ServerInfo>(serverInfoURL);
+    return total_users;
 };
