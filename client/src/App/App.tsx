@@ -6,6 +6,8 @@ import { IUser } from '../Auth/auth.api';
 import { theme } from '../common/theme';
 import routes from './routes';
 import { authService } from '../Auth/authService';
+import { GlobalProvider } from '../common/contexts/GlobalContext';
+import { SocketProvider } from '../common/contexts/SocketContext';
 
 const App: React.FC = () => {
     const [currentUser, setCurrentUser] = useState<IUser | null>(() =>
@@ -16,11 +18,15 @@ const App: React.FC = () => {
     return (
         <ThemeProvider theme={theme}>
             <Router routes={routes} context={{ currentUser, authService }}>
-                <Suspense fallback={null}>
-                    <NotFoundBoundary render={renderNotFound}>
-                        <View />
-                    </NotFoundBoundary>
-                </Suspense>
+                <SocketProvider>
+                    <GlobalProvider>
+                        <Suspense fallback={null}>
+                            <NotFoundBoundary render={renderNotFound}>
+                                <View />
+                            </NotFoundBoundary>
+                        </Suspense>
+                    </GlobalProvider>
+                </SocketProvider>
             </Router>
         </ThemeProvider>
     );

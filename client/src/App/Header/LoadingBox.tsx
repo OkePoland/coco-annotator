@@ -14,9 +14,7 @@ interface LoadingBoxProps {
 const LoadingBox: React.FC<LoadingBoxProps> = ({ state }) => {
     const classes = useStyles();
     const cn = clsx(
-        state.isError || state.isLoading
-            ? classes.errorText
-            : classes.successText,
+        state.isLoading ? classes.loadingText : classes.successText,
     );
     return (
         <Box className={cn} fontSize={14}>

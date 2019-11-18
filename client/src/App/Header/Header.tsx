@@ -15,12 +15,11 @@ import TitleBar from './TitleBar';
 import MenuDesktop from './MenuDesktop';
 import MenuMobile from './MenuMobile';
 
-const VERSION: string = 'v0.10.6';
-
 const Header: React.FC = () => {
     const classes = useStyles();
     const {
-        backendState,
+        version,
+        connected,
         loadingState,
         menuItems,
         drawerOn,
@@ -37,10 +36,10 @@ const Header: React.FC = () => {
                     spacing={2}
                 >
                     <Grid item md="auto" sm>
-                        <ConnectionDot state={backendState} />
+                        <ConnectionDot connected={connected} />
                     </Grid>
                     <Grid item md="auto" sm>
-                        <TitleBar version={VERSION} />
+                        <TitleBar version={version} />
                     </Grid>
                     <Hidden only={['sm', 'xs']}>
                         <MenuDesktop
