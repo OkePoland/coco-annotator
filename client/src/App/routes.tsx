@@ -1,10 +1,11 @@
 import React from 'react';
 import { View } from 'react-navi';
-import { compose, mount, route, withView, redirect } from 'navi';
+import { compose, mount, route, withView, redirect, NaviRequest } from 'navi';
 
 import Layout from './Layout';
 import Auth from '../Auth/Auth';
 import Datasets from '../Datasets/Datasets';
+import { withAuthentication, Context } from '../Auth/authenticatedRoute';
 
 const routesWithHeader = compose(
     withView(() => (
@@ -15,38 +16,58 @@ const routesWithHeader = compose(
     mount({
         '/': redirect('/datasets'),
 
-        '/datasets': route({
-            view: <Datasets />,
-        }),
-        '/categories': route({
-            view: <div>Categories</div>,
-        }),
-        '/about': route({
-            view: <div />,
-        }),
-        '/undo': route({
-            view: <div />,
-        }),
-        '/tasks': route({
-            view: <div />,
-        }),
-        '/annotate/:id': route({
-            view: <div />,
-        }),
-        '/dataset/:id': route({
-            view: <div />,
-        }),
-        '/user': route({
-            view: <div />,
-        }),
-        '/admin': route({
-            view: <div />,
-        }),
+        '/datasets': withAuthentication(
+            route({
+                view: <Datasets />,
+            }),
+        ),
+        '/categories': withAuthentication(
+            route({
+                view: <div>Categories</div>,
+            }),
+        ),
+        '/about': withAuthentication(
+            route({
+                view: <div />,
+            }),
+        ),
+        '/undo': withAuthentication(
+            route({
+                view: <div />,
+            }),
+        ),
+        '/tasks': withAuthentication(
+            route({
+                view: <div />,
+            }),
+        ),
+        '/annotate/:id': withAuthentication(
+            route({
+                view: <div />,
+            }),
+        ),
+        '/dataset/:id': withAuthentication(
+            route({
+                view: <div />,
+            }),
+        ),
+        '/user': withAuthentication(
+            route({
+                view: <div />,
+            }),
+        ),
+        '/admin': withAuthentication(
+            route({
+                view: <div />,
+            }),
+        ),
     }),
 );
 export default mount({
     '/auth': route({
-        view: <Auth />,
+        getView: (req: NaviRequest<Context>, context: Context) => {
+            return <Auth authService={context.authService} />;
+        },
     }),
     '*': routesWithHeader,
 });

@@ -8,12 +8,29 @@ import Tabs from '@material-ui/core/Tabs';
 import Typography from '@material-ui/core/Typography';
 
 import { useStyles } from './Auth.components';
+import { AuthService } from './authService';
 import useAuth from './auth.hooks';
+import useForm from './form.hooks';
 import TabPanel from './TabPanel';
+import Form from './Form';
 
-const Auth: React.FC = () => {
+interface Props {
+    authService: AuthService;
+}
+
+const Auth: React.FC<Props> = ({ authService }) => {
     const classes = useStyles();
-    const { activeTab, showLoginForm, handleChange } = useAuth();
+    const { activeTab, showLoginForm, changeTabPanel } = useAuth();
+    const {
+        error,
+        userDetails,
+        isValidUsername,
+        isValidPassword,
+        isValidConfirmedPassword,
+        handleChange,
+        handleLogin,
+        handleRegister,
+    } = useForm(activeTab, authService);
 
     return (
         <Container className={classes.container}>
@@ -36,7 +53,7 @@ const Auth: React.FC = () => {
                             </Typography>
                             <Typography paragraph>
                                 Find out more&nbsp;
-                                <Link href="https://github.com/jsbroks/Multi-annotator">
+                                <Link href="https://github.com/OKEPL/multi-annotator">
                                     Github.
                                 </Link>
                             </Typography>
@@ -53,11 +70,11 @@ const Auth: React.FC = () => {
                             <Typography paragraph>
                                 If you have any questions please checkout
                                 the&nbsp;
-                                <Link href="https://github.com/jsbroks/Multi-annotator/wiki">
+                                <Link href="https://github.com/jsbroks/coco-annotator/wiki">
                                     wiki&nbsp;
                                 </Link>
                                 before posting&nbsp;
-                                <Link href="https://github.com/jsbroks/Multi-annotator/issues">
+                                <Link href="https://github.com/OKEPL/multi-annotator/issues">
                                     issues
                                 </Link>
                                 .
@@ -69,20 +86,47 @@ const Auth: React.FC = () => {
                     <Tabs
                         classes={{ indicator: classes.indicator }}
                         value={activeTab}
-                        onChange={handleChange}
+                        onChange={changeTabPanel}
                     >
                         {showLoginForm && (
-                            <Tab className={classes.tab} label="Login" />
+                            <Tab
+                                className={classes.tab}
+                                label="Login"
+                                value={1}
+                            />
                         )}
-                        <Tab className={classes.tab} label="Register" />
+                        <Tab
+                            className={classes.tab}
+                            label="Register"
+                            value={0}
+                        />
                     </Tabs>
-                    {showLoginForm && (
-                        <TabPanel activeTab={activeTab} index={0}></TabPanel>
-                    )}
-                    <TabPanel
-                        activeTab={showLoginForm ? activeTab : 1}
-                        index={1}
-                    ></TabPanel>
+                    <TabPanel activeTab={activeTab} index={1}>
+                        <Form
+                            buttonText="Login"
+                            submitCb={handleLogin}
+                            registerMode={false}
+                            handleChange={handleChange}
+                            error={error}
+                            userDetails={userDetails}
+                            isValidUsername={isValidUsername}
+                            isValidPassword={isValidPassword}
+                            isValidConfirmedPassword={isValidConfirmedPassword}
+                        />
+                    </TabPanel>
+                    <TabPanel activeTab={activeTab} index={0}>
+                        <Form
+                            buttonText="Register"
+                            submitCb={handleRegister}
+                            registerMode={true}
+                            handleChange={handleChange}
+                            error={error}
+                            userDetails={userDetails}
+                            isValidUsername={isValidUsername}
+                            isValidPassword={isValidPassword}
+                            isValidConfirmedPassword={isValidConfirmedPassword}
+                        />
+                    </TabPanel>
                 </Grid>
             </Grid>
         </Container>

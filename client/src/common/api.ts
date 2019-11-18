@@ -1,5 +1,7 @@
 import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
 
+import { authService } from '../Auth/authService';
+
 export default class Api {
     private static axiosInstance: AxiosInstance;
 
@@ -16,20 +18,10 @@ export default class Api {
             response => response,
             error => {
                 const status = error.response.status;
-                const message = error.response.data.message;
-                if (status) {
-                    switch (status) {
-                        case 400:
-                            return Promise.reject(message);
-                        case 401:
-                            return Promise.reject(message);
-                        case 403:
-                            return Promise.reject(message);
-                        case 404:
-                            return Promise.reject(message);
-                    }
-                    return Promise.reject(message);
+                if (status === 401 || status === 403) {
+                    authService.deleteCurrentUser();
                 }
+                return Promise.reject(error.response);
             },
         );
     }
@@ -39,16 +31,19 @@ export default class Api {
             return err;
         });
     }
+
     static post<T>(url: string, data?: any, config?: AxiosRequestConfig) {
         return this.axiosInstance.post<T>(url, data, config).catch(err => {
             return err;
         });
     }
+
     static request<T>(config: AxiosRequestConfig) {
         return this.axiosInstance.request<T>(config).catch(err => {
             return err;
         });
     }
+
     static delete(url: string, config?: AxiosRequestConfig) {
         return this.axiosInstance.delete(url, config);
     }
