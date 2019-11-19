@@ -4,7 +4,7 @@ from .vod_converter import converter
 import os
 
 INGESTORS = [
-    # 'mio',
+    'mio',
     'pedx',         # tested and working
     'citycam',
     'coco',         # tested and working
@@ -40,9 +40,9 @@ def convert_to_coco(ann_file):
     for from_key in INGESTORS:
         try:
             success, encoded_labels = converter.convert(from_path=ann_file, to_path=None, ingestor_key=from_key,
-                                            egestor_key=to_key,
-                                            select_only_known_labels=False,
-                                            filter_images_without_labels=True, folder_names=None)
+                                                        egestor_key=to_key,
+                                                        select_only_known_labels=False,
+                                                        filter_images_without_labels=True, folder_names=None)
         except:
             success = False
         if success:

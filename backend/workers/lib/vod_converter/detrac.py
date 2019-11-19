@@ -1,10 +1,6 @@
-'''
-    Ingestor for DETRAC dataset format. DETRAC annotations are stored in XML format.
-    
-    YET NOT TESTED
-'''
 import os
 import json
+
 
 from PIL import Image
 import xml.etree.ElementTree as ET
@@ -28,16 +24,18 @@ class DETRACIngestor(Ingestor):
         return self._get_image_detection(path, folder_names=folder_names)
 
     def _get_image_detection(self, root, folder_names):
-        lab_dirs = ['DETRAC-Train-Annotations-XML', 'DETRAC-Test-Annotations-XML',]
+        lab_dirs = ['DETRAC-Train-Annotations-XML', 'DETRAC-Test-Annotations-XML']
+        img_det = []
         for lab_type in lab_dirs:
-            for lab in os.scandir(lab_type):
+            directory = root + '/' + lab_type
+            for lab in os.scandir(directory):
                 #TODO: get image dimensions
                 mov_name = os.path.splitext(lab.name)[0]
-                tree = ET.parse(lab.name)
-                root = tree.getroot()
+                tree = ET.parse(lab.path)
+                toor = tree.getroot()
                 accepted_tags = ['car', 'bus', 'van']
                 obj_id = -1
-                for frame in root.iter('frame'):                # child = frame
+                for frame in toor.iter('frame'):                # child = frame
                     no_frame = frame.attrib['num']
                     img_name = 'img' + '0' * (5 - len(str(no_frame))) + str(no_frame)
                     for target in frame:                 
@@ -51,21 +49,25 @@ class DETRACIngestor(Ingestor):
                                 det['id'] = obj_id
                                 det['image_id'] = mov_name + '/' + img_name
                                 det['iscrowd'] = False
-                                det['isbbox'] = False
+                                det['isbbox'] = True
+                                det['segmentation'] = None
                                 det['label'] = attr['vehicle_type']
-                                det['left'] = box['left']
-                                det['right'] = box['left'] + box['width']
-                                det['top'] = box['top']
-                                det['bottom'] = box['top'] + box['height']
+                                det['left'] = float(box['left'])
+                                det['right'] = float(box['left']) + float(box['width'])
+                                det['top'] = float(box['top'])
+                                det['bottom'] = float(box['top']) + float(box['height'])
+                                det['keypoints'] = []
                                 detections.append(det)
                         img = get_blank_image_detection_schema()
                         img['detections'] = detections
                         img['image']['id'] = mov_name + '/' + img_name
                         img['image']['dataset_id'] = None
-                        img['image']['path'] = mov_name + '/' + img_name + '.jpg'
-                        img['image']['width'] = 100
-                        img['image']['height'] = 100
+                        img['image']['path'] = directory + '/' + mov_name + '/' + img_name + '.jpg'
+                        img['image']['width'] = 10000
+                        img['image']['height'] = 10000
                         img['image']['file_name'] = img_name + '.jpg'
+                        img_det.append(img)
+        return img_det
     
     @staticmethod
     def _image_dimensions(path):
