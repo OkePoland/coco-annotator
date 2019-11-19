@@ -3,6 +3,7 @@
 .idea/*
 datasets/*
 !datasets/.gitkeep
+!datasets/test_inria
 .history/*
 .vscode/*
 __pycache__
