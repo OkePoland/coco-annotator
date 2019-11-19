@@ -4,6 +4,7 @@
 datasets/*
 !datasets/.gitkeep
 !datasets/test_inria
+datasets/test_inria/images/.thumbnail
 .history/*
 .vscode/*
 __pycache__
