@@ -4,16 +4,16 @@ from .vod_converter import converter
 import os
 
 INGESTORS = [
-    'mio',
-    'pedx',         # tested and working
-    'citycam',
-    'coco',         # tested and working
-    # 'daimler',    TODO: daimler needs more strict validation
-    'kitti',        # tested and working
-    'kitti-tracking',
-    'voc',          # tested and working
-    'detrac',
-    'caltech']
+    'mio',              # NOT tested
+    'pedx',             # tested and working
+    'citycam',          # tested and working
+    'coco',             # tested and working
+    # 'daimler',        TODO: daimler needs more strict validation
+    'kitti',            # tested and working
+    'kitti-tracking',   # NOT tested
+    'voc',              # tested and working
+    'detrac',           # tested and working
+    'caltech']          # tested and working
 
 
 def check_coco(ann_file):
