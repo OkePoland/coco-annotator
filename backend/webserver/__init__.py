@@ -45,7 +45,7 @@ def create_app():
 
     flask.config.from_object(Config)
 
-    CORS(flask)
+    CORS(flask, supports_credentials=True)
 
     flask.wsgi_app = ProxyFix(flask.wsgi_app)
     flask.register_blueprint(api)
@@ -75,6 +75,6 @@ if Config.INITIALIZE_FROM_FILE:
 def index(path):
     
     if app.debug:
-        return requests.get('http://frontend:8080/{}'.format(path)).text
+        return requests.get('http://frontend:3000/{}'.format(path)).text
 
     return app.send_static_file('index.html')

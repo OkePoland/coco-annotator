@@ -12,6 +12,7 @@
     "@types/socket.io-client": "^1.4.32",
     "clsx": "^1.0.4",
     "navi": "^0.13.6",
+    "axios": "^0.19.0",
     "react": "^16.10.2",
     "react-dom": "^16.10.2",
     "react-navi": "^0.13.6",
@@ -45,5 +46,6 @@
     "tslint": "^5.20.0",
     "tslint-config-prettier": "^1.18.0",
     "tslint-plugin-prettier": "^2.0.1"
-  }
+  },
+  "proxy": "http://localhost:5000"
 }

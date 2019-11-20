@@ -4,8 +4,7 @@ WORKDIR /workspace/
 COPY ./client /workspace/client
 
 RUN npm install -g --quiet \
-    @vue/cli@3.3.0 \
-    @vue/cli-service@3.3.0
+    react-scripts@3.2.0
 
 COPY ./client/package* /workspace/
 
