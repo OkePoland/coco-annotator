@@ -14,19 +14,21 @@ See `main.py` for the supported types, and `voc.py` and `kitti.py` for reference
 from jsonschema import validate as raw_validate
 from jsonschema.exceptions import ValidationError as SchemaError
 
-import lib.vod_converter.pedx as pedx
-import lib.vod_converter.coco as coco
-import lib.vod_converter.daimler as daimler
-import lib.vod_converter.kitti as kitti
-import lib.vod_converter.kitti_tracking as kitti_tracking
-import lib.vod_converter.voc as voc
-import lib.vod_converter.citycam as voc_city
-import lib.vod_converter.mio as mio
-import lib.vod_converter.caltech as caltech
-import lib.vod_converter.detrac as detrac
-import lib.vod_converter.mot_aicity as aicity
-from lib.vod_converter.validation_schemas import IMAGE_DETECTION_SCHEMA
+from .pedx import *
+from .coco import *
+from .daimler import *
+from .kitti import *
+from .kitti_tracking import *
+from .voc import *
+from .citycam import *
+from .mio import *        # something is wrong with mio file, probably imports fault
+from .caltech import *
+from .detrac import *
+from .validation_schemas import IMAGE_DETECTION_SCHEMA
 
+import logging
+logger = logging.getLogger('gunicorn.error')
+print = logger.info
 
 def validate_schema(data, schema):
     """Wraps default implementation but accepting tuples as arrays too.
@@ -37,23 +39,22 @@ def validate_schema(data, schema):
 
 
 INGESTORS = {
-    'pedx': pedx.PEDXIngestor(),
-    'citycam': voc_city.VOC_CITY_Ingestor(),
-    'coco': coco.COCOIngestor(),
-    'mio': mio.MIOIngestor(),
-    'daimler': daimler.DAIMLERIngestor(),
-    'kitti': kitti.KITTIIngestor(),
-    'kitti-tracking': kitti_tracking.KITTITrackingIngestor(),
-    'voc': voc.VOCIngestor(),
-    'detrac': detrac.DETRACIngestor(),
-    'caltech': caltech.CaltechIngestor(),
-    'aicity': aicity.MOT_AICITYIngestor()
-}
+    'pedx': PEDXIngestor(),
+    'citycam': VOC_CITY_Ingestor(),
+    'coco': COCOIngestor(),
+    'mio': MIOIngestor(),
+    'daimler': DAIMLERIngestor(),
+    'kitti': KITTIIngestor(),
+    'kitti-tracking': KITTITrackingIngestor(),
+    'voc': VOCIngestor(),
+    'detrac': DETRACIngestor(),
+    'caltech': CaltechIngestor()
+    }
 
 EGESTORS = {
-    'voc': voc.VOCEgestor(),
-    'kitti': kitti.KITTIEgestor(),
-    'coco': coco.COCOEgestor()
+    'voc': VOCEgestor(),
+    'kitti': KITTIEgestor(),
+    'coco': COCOEgestor()
 }
 
 
@@ -89,8 +90,8 @@ def convert(*, from_path, ingestor_key, to_path, egestor_key, select_only_known_
         select_only_known_labels=select_only_known_labels,
         filter_images_without_labels=filter_images_without_labels)
 
-    egestor.egest(image_detections=image_detections, root=to_path, folder_names=folder_names)
-    return True, ''
+    encoded_labels = egestor.egest(image_detections=image_detections, root=to_path, folder_names=folder_names)
+    return True, encoded_labels
 
 
 def validate_image_detections(image_detections):
@@ -107,21 +108,22 @@ def validate_image_detections(image_detections):
             continue
         image = image_detection['image']
         for detection in image_detection['detections']:
-            try:
-                if detection['right'] > image['width']:
-                    # os.remove(image['path'])
-                    raise ValueError(f"Image {image} has out of bounds bounding box {detection}")
-                if detection['bottom'] > image['height']:
-                    # os.remove(image['path'])
-                    raise ValueError(f"Image {image} has out of bounds bounding box {detection}")
-                if detection['right'] <= detection['left'] or detection['bottom'] <= detection['top']:
-                    # os.remove(image['path'])
-                    raise ValueError(f"Image {image} has zero dimension bbox {detection}")
-            except Exception as ve:
-                print(ve)
-                image_detections.remove(image_detection)
-                deleted_img_detections += 1
-                break
+            if detection['isbbox'] is True:
+                try:
+                    if detection['right'] > image['width']:
+                        # os.remove(image['path'])
+                        raise ValueError(f"Image {image} has out of bounds bounding box {detection}")
+                    if detection['bottom'] > image['height']:
+                        # os.remove(image['path'])
+                        raise ValueError(f"Image {image} has out of bounds bounding box {detection}")
+                    if detection['right'] <= detection['left'] or detection['bottom'] <= detection['top']:
+                        # os.remove(image['path'])
+                        raise ValueError(f"Image {image} has zero dimension bbox {detection}")
+                except Exception as ve:
+                    print(ve)
+                    image_detections.remove(image_detection)
+                    deleted_img_detections += 1
+                    break
     print(f"Deleted labels for {deleted_img_detections} images")
 
 
