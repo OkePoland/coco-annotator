@@ -12,6 +12,7 @@ INGESTORS = [
     'kitti',            # tested and working
     'kitti-tracking',   # NOT tested
     'voc',              # tested and working
+    'aicity',
     'detrac',           # tested and working
     'caltech']          # tested and working
 

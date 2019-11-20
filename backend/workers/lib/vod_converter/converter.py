@@ -24,6 +24,7 @@ from .citycam import *
 from .mio import *        # something is wrong with mio file, probably imports fault
 from .caltech import *
 from .detrac import *
+from .mot_aicity import *
 from .validation_schemas import IMAGE_DETECTION_SCHEMA
 
 import logging
@@ -47,6 +48,7 @@ INGESTORS = {
     'kitti': KITTIIngestor(),
     'kitti-tracking': KITTITrackingIngestor(),
     'voc': VOCIngestor(),
+    'aicity': MOT_AICITYIngestor(),
     'detrac': DETRACIngestor(),
     'caltech': CaltechIngestor()
     }
