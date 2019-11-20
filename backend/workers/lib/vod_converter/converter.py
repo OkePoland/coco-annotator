@@ -13,20 +13,19 @@ See `main.py` for the supported types, and `voc.py` and `kitti.py` for reference
 
 from jsonschema import validate as raw_validate
 from jsonschema.exceptions import ValidationError as SchemaError
-from .pedx import *
-from .coco import *
-from .daimler import *
-from .kitti import *
-from .kitti_tracking import *
-from .voc import *
-from .citycam import *
-from .mio import *        # something is wrong with mio file, probably imports fault
-from .caltech import *
-from .detrac import *
-from .validation_schemas import IMAGE_DETECTION_SCHEMA
-import logging
-logger = logging.getLogger('gunicorn.error')
-print = logger.info
+
+import lib.vod_converter.pedx as pedx
+import lib.vod_converter.coco as coco
+import lib.vod_converter.daimler as daimler
+import lib.vod_converter.kitti as kitti
+import lib.vod_converter.kitti_tracking as kitti_tracking
+import lib.vod_converter.voc as voc
+import lib.vod_converter.citycam as voc_city
+import lib.vod_converter.mio as mio
+import lib.vod_converter.caltech as caltech
+import lib.vod_converter.detrac as detrac
+import lib.vod_converter.mot_aicity as aicity
+from lib.vod_converter.validation_schemas import IMAGE_DETECTION_SCHEMA
 
 
 def validate_schema(data, schema):
@@ -38,28 +37,28 @@ def validate_schema(data, schema):
 
 
 INGESTORS = {
-    'pedx': PEDXIngestor(),
-    'citycam': VOC_CITY_Ingestor(),
-    'coco': COCOIngestor(),
-    'mio': MIOIngestor(),
-    'daimler': DAIMLERIngestor(),
-    'kitti': KITTIIngestor(),
-    'kitti-tracking': KITTITrackingIngestor(),
-    'voc': VOCIngestor(),
-    'detrac': DETRACIngestor(),
-    'caltech': CaltechIngestor()
-    }
+    'pedx': pedx.PEDXIngestor(),
+    'citycam': voc_city.VOC_CITY_Ingestor(),
+    'coco': coco.COCOIngestor(),
+    'mio': mio.MIOIngestor(),
+    'daimler': daimler.DAIMLERIngestor(),
+    'kitti': kitti.KITTIIngestor(),
+    'kitti-tracking': kitti_tracking.KITTITrackingIngestor(),
+    'voc': voc.VOCIngestor(),
+    'detrac': detrac.DETRACIngestor(),
+    'caltech': caltech.CaltechIngestor(),
+    'aicity': aicity.MOT_AICITYIngestor()
+}
 
 EGESTORS = {
-    'voc': VOCEgestor(),
-    'kitti': KITTIEgestor(),
-    'coco': COCOEgestor()
+    'voc': voc.VOCEgestor(),
+    'kitti': kitti.KITTIEgestor(),
+    'coco': coco.COCOEgestor()
 }
 
 
 def convert(*, from_path, ingestor_key, to_path, egestor_key, select_only_known_labels, filter_images_without_labels,
             folder_names):
-
     """
     Converts between data formats, validating that the converted data matches
     `IMAGE_DETECTION_SCHEMA` along the way.
@@ -74,25 +73,24 @@ def convert(*, from_path, ingestor_key, to_path, egestor_key, select_only_known_
     :param folder_names: List of folders' names that are passed to Egestor
     :return: (success, message)
     """
-    print("start")
     ingestor = INGESTORS[ingestor_key]
     egestor = EGESTORS[egestor_key]
     from_valid, from_msg = ingestor.validate(from_path, folder_names)
-
+    print(from_msg)
     if not from_valid:
         return from_valid, from_msg
-    logger.info('CHECKPOINT 1')
+
     image_detections = ingestor.ingest(from_path, folder_names)
-    logger.info('CHECKPOINT 2')
+
     validate_image_detections(image_detections)
-    logger.info('CHECKPOINT 3')
+
     image_detections = convert_labels(
         image_detections=image_detections, expected_labels=egestor.expected_labels(),
         select_only_known_labels=select_only_known_labels,
         filter_images_without_labels=filter_images_without_labels)
-    logger.info('CHECKPOINT 4')
-    encoded_labels = egestor.egest(image_detections=image_detections, root=to_path, folder_names=folder_names)
-    return True, encoded_labels
+
+    egestor.egest(image_detections=image_detections, root=to_path, folder_names=folder_names)
+    return True, ''
 
 
 def validate_image_detections(image_detections):
@@ -109,22 +107,21 @@ def validate_image_detections(image_detections):
             continue
         image = image_detection['image']
         for detection in image_detection['detections']:
-            if detection['isbbox'] is True:
-                try:
-                    if detection['right'] > image['width']:
-                        # os.remove(image['path'])
-                        raise ValueError(f"Image {image} has out of bounds bounding box {detection}")
-                    if detection['bottom'] > image['height']:
-                        # os.remove(image['path'])
-                        raise ValueError(f"Image {image} has out of bounds bounding box {detection}")
-                    if detection['right'] <= detection['left'] or detection['bottom'] <= detection['top']:
-                        # os.remove(image['path'])
-                        raise ValueError(f"Image {image} has zero dimension bbox {detection}")
-                except Exception as ve:
-                    print(ve)
-                    image_detections.remove(image_detection)
-                    deleted_img_detections += 1
-                    break
+            try:
+                if detection['right'] > image['width']:
+                    # os.remove(image['path'])
+                    raise ValueError(f"Image {image} has out of bounds bounding box {detection}")
+                if detection['bottom'] > image['height']:
+                    # os.remove(image['path'])
+                    raise ValueError(f"Image {image} has out of bounds bounding box {detection}")
+                if detection['right'] <= detection['left'] or detection['bottom'] <= detection['top']:
+                    # os.remove(image['path'])
+                    raise ValueError(f"Image {image} has zero dimension bbox {detection}")
+            except Exception as ve:
+                print(ve)
+                image_detections.remove(image_detection)
+                deleted_img_detections += 1
+                break
     print(f"Deleted labels for {deleted_img_detections} images")
 
 
@@ -136,9 +133,10 @@ def convert_labels(*, image_detections, expected_labels,
         convert_dict[label.lower()] = label
         for alias in aliases:
             convert_dict[alias.lower()] = label
+
     final_image_detections = []
     for i, image_detection in enumerate(image_detections):
-        if i >= 0:
+        if i % 100 == 0:
             print(f"Converted {i} labels")
 
         detections = []
