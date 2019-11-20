@@ -5,11 +5,10 @@ http://host.robots.ox.ac.uk/pascal/VOC/voc2012/htmldoc/index.html
 """
 
 import os
-import shutil
 import xml.etree.ElementTree as ET
 from pathlib import Path
-from .abstract import Ingestor, Egestor
-from .labels_and_aliases import output_labels
+
+from .abstract import Ingestor
 from .validation_schemas import get_blank_image_detection_schema, get_blank_detection_schema
 
 

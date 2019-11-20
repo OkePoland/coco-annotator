@@ -1,8 +1,8 @@
-import json
 import argparse
-import sys
-import os
 import collections
+import json
+import os
+import sys
 
 
 def main(labels_to_split, output_dir, labels_per_file):

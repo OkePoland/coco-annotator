@@ -1,13 +1,13 @@
 '''
     Ingestor for PedX dataset format. PedX annotations are stored in json format.
 '''
-import os
 import json
 import logging
-import traceback
+import os
 
 from PIL import Image
-from .abstract import Ingestor, Egestor
+
+from .abstract import Ingestor
 from .validation_schemas import get_blank_detection_schema, get_blank_image_detection_schema
 
 

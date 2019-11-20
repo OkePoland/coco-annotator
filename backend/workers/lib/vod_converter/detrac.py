@@ -1,11 +1,11 @@
 import os
-import json
-
+import xml.etree.ElementTree as ET
 
 from PIL import Image
-import xml.etree.ElementTree as ET
-from .abstract import Ingestor, Egestor
+
+from .abstract import Ingestor
 from .validation_schemas import get_blank_detection_schema, get_blank_image_detection_schema
+
 
 class DETRACIngestor(Ingestor):
     def validate(self, path, folder_names):

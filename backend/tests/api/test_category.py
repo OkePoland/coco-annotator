@@ -1,6 +1,6 @@
 import json
-import pytest
 
+import pytest
 from database import CategoryModel
 
 category1_id = 0

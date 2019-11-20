@@ -1,7 +1,8 @@
 import json
 import logging
-from .vod_converter import converter
 import os
+
+from .vod_converter import converter
 
 INGESTORS = [
     'mio',              # NOT tested
@@ -12,19 +13,17 @@ INGESTORS = [
     'kitti',            # tested and working
     'kitti-tracking',   # NOT tested
     'voc',              # tested and working
-    'aicity',
+    'aicity',           # tested and working
     'detrac',           # tested and working
     'caltech']          # tested and working
 
 
 def check_coco(ann_file):
-    logger = logging.getLogger('gunicorn.error')
     flist = []
     for dirpath, dirnames, filenames in os.walk(ann_file):
         for filename in [f for f in filenames if f.endswith(".json")]:
             flist.append(os.path.join(dirpath, filename))
     try:
-        # f = open(ann_file)
         c_json = json.loads(ann_file)
     except Exception as error:
         return False, ann_file

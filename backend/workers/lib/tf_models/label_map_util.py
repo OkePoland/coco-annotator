@@ -20,9 +20,9 @@ from __future__ import print_function
 
 import logging
 
-from six.moves import range
 import tensorflow as tf
 from google.protobuf import text_format
+from six.moves import range
 from workers.lib.tf_models import string_int_label_map_pb2
 
 

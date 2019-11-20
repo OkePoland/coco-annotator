@@ -17,15 +17,17 @@ license{
 }
 
 """
-import os
-import json
-from PIL import Image
-from .labels_and_aliases import output_labels
-from .abstract import Ingestor, Egestor
-from pycocotools import mask
-from .validation_schemas import get_blank_detection_schema, get_blank_image_detection_schema
 import collections
+import json
 import logging
+import os
+
+from PIL import Image
+from pycocotools import mask
+
+from .abstract import Ingestor, Egestor
+from .labels_and_aliases import output_labels
+from .validation_schemas import get_blank_detection_schema, get_blank_image_detection_schema
 
 
 class COCOIngestor(Ingestor):
@@ -110,11 +112,6 @@ class COCOIngestor(Ingestor):
                 print(f"Cannot find selected key: {annotation} - {ve}")
         return detections
 
-    # def _get_category(self, data, category_id):
-    #     for category in data['categories']:
-    #         if category['id'] == category_id:
-    #             return category['name']
-
     def _create_annotations_base(self, annotations):
         annotations_dict = collections.defaultdict(list)
         for annotation in annotations:
@@ -160,12 +157,6 @@ class COCOEgestor(Egestor):
                          "file_name": image['path'].split('/')[-1]}
 
             labels["images"].append(new_image)
-
-            # try:
-            #     shutil.copyfile(image['path'], f"{images_dir}/{image_id}.{src_extension}")
-            # except FileNotFoundError as e:
-            #     print(e)
-            #     continue
 
             for detection in image_detection['detections']:
 

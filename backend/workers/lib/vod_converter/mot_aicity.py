@@ -7,11 +7,13 @@
 
 
 import csv
-import traceback
 import os
+import traceback
+
 from PIL import Image
-from .abstract import Ingestor, Egestor
-from .validation_schemas import get_blank_detection_schema, get_blank_image_detection_schema
+
+from .abstract import Ingestor
+
 
 class MOT_AICITYIngestor(Ingestor):
     def validate(self, path, folder_names):
@@ -63,7 +65,7 @@ class MOT_AICITYIngestor(Ingestor):
                     for row in f_csv:
                         frame_id = row[0]
                         img_name = img_name_base + '0000'[:4 - len(frame_id)] + frame_id + '..jpg'
-                        img_path = path_img[i] + '/' + img_name
+                        img_path = os.path.join(path_img[i], img_name)
                         success, width, height = self._image_dimensions(img_path)
                         # success, width, height = True, 1000, 1000
                         if not success:

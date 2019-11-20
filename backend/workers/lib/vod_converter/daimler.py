@@ -24,15 +24,13 @@ Ingestor for DAIMLER formats.
 }
 """
 
-import csv
-import os
-import shutil
 import json
-from PIL import Image
 import logging
+import os
 
-from .abstract import Ingestor, Egestor
+from PIL import Image
 
+from .abstract import Ingestor
 
 daimler_dict = {
     "cyclist":"bike",
