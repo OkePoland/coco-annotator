@@ -14,6 +14,7 @@ services:
       context: .
       dockerfile: ./Dockerfile
     container_name: annotator_webclient
+    image: tantael/multi-annotator:webserver-stable
     restart: always
     ports:
       - "5000:5000"
@@ -31,6 +32,7 @@ services:
       - cocoannotator
   workers:
     container_name: annotator_workers
+    image: tantael/multi-annotator:workers-stable
     build:
       context: .
       dockerfile: ./backend/workers/Dockerfile

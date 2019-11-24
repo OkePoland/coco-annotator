@@ -15,9 +15,9 @@
             <p>Use the registeration form to create an admin account</p>
             <p>
               If you have any questions please checkout the
-              <a href="https://github.com/jsbroks/coco-annotator/wiki">wiki</a>
+              <a href="https://github.com/tantael/multi-annotator/wiki">wiki</a>
               before posting
-              <a href="https://github.com/jsbroks/coco-annotator/issues"
+              <a href="https://github.com/tantael/multi-annotator/issues"
                 >issues</a
               >.
             </p>
@@ -31,7 +31,7 @@
               Login to create a datasets.
               <br /><br />
               Find out more
-              <a href="https://github.com/jsbroks/coco-annotator">Github</a>
+              <a href="https://github.com/tantael/multi-annotator">Github</a>
             </p>
           </div>
           <!-- End of section -->
