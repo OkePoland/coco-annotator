@@ -1,8 +1,12 @@
-# TODO: Fix annotation counting
+import json
+import logging
+import os
+import sys
+import time
+import zipfile
 
-# TODO: images id in images in image detection and in annotations in image detection are the same, but not the same as
-#  in models from db
-
+import numpy as np
+from celery import shared_task
 from database import (
     fix_ids,
     ImageModel,
@@ -12,20 +16,10 @@ from database import (
     TaskModel,
     ExportModel
 )
-
-# import pycocotools.mask as mask
-import numpy as np
-import time
-import json
-import logging
-import sys
-import os
-import zipfile
-
-from celery import shared_task
-from ..socket import create_socket
-from workers.lib import check_coco, convert_to_coco
+from workers.lib import convert_to_coco
 from workers.lib.vod_converter.split_labels_from_json_string import split_coco_labels
+
+from ..socket import create_socket
 
 max_json_string_size = 16000000
 
@@ -351,7 +345,6 @@ def import_annotations(task_id, dataset_id, encoded_coco_json):
 
             annotation_model = AnnotationModel(image_id=image_model.id)
             annotation_model.category_id = category_model_id
-
             annotation_model.color = annotation.get('color')
             annotation_model.metadata = annotation.get('metadata', {})
 
@@ -382,7 +375,6 @@ def import_annotations(task_id, dataset_id, encoded_coco_json):
             set__category_ids=list(set(all_category_ids)),
             set__num_annotations=AnnotationModel.objects(image_id=image_model.id, area__gt=0, deleted=False).count()
         )
-    task.warning(AnnotationModel.objects().count())
 
     task.set_progress(100, socket=socket)
 
