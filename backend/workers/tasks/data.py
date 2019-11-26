@@ -345,6 +345,7 @@ def import_annotations(task_id, dataset_id, encoded_coco_json):
 
             annotation_model = AnnotationModel(image_id=image_model.id)
             annotation_model.category_id = category_model_id
+
             annotation_model.color = annotation.get('color')
             annotation_model.metadata = annotation.get('metadata', {})
 
