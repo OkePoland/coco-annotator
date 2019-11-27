@@ -1,3 +1,12 @@
+import json
+import logging
+import os
+import sys
+import time
+import zipfile
+
+import numpy as np
+from celery import shared_task
 from database import (
     fix_ids,
     ImageModel,
@@ -7,20 +16,10 @@ from database import (
     TaskModel,
     ExportModel
 )
-
-# import pycocotools.mask as mask
-import numpy as np
-import time
-import json
-import logging
-import sys
-import os
-import zipfile
-
-from celery import shared_task
-from ..socket import create_socket
-from workers.lib import check_coco, convert_to_coco
+from workers.lib import convert_to_coco
 from workers.lib.vod_converter.split_labels_from_json_string import split_coco_labels
+
+from ..socket import create_socket
 
 max_json_string_size = 16000000
 
@@ -365,8 +364,7 @@ def import_annotations(task_id, dataset_id, encoded_coco_json):
         image_model.update(
             set__annotated=True,
             set__category_ids=list(set(all_category_ids)),
-            set__num_annotations=AnnotationModel \
-                .objects(image_id=image_id, area__gt=0, deleted=False).count()
+            set__num_annotations=AnnotationModel.objects(image_id=image_model.id, area__gt=0, deleted=False).count()
         )
 
     task.set_progress(100, socket=socket)
@@ -416,7 +414,7 @@ def load_annotation_files(task_id, dataset_id, coco_json_strings, dataset_name):
             task.info(f"Sending json subfile nr {substring_index} from file nr {file_index} to workers queue")
             cel_test_task = import_annotations.delay(load_annotations_task.id, dataset_id, json_substring)
 
-        task.set_progress((file_index+1)*100/total_files, socket=socket)
+        task.set_progress((file_index + 1) * 100 / total_files, socket=socket)
 
     task.set_progress(100, socket=socket)
     task.info("===== Finished =====")
