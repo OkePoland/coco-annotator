@@ -358,27 +358,37 @@
                         </button>
                     </div>
                     <div class="modal-body">
-
-
                         <form>
-                            <div class="form-group">
-                                <label for="path_string">Path to your labels:</label>
-                                <br/>
-                                <input v-model=path_to_labels id="path_string" type="text" class="form-control">
-                            </div>
                             <div>
+                                <label>Import from:</label>
+                                <br/>
+                                <input type="radio" id="from_files" name="type" value="files"
+                                       v-model="import_type"> From JSON files
+                                <input type="radio" id="from_path" name="type" value="path"
+                                       v-model="import_type"> From path
 
-                                <!-- <input type="radio" id="file" name="type" value="file" checked  v-model="file_type" >
-                                <label for="file">File</label> -->
-                                <br/><b>or</b><br/><br/>
-                                <!--
-                                <input type="radio" id="folder" name="type" value="folder" v-model="file_type">
-                               <label for="folder">Folder</label>
-                               -->
                             </div>
-                            <div v-if="file_type == 'file'" class="form-group">
-                                <label for="coco">COCO Annotation file (.json)</label>
-                                <input type="file" class="form-control-file" id="coco" multiple/>
+                            <!--                            <div>-->
+
+                            <!--                                &lt;!&ndash; <input type="radio" id="file" name="type" value="file" checked  v-model="file_type" >-->
+                            <!--                                <label for="file">File</label> &ndash;&gt;-->
+                            <!--                                <br/><b>or</b><br/><br/>-->
+                            <!--                                &lt;!&ndash;-->
+                            <!--                                <input type="radio" id="folder" name="type" value="folder" v-model="file_type">-->
+                            <!--                               <label for="folder">Folder</label>-->
+                            <!--                               &ndash;&gt;-->
+                            <!--                            </div>-->
+                            <div v-if="import_type == 'files'" class="form-group">
+                                <br/>
+
+                                <label for="coco_files">COCO Annotation file (.json)</label>
+                                <input type="file" class="form-control-file" id="coco_files" multiple/>
+                            </div>
+                            <div v-if="import_type == 'path'" class="form-group">
+                                <br/>
+
+                                <label for="path_string">Path to folder with annotations</label>
+                                <input v-model=path_to_labels id="path_string" type="text" class="form-control">
                             </div>
                             <!--
                               <div v-if="file_type == 'folder'" class="form-group">
@@ -389,10 +399,18 @@
                         </form>
                     </div>
                     <div class="modal-footer">
-                        <button
+                        <button v-if="import_type == 'files'"
                                 type="button"
                                 class="btn btn-primary"
-                                @click="importCOCO"
+                                @click="importCOCOfiles"
+                                data-dismiss="modal"
+                        >
+                            Upload
+                        </button>
+                        <button v-if="import_type == 'path'"
+                                type="button"
+                                class="btn btn-primary"
+                                @click="importCOCOpath"
                                 data-dismiss="modal"
                         >
                             Upload
@@ -437,7 +455,7 @@
                             </div>
 
                             <div>
-                                <input type="radio" id="coco_format" name="type" value="coco" checked
+                                <input type="radio" id="coco_format" name="type" value="coco"
                                        v-model="exporting.format">
                                 <label for="coco_format">Coco</label>
                                 <input type="radio" id="tf_record_format" name="type" value="tfrecord"
@@ -528,6 +546,7 @@
                 generateLimit: 100,
                 file_type: 'file',
                 path_to_labels: '/datasets/',
+                import_type: "files",
                 limit: 52,
                 imageCount: 0,
                 categories: [],
@@ -718,16 +737,26 @@
 
                 $("#cocoUpload").modal("show");
             },
-            importCOCO() {
-
-                let uploaded = document.getElementById("coco");
-                Dataset.uploadCoco(this.dataset.id, uploaded.files, this.path_to_labels)
+            importCOCOfiles() {
+                let uploaded = document.getElementById("coco_files");
+                Dataset.uploadCoco(this.dataset.id, uploaded.files, "")
                     .then(response => {
                         let id = response.data.id;
                         this.importing.id = id;
                     })
                     .catch(error => {
-                        this.axiosReqestError("Importing COCO_HERE", error.response.data.message);
+                        this.axiosReqestError("Importing COCO", error.response.data.message);
+                    })
+                    .finally(() => this.removeProcess(process));
+            },
+            importCOCOpath() {
+                Dataset.uploadCoco(this.dataset.id, null, this.path_to_labels)
+                    .then(response => {
+                        let id = response.data.id;
+                        this.importing.id = id;
+                    })
+                    .catch(error => {
+                        this.axiosReqestError("Importing COCO", error.response.data.message);
                     })
                     .finally(() => this.removeProcess(process));
             },
