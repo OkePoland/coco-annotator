@@ -184,6 +184,8 @@ const Datasets: React.FC = () => {
                             name="name"
                             label="Dataset name"
                             formik={formikCreate}
+                            touched={formikCreate.touched['name']}
+                            error={formikCreate.errors['name']}
                         />
                         <MuiTextField
                             disabled

@@ -60,8 +60,7 @@ const usePageNavigation = (): NavigationState => {
 };
 
 const useList = (itemsPerPage: number): ListState => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const [_globalState, dispatch] = useGlobalContext();
+    const [, dispatch] = useGlobalContext();
 
     const [page, setPage] = useState(0);
     const [generation, moveGeneration] = useState(0);
