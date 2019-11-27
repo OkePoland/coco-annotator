@@ -2,12 +2,13 @@ import { Dispatch, SetStateAction } from 'react';
 
 import { UserInfo } from '../common/types';
 import { setUserData, USER_DATA_KEY, removeUserData } from './auth.utils';
+import { onLogout } from './auth.api';
 
 export interface AuthService {
     login: (data: UserInfo) => Promise<void>;
     getCurrentUser: () => UserInfo | null;
     deleteCurrentUser: () => void;
-    logout: () => void;
+    logout: () => Promise<void>;
     subscribe: (cb: Dispatch<SetStateAction<UserInfo | null>>) => void;
 }
 
@@ -38,7 +39,8 @@ const authFactory = (): AuthService => {
                 callback(null);
             }
         },
-        logout() {
+        async logout() {
+            await onLogout();
             removeUserData();
             authService.deleteCurrentUser();
         },

@@ -5,11 +5,18 @@ import { compose, mount, route, withView, redirect, NaviRequest } from 'navi';
 import Layout from './Layout';
 import Auth from '../Auth/Auth';
 import Datasets from '../Datasets/Datasets';
-import { withAuthentication, Context } from '../Auth/authenticatedRoute';
+import {
+    withAuthentication,
+    Context,
+    withAdminContentProtection,
+} from '../Auth/authenticatedRoute';
 
 const routesWithHeader = compose(
-    withView(() => (
-        <Layout>
+    withView((request: NaviRequest<Context>, context: Context) => (
+        <Layout
+            currentUser={context.currentUser}
+            onLogoutCb={() => context.authService.logout()}
+        >
             <View />
         </Layout>
     )),
@@ -56,7 +63,7 @@ const routesWithHeader = compose(
                 view: <div />,
             }),
         ),
-        '/admin': withAuthentication(
+        '/admin': withAdminContentProtection(
             route({
                 view: <div />,
             }),

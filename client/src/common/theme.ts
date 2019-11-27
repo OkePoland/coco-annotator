@@ -32,4 +32,9 @@ export const theme = createMuiTheme({
             main: '#007bff',
         },
     },
+    typography: {
+        button: {
+            textTransform: 'none',
+        },
+    },
 });

@@ -1,8 +1,17 @@
 import { useState, useEffect, useRef } from 'react';
 
-import { NavItem, staticNavItems } from '../navItems';
+import {
+    NavItem,
+    Datasets,
+    Categories,
+    Undo,
+    Tasks,
+    API,
+    Help,
+    Admin,
+} from '../navItems';
+import { Dataset, UserInfo } from '../../common/types';
 import { SocketEvent } from '../../common/sockets/events';
-import { Dataset } from '../../common/types';
 
 import useSocketEvent from '../../common/hooks/useSocketEvent';
 import useGlobalContext from '../../common/hooks/useGlobalContext';
@@ -21,14 +30,14 @@ export interface LoadingState {
     message: string;
 }
 
-export const useHeaderState = (): HeaderState => {
+export const useHeaderState = (currentUser: UserInfo | null): HeaderState => {
     const {
         state: { appInfo, dataset, processList },
     } = useGlobalContext();
     const connected = useConnectionState();
     const [drawerOn, setDrawerOn] = useState(false);
     const loadingState = useLoadingState(processList);
-    const menuItems = useMenuItems(dataset);
+    const menuItems = useMenuItems(dataset, currentUser);
 
     return {
         version: appInfo.git.tag,
@@ -82,19 +91,29 @@ const useConnectionState = (): boolean | null => {
     return connected;
 };
 
-const useMenuItems = (dataset: Dataset | null): Array<NavItem> => {
+const useMenuItems = (
+    dataset: Dataset | null,
+    currentUser: UserInfo | null,
+): Array<NavItem> => {
     // Calculate extra page for menu
     let menuItems: Array<NavItem> = [];
+
+    menuItems.push(Datasets);
     if (dataset) {
         const extraItem: NavItem = {
             title: dataset.name,
             href: `/dataset/${dataset.id}`,
         };
-        const items = [...staticNavItems];
-        items.splice(1, 0, extraItem);
-        menuItems = items;
-    } else {
-        menuItems = staticNavItems;
+        menuItems.push(extraItem);
     }
+    menuItems.push(Categories);
+    menuItems.push(Undo);
+    menuItems.push(Tasks);
+    if (currentUser && currentUser.is_admin) {
+        menuItems.push(Admin);
+    }
+    menuItems.push(API);
+    menuItems.push(Help);
+
     return menuItems;
 };

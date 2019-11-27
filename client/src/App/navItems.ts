@@ -3,33 +3,37 @@ export interface NavItem {
     href: string;
 }
 
-export const staticNavItems: Array<NavItem> = [
-    {
-        title: 'Datasets',
-        href: '/datasets',
-    },
-    {
-        title: 'Categories',
-        href: '/categories',
-    },
-    {
-        title: 'Undo',
-        href: '/undo',
-    },
-    {
-        title: 'Tasks',
-        href: '/tasks',
-    },
-    {
-        title: 'Admin',
-        href: '/admin',
-    },
-    {
-        title: 'API',
-        href: '/api',
-    },
-    {
-        title: 'Help',
-        href: 'https://github.com/jsbroks/coco-annotator/wiki',
-    },
-];
+export const Datasets: NavItem = {
+    title: 'Datasets',
+    href: '/datasets',
+};
+
+export const Categories: NavItem = {
+    title: 'Categories',
+    href: '/categories',
+};
+
+export const Undo: NavItem = {
+    title: 'Undo',
+    href: '/undo',
+};
+
+export const Tasks: NavItem = {
+    title: 'Tasks',
+    href: '/tasks',
+};
+
+export const Admin: NavItem = {
+    title: 'Admin',
+    href: '/admin',
+};
+
+export const API: NavItem = {
+    title: 'API',
+    href: '/api',
+};
+
+export const Help: NavItem = {
+    title: 'Help',
+    href: 'https://github.com/jsbroks/coco-annotator/wiki',
+};

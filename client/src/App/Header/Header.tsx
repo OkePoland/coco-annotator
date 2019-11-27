@@ -9,13 +9,19 @@ import IconButton from '@material-ui/core/IconButton';
 import MenuIcon from '@material-ui/icons/Menu';
 
 import { useStyles } from './header.components';
+import { UserInfo } from '../../common/types';
 import { useHeaderState } from './header.hooks';
 import ConnectionDot from './ConnectionDot';
 import TitleBar from './TitleBar';
 import MenuDesktop from './MenuDesktop';
 import MenuMobile from './MenuMobile';
 
-const Header: React.FC = () => {
+interface HeaderProps {
+    currentUser: UserInfo | null;
+    onLogoutCb: () => Promise<void>;
+}
+
+const Header: React.FC<HeaderProps> = ({ currentUser, onLogoutCb }) => {
     const classes = useStyles();
     const {
         version,
@@ -24,7 +30,7 @@ const Header: React.FC = () => {
         menuItems,
         drawerOn,
         setDrawerOn,
-    } = useHeaderState();
+    } = useHeaderState(currentUser);
 
     return (
         <AppBar position="static" className={classes.appbar}>
@@ -45,6 +51,8 @@ const Header: React.FC = () => {
                         <MenuDesktop
                             loadingState={loadingState}
                             items={menuItems}
+                            currentUser={currentUser}
+                            onLogoutCb={onLogoutCb}
                         />
                     </Hidden>
                     <Hidden only={['xl', 'lg', 'md']}>
@@ -72,7 +80,12 @@ const Header: React.FC = () => {
                         setDrawerOn(false);
                     }}
                 >
-                    <MenuMobile loadingState={loadingState} items={menuItems} />
+                    <MenuMobile
+                        loadingState={loadingState}
+                        items={menuItems}
+                        currentUser={currentUser}
+                        onLogoutCb={onLogoutCb}
+                    />
                 </Drawer>
             </Hidden>
         </AppBar>
