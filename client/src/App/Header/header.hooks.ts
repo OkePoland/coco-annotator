@@ -22,16 +22,14 @@ export interface LoadingState {
 }
 
 export const useHeaderState = (): HeaderState => {
-    const {
-        state: { appInfo, dataset, processList },
-    } = useGlobalContext();
+    const [state] = useGlobalContext();
     const connected = useConnectionState();
     const [drawerOn, setDrawerOn] = useState(false);
-    const loadingState = useLoadingState(processList);
-    const menuItems = useMenuItems(dataset);
+    const loadingState = useLoadingState(state.processList);
+    const menuItems = useMenuItems(state.dataset);
 
     return {
-        version: appInfo.git.tag,
+        version: state.appInfo.git.tag,
         connected: connected,
         loadingState: loadingState,
         drawerOn: drawerOn,

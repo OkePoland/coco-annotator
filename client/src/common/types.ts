@@ -3,27 +3,45 @@ export interface AppInfo {
     author: string;
     demo: string;
     repo: string;
-    git: { tag: string };
+    git: {
+        tag: string;
+    };
     login_enabled: boolean;
     total_users: number;
     allow_registration: boolean;
 }
 
 export interface UserInfo {
-    id: { $oid: string };
+    id: {
+        $oid: string;
+    };
     username: string;
     name: string;
     online: boolean;
-    last_seen: { $data: Date };
+    last_seen: {
+        $date: number;
+    };
     is_admin: boolean;
-    preferences: {}; // TODO
-    permissions: []; // TODO
 }
 
 export interface Dataset {
-    id: string;
+    id: number;
     name: string;
-    // TODO update with rest of fields
+    directory: string;
+    first_image_id?: number;
+    numberAnnotated: number;
+    numberImages: number;
+    categories: Array<number>;
+    owner: string;
+    users: Array<string>;
+    annotate_url: string;
+    default_annotation_metadata: IDict;
+    deleted: boolean;
+    deleted_date?: {
+        $data: number;
+    };
 }
 
-// TODO update with rest of global types
+interface IDict {
+    [key: string]: any;
+}

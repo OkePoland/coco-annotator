@@ -1,16 +1,8 @@
-import React, { createContext, useReducer } from 'react';
+import React, { Dispatch, createContext, useReducer } from 'react';
 
 import { AppInfo, Dataset } from '../types';
 
-interface IGlobalContext {
-    state: IGlobalContextState;
-    setAppInfo: (info: AppInfo) => void;
-    addProcess: (process: string) => void;
-    removeProcess: (process: string) => void;
-    addUndo: () => void;
-    removeUndo: () => void;
-    resetUndo: () => void;
-}
+type IGlobalContext = [IGlobalContextState, Dispatch<Action>];
 
 interface IGlobalContextState {
     appInfo: AppInfo;
@@ -19,7 +11,7 @@ interface IGlobalContextState {
     undoList: Array<null>; // TODO add Type
 }
 
-enum ActionType {
+export enum ActionType {
     SET_SERVER_INFO,
     SET_DATASET,
     ADD_PROCESS,
@@ -29,7 +21,7 @@ enum ActionType {
     RESET_UNDO,
 }
 
-type Action =
+export type Action =
     | { type: ActionType.SET_SERVER_INFO; payload: AppInfo }
     | { type: ActionType.SET_DATASET; payload: Dataset | null }
     | { type: ActionType.ADD_PROCESS; payload: string }
@@ -81,15 +73,10 @@ const apiReducer = (
     }
 };
 
-const createInitContextValue: () => IGlobalContext = () => ({
-    state: createInitContextState(),
-    setAppInfo: () => {},
-    addProcess: () => {},
-    removeProcess: () => {},
-    addUndo: () => {},
-    removeUndo: () => {},
-    resetUndo: () => {},
-});
+const createInitContextValue: () => IGlobalContext = () => [
+    createInitContextState(),
+    () => {},
+];
 
 const createInitContextState: () => IGlobalContextState = () => ({
     appInfo: {
@@ -112,39 +99,9 @@ export const GlobalContext = createContext<IGlobalContext>(
 );
 
 export const GlobalProvider: React.FC = ({ children }) => {
-    const [state, dispatch] = useReducer(apiReducer, createInitContextState());
-
-    const setAppInfo = (info: AppInfo) => {
-        dispatch({ type: ActionType.SET_SERVER_INFO, payload: info });
-    };
-    const addProcess = (process: string) => {
-        dispatch({ type: ActionType.ADD_PROCESS, payload: process });
-    };
-    const removeProcess = (process: string) => {
-        dispatch({ type: ActionType.REMOVE_PROCESS, payload: process });
-    };
-    const addUndo = () => {
-        dispatch({ type: ActionType.ADD_UNDO });
-    };
-    const removeUndo = () => {
-        dispatch({ type: ActionType.REMOVE_UNDO });
-    };
-    const resetUndo = () => {
-        dispatch({ type: ActionType.RESET_UNDO });
-    };
-
+    const reducerTuple = useReducer(apiReducer, createInitContextState());
     return (
-        <GlobalContext.Provider
-            value={{
-                state,
-                setAppInfo,
-                addProcess,
-                removeProcess,
-                addUndo,
-                removeUndo,
-                resetUndo,
-            }}
-        >
+        <GlobalContext.Provider value={reducerTuple}>
             {children}
         </GlobalContext.Provider>
     );
