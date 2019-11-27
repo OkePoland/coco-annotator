@@ -1,29 +1,29 @@
 import json
 import logging
-from .vod_converter import converter
 import os
 
+from .vod_converter import converter
+
 INGESTORS = [
-    # 'mio',
-    'pedx',
-    'citycam',
-    'coco',
-    # 'daimler',    TODO: daimler needs more strict validation
-    'kitti',
-    'kitti-tracking',
-    'voc',
-    'detrac',
-    'caltech']
+    'mio',              # NOT tested
+    'pedx',             # tested and working
+    'citycam',          # tested and working
+    'coco',             # tested and working
+    # 'daimler',        TODO: daimler needs more strict validation
+    'kitti',            # tested and working
+    'kitti-tracking',   # NOT tested
+    'voc',              # tested and working
+    'aicity',           # tested and working
+    'detrac',           # tested and working
+    'caltech']          # tested and working
 
 
 def check_coco(ann_file):
-    logger = logging.getLogger('gunicorn.error')
     flist = []
     for dirpath, dirnames, filenames in os.walk(ann_file):
         for filename in [f for f in filenames if f.endswith(".json")]:
             flist.append(os.path.join(dirpath, filename))
     try:
-        # f = open(ann_file)
         c_json = json.loads(ann_file)
     except Exception as error:
         return False, ann_file
@@ -34,18 +34,15 @@ def check_coco(ann_file):
 
 
 def convert_to_coco(ann_file):
-    '''
-    It should return json file (json.load)
-    '''
     logger = logging.getLogger('gunicorn.error')
     to_key = 'coco'
     success = False
     for from_key in INGESTORS:
         try:
             success, encoded_labels = converter.convert(from_path=ann_file, to_path=None, ingestor_key=from_key,
-                                            egestor_key=to_key,
-                                            select_only_known_labels=False,
-                                            filter_images_without_labels=True, folder_names=None)
+                                                        egestor_key=to_key,
+                                                        select_only_known_labels=False,
+                                                        filter_images_without_labels=True, folder_names=None)
         except:
             success = False
         if success:

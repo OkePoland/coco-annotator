@@ -1,13 +1,8 @@
-from flask import request
-from flask_restplus import Namespace, Resource, reqparse
-from flask_login import login_required, current_user
-from werkzeug.datastructures import FileStorage
-from mongoengine.errors import NotUniqueError
-from threading import Thread
+import datetime
+import json
 import logging
-from google_images_download import google_images_download as gid
-from ..util.pagination_util import Pagination
-from ..util import query_util, coco_util, profile
+import os
+from threading import Thread
 
 from database import (
     ImageModel,
@@ -16,10 +11,15 @@ from database import (
     AnnotationModel,
     ExportModel
 )
+from flask import request
+from flask_login import login_required, current_user
+from flask_restplus import Namespace, Resource, reqparse
+from google_images_download import google_images_download as gid
+from mongoengine.errors import NotUniqueError
+from werkzeug.datastructures import FileStorage
 
-import datetime
-import json
-import os
+from ..util import query_util, coco_util, profile
+from ..util.pagination_util import Pagination
 
 logger = logging.getLogger('gunicorn.error')
 api = Namespace('dataset', description='Dataset related operations')
@@ -411,19 +411,6 @@ class DatasetDataId(Resource):
         
         images = images.skip(page*per_page).limit(per_page)
         images_json = query_util.fix_ids(images)
-        # for image in images:
-        #     image_json = query_util.fix_ids(image)
-
-        #     query = AnnotationModel.objects(image_id=image.id, deleted=False)
-        #     category_ids = query.distinct('category_id')
-        #     categories = CategoryModel.objects(id__in=category_ids).only('name', 'color')
-
-        #     image_json['annotations'] = query.count()
-        #     image_json['categories'] = query_util.fix_ids(categories)
-
-        #     images_json.append(image_json)
-
-
         subdirectories = [f for f in sorted(os.listdir(directory))
                           if os.path.isdir(directory + f) and not f.startswith('.')]
         
@@ -553,25 +540,6 @@ class DatasetCoco(Resource):
         
         if coco==None and path != '/datasets/':
             return dataset.import_coco(path)
-
-        # HERE PUT THE CODE
-        # for el in coco:
-        #     logger.info(el)
-
-        # to_key = 'coco'
-
-        # for from_key in INGESTORS:
-
-        #     success, file = converter.convert(labels=coco, ingestor_key=from_key,
-        #                                      egestor_key=to_key,
-        #                                      select_only_known_labels=False,
-        #                                      filter_images_without_labels=True, folder_names=None)
-        #     if success:
-        #         logger.info(f"Successfully converted from {from_key} to {to_key}.")
-        #         coco = file
-        #         break
-        #     else:
-        #         logger.info(f"Failed to convert from {from_key} to {to_key}")
 
         # Decoding from File Storage format to json strings
         coco_json_files = []

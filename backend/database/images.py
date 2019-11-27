@@ -1,13 +1,12 @@
 import os
+
 import imantics as im
-
-
 from PIL import Image
 from mongoengine import *
 
-from .events import Event, SessionEvent
-from .datasets import DatasetModel
 from .annotations import AnnotationModel
+from .datasets import DatasetModel
+from .events import Event, SessionEvent
 
 
 class ImageModel(DynamicDocument):

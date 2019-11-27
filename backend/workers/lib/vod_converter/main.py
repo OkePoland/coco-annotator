@@ -9,12 +9,12 @@ import argparse
 import logging
 import sys
 
+import lib.vod_converter.caltech as caltech
+import lib.vod_converter.coco as coco
 import lib.vod_converter.converter as converter
 import lib.vod_converter.kitti as kitti
 import lib.vod_converter.kitti_tracking as kitti_tracking
-import lib.vod_converter.coco as coco
 import lib.vod_converter.voc as voc
-import lib.vod_converter.caltech as caltech
 
 logger = logging.getLogger('gunicorn.error')
 logger.setLevel(logging.INFO)

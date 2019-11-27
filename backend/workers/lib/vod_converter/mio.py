@@ -4,12 +4,9 @@ csv file
 photo_id|label|x1|y1|x2|y2
 
 """
-import os
 import pandas as pd
-from PIL import Image
 
-from .abstract import Ingestor, Egestor
-from .validation_schemas import get_blank_detection_schema, get_blank_image_detection_schema
+from .abstract import Ingestor
 
 labels = {
     "pedestrian": "Pedestrian",
@@ -67,9 +64,6 @@ class MIOIngestor(Ingestor):
 
         image_detection_schema.pop(0)
         return image_detection_schema
-
-    # except Exception as e:
-    # print(e)
 
     def _get_detections(self, id, df):
         detections = []

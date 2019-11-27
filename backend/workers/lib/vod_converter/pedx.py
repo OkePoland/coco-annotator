@@ -1,11 +1,13 @@
 '''
     Ingestor for PedX dataset format. PedX annotations are stored in json format.
 '''
-import os
 import json
+import logging
+import os
 
 from PIL import Image
-from .abstract import Ingestor, Egestor
+
+from .abstract import Ingestor
 from .validation_schemas import get_blank_detection_schema, get_blank_image_detection_schema
 
 
@@ -23,10 +25,12 @@ class PEDXIngestor(Ingestor):
                 return False, f"Expected subdirectory {subdir} within {path}"
         return True, None
 
+
     def ingest(self, path, folder_names):
         return self._get_image_detection(path, folder_names=folder_names)
 
     def _get_image_detection(self, root, folder_names):
+        logger = logging.getLogger('gunicorn.error')
         det_id = 0
         image_detections = []
         names = []
@@ -38,7 +42,8 @@ class PEDXIngestor(Ingestor):
         for date in os.scandir(path_imgs):
             for cam in os.scandir(date):
                 for im in os.scandir(cam):
-                    names.append(os.path.splitext(im.name)[0])
+                    if not im.name.startswith('.'):
+                        names.append(os.path.splitext(im.name)[0])
         for im_name in names:
             detcs[im_name] = []
             im_name_seg = im_name.split('_')
@@ -77,12 +82,12 @@ class PEDXIngestor(Ingestor):
         if json_data['keypoint'] is not None:
             keypoint, num_keypoints = self._get_keypoints(json_data['keypoint'])
         else:
-            keypoint, num_keypoints = None, None
+            keypoint, num_keypoints = [], None
         temp = get_blank_detection_schema()
         temp['id'] = det_id
         temp['image_id'] = image_id
         temp['label'] = json_data['category']
-        temp['segmentation'] = polygon
+        temp['segmentation'] = [polygon]
         temp['iscrowd'] = False
         temp['isbbox'] = False
         temp['keypoints'] = keypoint

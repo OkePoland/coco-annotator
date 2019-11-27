@@ -32,18 +32,17 @@ from __future__ import print_function
 import hashlib
 import io
 import json
-import random
 import os
-import numpy as np
+import random
+
 import PIL.Image
-
-from pycocotools import mask
+import contextlib2
+import numpy as np
 import tensorflow as tf
-
-from workers.lib.tf_models import tf_record_creation_util
+from pycocotools import mask
 from workers.lib.tf_models import dataset_util
 from workers.lib.tf_models import label_map_util
-import contextlib2
+from workers.lib.tf_models import tf_record_creation_util
 
 
 def create_tf_example(image,
@@ -84,8 +83,9 @@ def create_tf_example(image,
     image_width = image['width']
     filename = image['file_name']
     image_id = image['id']
+    # image_dir = image['path'].replace(image['file_name'], '')
 
-    full_path = os.path.join(image_dir, filename)
+    full_path = image['path']
     with tf.gfile.GFile(full_path, 'rb') as fid:
         encoded_jpg = fid.read()
     encoded_jpg_io = io.BytesIO(encoded_jpg)

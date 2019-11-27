@@ -42,11 +42,12 @@ people? - assigned when clear identification of a pedestrian wasambiguous  or  e
 person-fa - this label is quite the same as 'person?'
 """
 
-import os
 import json
+import os
+
 from PIL import Image
 
-from .abstract import Ingestor, Egestor
+from .abstract import Ingestor
 from .validation_schemas import get_blank_image_detection_schema, get_blank_detection_schema
 
 

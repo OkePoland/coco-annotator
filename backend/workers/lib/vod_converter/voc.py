@@ -4,17 +4,19 @@ Ingestor and egestor for VOC formats.
 http://host.robots.ox.ac.uk/pascal/VOC/voc2012/htmldoc/index.html
 """
 
+import glob
 import os
 import shutil
 import xml.etree.ElementTree as ET
+
+import numpy as np
+from PIL import Image
+from pycocotools import mask
+from skimage import measure
+
 from .abstract import Ingestor, Egestor
 from .labels_and_aliases import output_labels
 from .validation_schemas import get_blank_image_detection_schema, get_blank_detection_schema
-import glob
-from PIL import Image
-import numpy as np
-from skimage import measure
-from pycocotools import mask
 
 
 class VOCIngestor(Ingestor):

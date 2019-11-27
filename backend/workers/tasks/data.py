@@ -52,14 +52,6 @@ def export_annotations(task_id, dataset_id, categories):
     with open(file_path, 'w') as fp:
         json.dump(coco, fp)
 
-    # task.info(f"Writing TF Records to zip file")
-    # zip_path = f"{directory}tf_record_zip-{timestamp}.zip"
-    # with zipfile.ZipFile(zip_path, 'w') as zipObj:
-    #     zipObj.write(file_path, os.path.basename(file_path))
-    #
-    # # Clean exports
-    # os.remove(file_path)
-
     task.info("Creating export object")
     export = ExportModel(dataset_id=dataset.id, path=file_path, tags=["COCO", *category_names])
     export.save()
@@ -74,9 +66,6 @@ def export_annotations_to_tf_record(task_id, dataset_id, categories, validation_
     to a single ZIP file accessible from:
     Datasets->Chosen Dataset -> Exports
     """
-    # logger = logging.getLogger('gunicorn.error')
-
-    # logger.info("OOOOOOOO")
     from workers.lib.tf_models.create_tf_record_from_coco import convert_coco_to_tfrecord
 
     task = TaskModel.objects.get(id=task_id)
@@ -94,9 +83,7 @@ def export_annotations_to_tf_record(task_id, dataset_id, categories, validation_
     timestamp = time.time()
     out_directory = f"{dataset.directory}.exports/"
     image_dir = f"{dataset.directory}"
-    # task.info(image_dir)
-    #
-    # print(image_dir)
+
     if not os.path.exists(out_directory):
         os.makedirs(out_directory)
 
@@ -320,7 +307,10 @@ def import_annotations(task_id, dataset_id, encoded_coco_json):
         task.set_progress((progress / total_items) * 100, socket=socket)
 
         has_segmentation = len(segmentation) > 0
-        has_keypoints = len(keypoints) > 0
+        try:
+            has_keypoints = len(keypoints) > 0
+        except:
+            has_keypoints = False
         if not has_segmentation and not has_keypoints:
             task.warning(f"Annotation {annotation.get('id')} has no segmentation or keypoints")
             continue

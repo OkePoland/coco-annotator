@@ -31,18 +31,18 @@ from __future__ import print_function
 import hashlib
 import io
 import json
-import random
 import os
+import random
+
+import PIL.Image
 import contextlib2
 import numpy as np
-import PIL.Image
-
-from pycocotools import mask
 import tensorflow as tf
-
 from object_detection.dataset_tools import tf_record_creation_util
 from object_detection.utils import dataset_util
 from object_detection.utils import label_map_util
+
+from pycocotools import mask
 
 flags = tf.app.flags
 tf.flags.DEFINE_boolean('include_masks', False,

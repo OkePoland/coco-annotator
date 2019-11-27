@@ -1,12 +1,12 @@
 
-from flask_login import current_user
 import logging
-from mongoengine import *
-from config import Config
-from .tasks import TaskModel
-
 import os
-import json
+
+from config import Config
+from flask_login import current_user
+from mongoengine import *
+
+from .tasks import TaskModel
 
 
 class DatasetModel(DynamicDocument):
@@ -47,18 +47,7 @@ class DatasetModel(DynamicDocument):
             .exclude('password', 'id', 'preferences')
 
     def import_coco(self, coco_json):
-        from workers.tasks import import_annotations, convert_dataset
-        
-        logger = logging.getLogger('gunicorn.error')
-
-        # task = TaskModel(
-        #     name="Import COCO format into {}".format(self.name),
-        #     dataset_id=self.id,
-        #     group="Annotation Import"
-        # )
-        # task.save()
-        # cel_task = import_annotations.delay(task.id, self.id, coco_json, self.id)
-
+        from workers.tasks import convert_dataset
         task = TaskModel(
             name="Convert input dataset",
             dataset_id=self.id,
@@ -66,15 +55,6 @@ class DatasetModel(DynamicDocument):
         )
         task.save()
         cel_task = convert_dataset.delay(task.id, self.id, coco_json, self.name)
-
-        # tt_task = TaskModel(
-        #     name="TEST TASK",
-        #     dataset_id=self.id,
-        #     group="TESTING"
-        # )
-        # tt_task.save()
-        # cel_test_task = test_task.delay(tt_task.id, self.id, "in dataset")
-
         return {
             "celery_id": cel_task.id,
             "id": task.id,
@@ -83,16 +63,12 @@ class DatasetModel(DynamicDocument):
 
     def import_coco_from_json_files(self, coco_json_strings):
         from workers.tasks import load_annotation_files
-
-        logger = logging.getLogger('gunicorn.error')
-
         task = TaskModel(
             name="Load annotation files",
             dataset_id=self.id,
             group="Annotation Conversion"
         )
         task.save()
-
         cel_task = load_annotation_files.delay(task.id, self.id, coco_json_strings, self.name)
 
         return {

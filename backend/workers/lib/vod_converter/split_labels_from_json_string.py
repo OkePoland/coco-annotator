@@ -1,7 +1,7 @@
-import json
-import sys
 import collections
+import json
 import math
+import sys
 
 
 def split_coco_labels(json_string, max_byte_size):
