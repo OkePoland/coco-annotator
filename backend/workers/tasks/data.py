@@ -239,8 +239,9 @@ def import_annotations(task_id, dataset_id, encoded_coco_json):
         category_id = category.get('id')
         category_model = categories.filter(name__iexact=category_name).first()
 
+        # Checking if category already exists in Database Categories
         if category_model is None:
-            task.warning(f"{category_name} category not found (creating a new one)")
+            task.warning(f"{category_name} category not found in Database Categories (creating a new one)")
 
             new_category = CategoryModel(
                 name=category_name,
@@ -250,9 +251,17 @@ def import_annotations(task_id, dataset_id, encoded_coco_json):
             new_category.save()
 
             category_model = new_category
-            dataset.categories.append(new_category.id)
+            # dataset.categories.append(new_category.id)
+        else:
+            task.info(f"{category_name} category already exists in Database Categories")
 
-        task.info(f"{category_name} category found")
+        # Checking if category already exists in current Dataset categories
+        if category_model.id not in dataset.categories:
+            task.warning(f"{category_name} category not found in Dataset categories (adding a new one)")
+            dataset.categories.append(category_model.id)
+        else:
+            task.info(f"{category_name} category already exists in Dataset categories")
+
         # map category ids
         categories_id[category_id] = category_model.id
 
