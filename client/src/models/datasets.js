@@ -52,7 +52,6 @@ export default {
       }
     }
      form.append('path_string', path_string);
-
     return axios.post(`${baseURL}/${id}/coco`, form, {
       headers: {
         "Content-Type": "multipart/form-data"
