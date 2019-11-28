@@ -1,22 +1,18 @@
 import React from 'react';
 import { View } from 'react-navi';
-import { compose, mount, route, withView, redirect, NaviRequest } from 'navi';
+import { compose, mount, route, withView, redirect } from 'navi';
 
 import Layout from './Layout';
 import Auth from '../Auth/Auth';
 import Datasets from '../Datasets/Datasets';
 import {
     withAuthentication,
-    Context,
     withAdminContentProtection,
 } from '../Auth/authenticatedRoute';
 
 const routesWithHeader = compose(
-    withView((request: NaviRequest<Context>, context: Context) => (
-        <Layout
-            currentUser={context.currentUser}
-            onLogoutCb={() => context.authService.logout()}
-        >
+    withView(() => (
+        <Layout>
             <View />
         </Layout>
     )),
@@ -72,9 +68,7 @@ const routesWithHeader = compose(
 );
 export default mount({
     '/auth': route({
-        getView: (req: NaviRequest<Context>, context: Context) => {
-            return <Auth authService={context.authService} />;
-        },
+        view: <Auth />,
     }),
     '*': routesWithHeader,
 });

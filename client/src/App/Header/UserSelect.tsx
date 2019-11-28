@@ -8,21 +8,20 @@ import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 
 import { useStyles } from './header.components';
-import { UserInfo } from '../../common/types';
+import useAuthContext from '../../common/hooks/useAuthContext';
 
-interface UserSelectProps {
-    currentUser: UserInfo | null;
-    onLogoutCb: () => Promise<void>;
-}
-
-const UserSelect: React.FC<UserSelectProps> = ({ currentUser, onLogoutCb }) => {
+const UserSelect: React.FC = () => {
     const classes = useStyles();
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     let navigation = useNavigation();
-
     const open = Boolean(anchorEl);
-    const userName = currentUser && currentUser.username;
-    const isAdmin = currentUser && currentUser.is_admin;
+
+    const { getCurrentUser, logout } = useAuthContext();
+    const currentUser = getCurrentUser();
+    const userName =
+        currentUser && currentUser.username ? currentUser.username : '';
+    const isAdmin =
+        currentUser && currentUser.is_admin ? currentUser.is_admin : false;
 
     return (
         <Grid container>
@@ -70,7 +69,7 @@ const UserSelect: React.FC<UserSelectProps> = ({ currentUser, onLogoutCb }) => {
                     <MenuItem
                         onClick={async () => {
                             setAnchorEl(null);
-                            await onLogoutCb();
+                            await logout();
                         }}
                     >
                         Logout

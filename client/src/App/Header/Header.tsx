@@ -9,19 +9,13 @@ import IconButton from '@material-ui/core/IconButton';
 import MenuIcon from '@material-ui/icons/Menu';
 
 import { useStyles } from './header.components';
-import { UserInfo } from '../../common/types';
 import { useHeaderState } from './header.hooks';
 import ConnectionDot from './ConnectionDot';
 import TitleBar from './TitleBar';
 import MenuDesktop from './MenuDesktop';
 import MenuMobile from './MenuMobile';
 
-interface HeaderProps {
-    currentUser: UserInfo | null;
-    onLogoutCb: () => Promise<void>;
-}
-
-const Header: React.FC<HeaderProps> = ({ currentUser, onLogoutCb }) => {
+const Header: React.FC = () => {
     const classes = useStyles();
     const {
         version,
@@ -30,7 +24,7 @@ const Header: React.FC<HeaderProps> = ({ currentUser, onLogoutCb }) => {
         menuItems,
         drawerOn,
         setDrawerOn,
-    } = useHeaderState(currentUser);
+    } = useHeaderState();
 
     return (
         <AppBar position="static" className={classes.appbar}>
@@ -51,8 +45,6 @@ const Header: React.FC<HeaderProps> = ({ currentUser, onLogoutCb }) => {
                         <MenuDesktop
                             loadingState={loadingState}
                             items={menuItems}
-                            currentUser={currentUser}
-                            onLogoutCb={onLogoutCb}
                         />
                     </Hidden>
                     <Hidden only={['xl', 'lg', 'md']}>
@@ -80,12 +72,7 @@ const Header: React.FC<HeaderProps> = ({ currentUser, onLogoutCb }) => {
                         setDrawerOn(false);
                     }}
                 >
-                    <MenuMobile
-                        loadingState={loadingState}
-                        items={menuItems}
-                        currentUser={currentUser}
-                        onLogoutCb={onLogoutCb}
-                    />
+                    <MenuMobile loadingState={loadingState} items={menuItems} />
                 </Drawer>
             </Hidden>
         </AppBar>

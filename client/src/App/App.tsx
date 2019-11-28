@@ -8,6 +8,7 @@ import routes from './routes';
 import { authService } from '../Auth/authService';
 import { GlobalProvider } from '../common/contexts/GlobalContext';
 import { SocketProvider } from '../common/contexts/SocketContext';
+import { AuthProvider } from '../common/contexts/AuthContext';
 
 const App: React.FC = () => {
     const [currentUser, setCurrentUser] = useState<UserInfo | null>(() =>
@@ -17,17 +18,19 @@ const App: React.FC = () => {
 
     return (
         <ThemeProvider theme={theme}>
-            <Router routes={routes} context={{ currentUser, authService }}>
-                <SocketProvider>
-                    <GlobalProvider>
-                        <Suspense fallback={null}>
-                            <NotFoundBoundary render={renderNotFound}>
-                                <View />
-                            </NotFoundBoundary>
-                        </Suspense>
-                    </GlobalProvider>
-                </SocketProvider>
-            </Router>
+            <AuthProvider>
+                <Router routes={routes} context={{ currentUser }}>
+                    <SocketProvider>
+                        <GlobalProvider>
+                            <Suspense fallback={null}>
+                                <NotFoundBoundary render={renderNotFound}>
+                                    <View />
+                                </NotFoundBoundary>
+                            </Suspense>
+                        </GlobalProvider>
+                    </SocketProvider>
+                </Router>
+            </AuthProvider>
         </ThemeProvider>
     );
 };

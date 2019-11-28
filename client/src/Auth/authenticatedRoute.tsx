@@ -1,11 +1,9 @@
 import { map, Matcher, redirect, NaviRequest } from 'navi';
 
-import { AuthService } from './authService';
 import { UserInfo } from '../common/types';
 
 export interface Context {
     currentUser: UserInfo;
-    authService: AuthService;
 }
 
 export function withAuthentication(matcher: Matcher<{}, Context>) {

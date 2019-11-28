@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigation } from 'react-navi';
 
-import { AuthService } from './authService';
 import { onRegister, onLogin } from './auth.api';
+import useAuthContext from '../common/hooks/useAuthContext';
 
 export interface UserDetails {
     fullName: string;
@@ -24,8 +24,9 @@ interface FormState {
 
 export const PASSWORD_LENGTH_LIMIT = 4;
 
-const useForm = (activeTab: number, authService: AuthService): FormState => {
+const useForm = (activeTab: number): FormState => {
     let navigation = useNavigation();
+    const { login } = useAuthContext();
     const [
         { fullName, username, password, confirmPassword },
         setCredentials,
@@ -71,7 +72,7 @@ const useForm = (activeTab: number, authService: AuthService): FormState => {
             if (response && response.error) {
                 setError(response.error);
             } else if (response.user) {
-                await authService.login(response.user);
+                await login(response.user);
                 navigation.navigate('/');
             }
         }
@@ -92,7 +93,7 @@ const useForm = (activeTab: number, authService: AuthService): FormState => {
             if (response && response.error) {
                 setError(response.error);
             } else if (response.user) {
-                await authService.login(response.user);
+                await login(response.user);
                 navigation.navigate('/');
             }
         }

@@ -10,11 +10,12 @@ import {
     Help,
     Admin,
 } from '../navItems';
-import { Dataset, UserInfo } from '../../common/types';
+import { Dataset } from '../../common/types';
 import { SocketEvent } from '../../common/sockets/events';
 
 import useSocketEvent from '../../common/hooks/useSocketEvent';
 import useGlobalContext from '../../common/hooks/useGlobalContext';
+import useAuthContext from '../../common/hooks/useAuthContext';
 
 interface HeaderState {
     version: string;
@@ -30,14 +31,14 @@ export interface LoadingState {
     message: string;
 }
 
-export const useHeaderState = (currentUser: UserInfo | null): HeaderState => {
+export const useHeaderState = (): HeaderState => {
     const {
         state: { appInfo, dataset, processList },
     } = useGlobalContext();
     const connected = useConnectionState();
     const [drawerOn, setDrawerOn] = useState(false);
     const loadingState = useLoadingState(processList);
-    const menuItems = useMenuItems(dataset, currentUser);
+    const menuItems = useMenuItems(dataset);
 
     return {
         version: appInfo.git.tag,
@@ -91,12 +92,11 @@ const useConnectionState = (): boolean | null => {
     return connected;
 };
 
-const useMenuItems = (
-    dataset: Dataset | null,
-    currentUser: UserInfo | null,
-): Array<NavItem> => {
+const useMenuItems = (dataset: Dataset | null): Array<NavItem> => {
     // Calculate extra page for menu
-    let menuItems: Array<NavItem> = [];
+    const { getCurrentUser } = useAuthContext();
+    const currentUser = getCurrentUser();
+    const menuItems: Array<NavItem> = [];
 
     menuItems.push(Datasets);
     if (dataset) {
