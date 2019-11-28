@@ -33,8 +33,21 @@ export const useStyles = makeStyles((theme: AugmentedTheme) => ({
         float: 'right',
     },
     userSelect: {
-        color: 'white',
-        borderRadius: 3,
+        '&.MuiButton-root': {
+            color: theme.palette.common.white,
+            backgroundColor: theme.header,
+            boxShadow: 'none',
+            padding: theme.spacing(0.25, 0.5),
+            borderRadius: 3,
+            '&:hover': {
+                backgroundColor: theme.palette.common.white,
+                color: theme.palette.common.black,
+            },
+            '&:focus': {
+                backgroundColor: theme.palette.common.white,
+                color: theme.palette.common.black,
+            },
+        },
     },
     link: {
         color: theme.link,

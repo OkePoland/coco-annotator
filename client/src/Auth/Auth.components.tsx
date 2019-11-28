@@ -19,6 +19,7 @@ export const useStyles = makeStyles((theme: AugmentedTheme) => ({
         padding: 80,
     },
     tab: {
+        textTransform: 'uppercase',
         color: theme.palette.primary.dark,
         '&:hover': {
             color: theme.palette.primary.main,

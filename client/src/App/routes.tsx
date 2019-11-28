@@ -1,11 +1,14 @@
 import React from 'react';
 import { View } from 'react-navi';
-import { compose, mount, route, withView, redirect, NaviRequest } from 'navi';
+import { compose, mount, route, withView, redirect } from 'navi';
 
 import Layout from './Layout';
 import Auth from '../Auth/Auth';
 import Datasets from '../Datasets/Datasets';
-import { withAuthentication, Context } from '../Auth/authenticatedRoute';
+import {
+    withAuthentication,
+    withAdminContentProtection,
+} from '../Auth/authenticatedRoute';
 
 const routesWithHeader = compose(
     withView(() => (
@@ -56,7 +59,7 @@ const routesWithHeader = compose(
                 view: <div />,
             }),
         ),
-        '/admin': withAuthentication(
+        '/admin': withAdminContentProtection(
             route({
                 view: <div />,
             }),
@@ -65,9 +68,7 @@ const routesWithHeader = compose(
 );
 export default mount({
     '/auth': route({
-        getView: (req: NaviRequest<Context>, context: Context) => {
-            return <Auth authService={context.authService} />;
-        },
+        view: <Auth />,
     }),
     '*': routesWithHeader,
 });

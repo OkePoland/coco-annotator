@@ -8,17 +8,12 @@ import Tabs from '@material-ui/core/Tabs';
 import Typography from '@material-ui/core/Typography';
 
 import { useStyles } from './Auth.components';
-import { AuthService } from './authService';
 import useAuth from './auth.hooks';
 import useForm from './form.hooks';
 import TabPanel from './TabPanel';
 import Form from './Form';
 
-interface Props {
-    authService: AuthService;
-}
-
-const Auth: React.FC<Props> = ({ authService }) => {
+const Auth: React.FC = () => {
     const classes = useStyles();
     const { activeTab, showLoginForm, changeTabPanel } = useAuth();
     const {
@@ -30,7 +25,7 @@ const Auth: React.FC<Props> = ({ authService }) => {
         handleChange,
         handleLogin,
         handleRegister,
-    } = useForm(activeTab, authService);
+    } = useForm(activeTab);
 
     return (
         <Container className={classes.container}>

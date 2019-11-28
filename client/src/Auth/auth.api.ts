@@ -6,6 +6,7 @@ import Api from '../common/api';
 const loginURL = '/user/login';
 const registerURL = '/user/register';
 const serverInfoURL = '/info/';
+const logoutUrl = '/user/logout';
 
 interface Credentials {
     username: string;
@@ -49,4 +50,8 @@ export const getServerInfo = async () => {
         data: { total_users },
     } = await Api.get<AppInfo>(serverInfoURL);
     return total_users;
+};
+
+export const onLogout = async () => {
+    await Api.get(logoutUrl);
 };

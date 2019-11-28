@@ -23,7 +23,7 @@ const NavList: React.FC<NavListProps> = ({ items, noWrap }) => {
             wrap={noWrap != null ? 'nowrap' : 'wrap'}
         >
             {items.map(item => (
-                <Grid key={item.title} item md="auto" sm={12}>
+                <Grid key={item.title} item md="auto" xs={12}>
                     <Link
                         href={item.href}
                         className={classes.link}

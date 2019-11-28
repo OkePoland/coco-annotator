@@ -4,7 +4,11 @@ import Box from '@material-ui/core/Box';
 
 import Header from './Header/Header';
 
-const Layout: React.FC = ({ children }) => (
+interface LayoutProps {
+    children: React.ReactNode;
+}
+
+const Layout: React.FC<LayoutProps> = ({ children }) => (
     <Box maxWidth="xl">
         <Header />
         <Container>{children}</Container>

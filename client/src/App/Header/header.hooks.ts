@@ -1,11 +1,21 @@
 import { useState, useEffect, useRef } from 'react';
 
-import { NavItem, staticNavItems } from '../navItems';
-import { SocketEvent } from '../../common/sockets/events';
+import {
+    NavItem,
+    Datasets,
+    Categories,
+    Undo,
+    Tasks,
+    API,
+    Help,
+    Admin,
+} from '../navItems';
 import { Dataset } from '../../common/types';
+import { SocketEvent } from '../../common/sockets/events';
 
 import useSocketEvent from '../../common/hooks/useSocketEvent';
 import useGlobalContext from '../../common/hooks/useGlobalContext';
+import useAuthContext from '../../common/hooks/useAuthContext';
 
 interface HeaderState {
     version: string;
@@ -82,17 +92,26 @@ const useConnectionState = (): boolean | null => {
 
 const useMenuItems = (dataset: Dataset | null): Array<NavItem> => {
     // Calculate extra page for menu
-    let menuItems: Array<NavItem> = [];
+    const { getCurrentUser } = useAuthContext();
+    const currentUser = getCurrentUser();
+    const menuItems: Array<NavItem> = [];
+
+    menuItems.push(Datasets);
     if (dataset) {
         const extraItem: NavItem = {
             title: dataset.name,
             href: `/dataset/${dataset.id}`,
         };
-        const items = [...staticNavItems];
-        items.splice(1, 0, extraItem);
-        menuItems = items;
-    } else {
-        menuItems = staticNavItems;
+        menuItems.push(extraItem);
     }
+    menuItems.push(Categories);
+    menuItems.push(Undo);
+    menuItems.push(Tasks);
+    if (currentUser && currentUser.is_admin) {
+        menuItems.push(Admin);
+    }
+    menuItems.push(API);
+    menuItems.push(Help);
+
     return menuItems;
 };
