@@ -83,7 +83,6 @@ def create_tf_example(image,
     image_width = image['width']
     filename = image['file_name']
     image_id = image['id']
-    # image_dir = image['path'].replace(image['file_name'], '')
 
     full_path = image['path']
     with tf.gfile.GFile(full_path, 'rb') as fid:
@@ -168,23 +167,20 @@ def create_tf_example(image,
 
 
 def _create_tf_record_from_coco_annotations(
-        task, groundtruth_data, image_dir, output_path, include_masks, num_shards):
+        task, groundtruth_data, dataset_dir, output_path, include_masks, num_shards):
     """Loads COCO annotation json files and converts to tf.Record format.
 
     Args:
       groundtruth_data: JSON file containing bounding box annotations.
-      image_dir: Directory containing the image files.
+      dataset_dir: Directory containing the dataset.
       output_path: Path to output tf.Record file.
       include_masks: Whether to include instance segmentations masks
         (PNG encoded) in the result. default: False.
       num_shards: number of output file shards.
     """
-    # with contextlib2.ExitStack() as tf_record_close_stack, \
-    # tf.gfile.GFile(annotations_file, 'r') as fid:
     with contextlib2.ExitStack() as tf_record_close_stack:
         output_tfrecords, results_paths = tf_record_creation_util.open_sharded_output_tfrecords(
             tf_record_close_stack, output_path, num_shards)
-        # groundtruth_data = json.load(fid)
         images = groundtruth_data['images']
         category_index = label_map_util.create_category_index(
             groundtruth_data['categories'])
@@ -212,7 +208,7 @@ def _create_tf_record_from_coco_annotations(
                 task.info(f'On image {idx} of {len(images)}')
             annotations_list = annotations_index[image['id']]
             _, tf_example, num_annotations_skipped = create_tf_example(
-                image, annotations_list, image_dir, category_index, include_masks)
+                image, annotations_list, dataset_dir, category_index, include_masks)
             total_num_annotations_skipped += num_annotations_skipped
             shard_idx = idx % num_shards
             output_tfrecords[shard_idx].write(tf_example.SerializeToString())
@@ -221,42 +217,61 @@ def _create_tf_record_from_coco_annotations(
     return results_paths
 
 
-def _split_dataset(annotations_file, val_size):
-    # TODO: Optimize
+def _split_dataset(annotations_file, val_size, test_size):
     groundtruth_data = json.loads(annotations_file)
     images = groundtruth_data['images']
     annotations = groundtruth_data['annotations']
+
     val_images = random.sample(images, val_size)
-    val_image_ids = [image['id'] for image in val_images]
     images = [image for image in images if image not in val_images]
+    test_images = random.sample(images, test_size)
+    images = [image for image in images if image not in test_images]
+
+    val_image_ids = [image['id'] for image in val_images]
+    test_image_ids = [image['id'] for image in test_images]
+
     val_annotations = [annotation for annotation in annotations if annotation['image_id'] in val_image_ids]
-    annotations = [annotation for annotation in annotations if annotation not in val_annotations]
+    test_annotations = [annotation for annotation in annotations if annotation['image_id'] in test_image_ids]
+
+    annotations = [annotation for annotation in annotations if annotation not in val_annotations and annotation not
+                   in test_annotations]
     train_data = {'images': images, 'categories': groundtruth_data['categories'], 'annotations': annotations}
     val_data = {'images': val_images, 'categories': groundtruth_data['categories'], 'annotations': val_annotations}
-    return train_data, val_data
+    test_data = {'images': test_images, 'categories': groundtruth_data['categories'],
+                 'annotations': test_annotations}
+    return train_data, val_data, test_data
 
 
-def convert_coco_to_tfrecord(image_dir, annotations_file, output_dir, val_size, task, train_shards, val_shards,
+def convert_coco_to_tfrecord(dataset_dir, annotations_file, output_dir, val_size, test_size, task, train_shards,
+                             val_shards, test_shards,
                              include_masks=False):
-    assert image_dir, '`image_dir` missing.'
+    assert dataset_dir, '`image_dir` missing.'
     assert annotations_file, '`annotations_file` missing.'
     assert output_dir, '`output_dir` missing.'
     if val_size != 0:
         assert val_size, '`val_size` missing'
+    if test_size != 0:
+        assert test_size, '`test_size` missing'
+    assert train_shards, 'number of train shards missing'
+    assert val_shards, 'number of val shards missing'
+    assert test_shards, 'number of test shards missing'
 
     if not tf.gfile.IsDirectory(output_dir):
         tf.gfile.MakeDirs(output_dir)
-    train_output_path = os.path.join(output_dir, 'coco_train.record')
-    val_output_path = os.path.join(output_dir, 'coco_val.record')
-    # testdev_output_path = os.path.join(FLAGS.output_dir, 'coco_testdev.record')
+
+    tfrecords_name = dataset_dir.split("/")[-1]
+    train_output_path = os.path.join(output_dir, f'coco_train_{tfrecords_name}.record')
+    val_output_path = os.path.join(output_dir, f'coco_val_{tfrecords_name}.record')
+    test_output_path = os.path.join(output_dir, f'coco_test_{tfrecords_name}.record')
+
     task.info("Splitting data into train and val sets")
-    train_annotation, val_annotation = _split_dataset(annotations_file, val_size)
+    train_annotation, val_annotation, test_annotation = _split_dataset(annotations_file, val_size, test_size)
 
     task.info("Creating train set")
     train_files_path = _create_tf_record_from_coco_annotations(
         task,
         train_annotation,
-        image_dir,
+        dataset_dir,
         train_output_path,
         include_masks,
         num_shards=train_shards)
@@ -265,18 +280,18 @@ def convert_coco_to_tfrecord(image_dir, annotations_file, output_dir, val_size, 
     val_files_path = _create_tf_record_from_coco_annotations(
         task,
         val_annotation,
-        image_dir,
+        dataset_dir,
         val_output_path,
         include_masks,
         num_shards=val_shards)
 
-    """
-    _create_tf_record_from_coco_annotations(
-        FLAGS.testdev_annotations_file,
-        FLAGS.test_image_dir,
-        testdev_output_path,
-        FLAGS.include_masks,
-        num_shards=100)"""
+    test_files_path = _create_tf_record_from_coco_annotations(
+        task,
+        test_annotation,
+        dataset_dir,
+        test_output_path,
+        include_masks,
+        num_shards=test_shards)
 
-    tf_record_files_path = train_files_path + val_files_path
+    tf_record_files_path = train_files_path + val_files_path + test_files_path
     return tf_record_files_path

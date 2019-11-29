@@ -60,7 +60,8 @@ def export_annotations(task_id, dataset_id, categories):
 
 
 @shared_task
-def export_annotations_to_tf_record(task_id, dataset_id, categories, validation_set_size, train_shards, val_shards):
+def export_annotations_to_tf_record(task_id, dataset_id, categories, validation_set_size, test_set_size,
+                                    train_shards_number, val_shards_number, test_shards_number):
     """
     Loads COCO annotations from chosen dataset, converts them to tf record format and exports them
     to a single ZIP file accessible from:
@@ -88,10 +89,11 @@ def export_annotations_to_tf_record(task_id, dataset_id, categories, validation_
         os.makedirs(out_directory)
 
     task.info("===== Converting to TF Record =====")
-    task.info(f"Number of train shards: {train_shards}")
-    task.info(f"Number of validation shards: {val_shards}")
+    task.info(f"Number of train shards: {train_shards_number}")
+    task.info(f"Number of validation shards: {val_shards_number}")
     tf_records_files_path = convert_coco_to_tfrecord(image_dir, json.dumps(coco), out_directory, validation_set_size,
-                                                     task, train_shards, val_shards, include_masks=True)
+                                                     test_set_size, task, train_shards_number, val_shards_number,
+                                                     test_shards_number, include_masks=True)
     task.info(f"Created {len(tf_records_files_path)} TF Record files")
 
     zip_path = f"{out_directory}tf_record_zip-{timestamp}.zip"
