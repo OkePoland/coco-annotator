@@ -91,6 +91,7 @@ def export_annotations_to_tf_record(task_id, dataset_id, categories, validation_
     task.info("===== Converting to TF Record =====")
     task.info(f"Number of train shards: {train_shards_number}")
     task.info(f"Number of validation shards: {val_shards_number}")
+    task.info(f"Number of test shards: {test_shards_number}")
     tf_records_files_path = convert_coco_to_tfrecord(image_dir, json.dumps(coco), out_directory, validation_set_size,
                                                      test_set_size, task, train_shards_number, val_shards_number,
                                                      test_shards_number, include_masks=True)

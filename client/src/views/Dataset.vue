@@ -444,9 +444,11 @@
               </div>
                 <div v-if="exporting.format == 'tfrecord'" class="form-group">
                 <label>Tfrecord files</label>
-                    <input v-model='exporting.validation' id="tfrecord_validation_size" type="number"  class="form-control" placeholder="Number of images in validation subset (default: 0)">
-                    <input v-model='exporting.tfrecord_train_num_shards' id="tfrecord_train_num_shards" type="number"  class="form-control" placeholder="Number of TF Records val shards (default: 1)">
-                    <input v-model='exporting.tfrecord_val_num_shards' id="tfrecord_val_num_shards" type="number"  class="form-control" placeholder="Number of TF Records train shards (default: 1)">
+                    <input v-model='exporting.validation_set_size' id="tfrecord_validation_size" type="number"  class="form-control" placeholder="Number of images in validation subset (default: 0)">
+                    <input v-model='exporting.test_set_size' id="tfrecord_test_size" type="number"  class="form-control" placeholder="Number of images in testing subset (default: 0)">
+                    <input v-model='exporting.tfrecord_train_num_shards' id="tfrecord_train_num_shards" type="number"  class="form-control" placeholder="Number of TF Records train shards (default: 1)">
+                    <input v-model='exporting.tfrecord_val_num_shards' id="tfrecord_val_num_shards" type="number"  class="form-control" placeholder="Number of TF Records val shards (default: 1)">
+                    <input v-model='exporting.tfrecord_test_num_shards' id="tfrecord_test_num_shards" type="number"  class="form-control" placeholder="Number of TF Records test shards (default: 1)">
               </div>
             </form>
           </div>
@@ -550,9 +552,11 @@ export default {
         id: null
       },
       exporting: {
-        validation: '',
+        validation_set_size: '',
+        test_set_size: '',
         tfrecord_train_num_shards: null,
         tfrecord_val_num_shards: null,
+        tfrecord_test_num_shards: null,
         format: 'coco',
         categories: [],
         progress: 0,
@@ -684,8 +688,10 @@ export default {
     },
     exportCOCO() {
       $("#exportDataset").modal("hide");
-      Dataset.exportingCOCO(this.dataset.id, this.exporting.categories, this.exporting.format, this.exporting.validation,
-      this.exporting.tfrecord_train_num_shards, this.exporting.tfrecord_val_num_shards)
+      Dataset.exportingCOCO(this.dataset.id, this.exporting.categories, this.exporting.format,
+              this.exporting.validation_set_size,
+      this.exporting.test_set_size, this.exporting.tfrecord_train_num_shards, this.exporting.tfrecord_val_num_shards,
+              this.exporting.tfrecord_test_num_shards)
         .then(response => {
           let id = response.data.id;
           this.exporting.id = id;

@@ -264,7 +264,7 @@ def convert_coco_to_tfrecord(dataset_dir, annotations_file, output_dir, val_size
     val_output_path = os.path.join(output_dir, f'coco_val_{tfrecords_name}.record')
     test_output_path = os.path.join(output_dir, f'coco_test_{tfrecords_name}.record')
 
-    task.info("Splitting data into train and val sets")
+    task.info("Splitting data into train, validation and test sets")
     train_annotation, val_annotation, test_annotation = _split_dataset(annotations_file, val_size, test_size)
 
     task.info("Creating train set")
@@ -276,7 +276,7 @@ def convert_coco_to_tfrecord(dataset_dir, annotations_file, output_dir, val_size
         include_masks,
         num_shards=train_shards)
 
-    task.info("Creating val set")
+    task.info("Creating validation set")
     val_files_path = _create_tf_record_from_coco_annotations(
         task,
         val_annotation,
@@ -285,6 +285,7 @@ def convert_coco_to_tfrecord(dataset_dir, annotations_file, output_dir, val_size
         include_masks,
         num_shards=val_shards)
 
+    task.info("Creating test set")
     test_files_path = _create_tf_record_from_coco_annotations(
         task,
         test_annotation,
