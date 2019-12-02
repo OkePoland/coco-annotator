@@ -275,9 +275,9 @@ def import_annotations(task_id, dataset_id, encoded_coco_json):
     # image id mapping ( file: database )
     images_id = {}
     categories_by_image = {}
-
+    images_size = len(coco_images)
     # Find all images
-    for image in coco_images:
+    for image_number, image in enumerate(coco_images):
         image_id = image.get('id')
         image_filename = image.get('file_name')
 
@@ -295,13 +295,14 @@ def import_annotations(task_id, dataset_id, encoded_coco_json):
             task.error(f"Too many images found with the same file name: {image_filename}")
             continue
 
-        task.info(f"Image {image_filename} found")
+        task.info(f"Image {image_filename} found, loaded {image_number}/{images_size} images")
         image_model = image_model[0]
         images_id[image_id] = image_model
         categories_by_image[image_id] = list()
 
     task.info("===== Import Annotations =====")
-    for annotation in coco_annotations:
+    annotation_list = len(coco_annotations)
+    for annotation_number, annotation in enumerate(coco_annotations):
 
         image_id = annotation.get('image_id')
         category_id = annotation.get('category_id')
@@ -340,7 +341,7 @@ def import_annotations(task_id, dataset_id, encoded_coco_json):
         ).first()
 
         if annotation_model is None:
-            task.info(f"Creating annotation data ({image_id}, {category_id})")
+            task.info(f"Creating annotation data ({image_id}, {category_id}), loaded {annotation_number}/{annotation_list} annotations")
 
             annotation_model = AnnotationModel(image_id=image_model.id)
             annotation_model.category_id = category_model_id
