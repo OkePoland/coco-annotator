@@ -45,6 +45,8 @@ class VOCIngestor(Ingestor):
         return True, None
 
     def ingest(self, path, folder_names=None):
+        self.iii = 0
+        self.detection_counter = 0
         if folder_names is None:
             folder_names = self.folder_names
         image_names = self._get_image_ids(path, folder_names)

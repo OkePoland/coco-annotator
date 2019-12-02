@@ -1,8 +1,8 @@
 import json
-import logging
 import os
-
+import sys
 from .vod_converter import converter
+from contextlib import redirect_stdout
 
 INGESTORS = [
     'mio',              # NOT tested
@@ -16,6 +16,20 @@ INGESTORS = [
     'aicity',           # tested and working
     'detrac',           # tested and working
     'caltech']          # tested and working
+
+
+class RedirectStream:
+    task_stream = None
+
+    def __init__(self, task):
+        self.task_stream = task
+
+    def write(self, message):
+        if message != "\n":
+            self.task_stream.info(message)
+
+    def flush(self):
+        pass
 
 
 def check_coco(ann_file):
@@ -33,22 +47,25 @@ def check_coco(ann_file):
         return False, ann_file
 
 
-def convert_to_coco(ann_file):
-    logger = logging.getLogger('gunicorn.error')
+def convert_to_coco(ann_file, current_task):
     to_key = 'coco'
     success = False
-    for from_key in INGESTORS:
-        try:
-            success, encoded_labels = converter.convert(from_path=ann_file, to_path=None, ingestor_key=from_key,
-                                                        egestor_key=to_key,
-                                                        select_only_known_labels=False,
-                                                        filter_images_without_labels=True, folder_names=None)
-        except:
-            success = False
-        if success:
-            logger.info(f"Successfully converted from {from_key} to {to_key}.")
-            coco = encoded_labels
-            return coco, True
-        else:
-            logger.info(f"Failed to convert from {from_key} to {to_key}")
-    return None, False
+    with redirect_stdout(RedirectStream(current_task)):
+        for from_key in INGESTORS:
+            try:
+                success, encoded_labels = converter.convert(from_path=ann_file, to_path=None, ingestor_key=from_key,
+                                                            egestor_key=to_key,
+                                                            select_only_known_labels=False,
+                                                            filter_images_without_labels=True, folder_names=None)
+            except:
+                success = False
+            if success:
+                print(f"Successfully converted from {from_key} to {to_key}.")
+                coco = encoded_labels
+                sys.stdout = sys.__stdout__
+                return coco, True
+            else:
+                print(f"Failed to convert from {from_key} to {to_key}")
+
+        sys.stdout = sys.__stdout__
+        return None, False

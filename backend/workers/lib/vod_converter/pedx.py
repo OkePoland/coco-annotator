@@ -2,7 +2,6 @@
     Ingestor for PedX dataset format. PedX annotations are stored in json format.
 '''
 import json
-import logging
 import os
 
 from PIL import Image
@@ -25,12 +24,10 @@ class PEDXIngestor(Ingestor):
                 return False, f"Expected subdirectory {subdir} within {path}"
         return True, None
 
-
     def ingest(self, path, folder_names):
         return self._get_image_detection(path, folder_names=folder_names)
 
     def _get_image_detection(self, root, folder_names):
-        logger = logging.getLogger('gunicorn.error')
         det_id = 0
         image_detections = []
         names = []
@@ -72,7 +69,6 @@ class PEDXIngestor(Ingestor):
                     im_schema['detections'] = detcs[im_name]
                     image_detections.append(im_schema)
         return image_detections
-
 
     def _get_detections(self, json_data, image_id, det_id, lab_name):
         if json_data['polygon'] is not None:
