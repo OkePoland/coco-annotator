@@ -444,6 +444,9 @@ def convert_dataset(task_id, dataset_id, coco_json, dataset_name):
     coco_json, success = convert_to_coco(coco_json)
     if not success:
         task.info('Format not supported')
+        task.set_progress(100, socket=socket)
+        task.info("===== Finished =====")
+        return
     task.set_progress(50, socket=socket)
 
     task.info(f"Checking size of json string, max size = {max_json_string_size}")
