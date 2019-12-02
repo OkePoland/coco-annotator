@@ -529,26 +529,24 @@ class DatasetCoco(Resource):
     @login_required
     def post(self, dataset_id):
         """ Adds coco formatted annotations to the dataset """
-        args = coco_upload.parse_args()
-        coco = args['coco']
-        args = path_string.parse_args()
-        path = args['path_string']
-        
+        coco_files = coco_upload.parse_args()['coco']
+        path_to_dataset = path_string.parse_args()['path_string']
+
         dataset = current_user.datasets.filter(id=dataset_id).first()
         if dataset is None:
             return {'message': 'Invalid dataset ID'}, 400
-        
-        if coco==None and path != '/datasets/':
-            return dataset.import_coco(path)
 
-        # Decoding from File Storage format to json strings
-        coco_json_files = []
-        for file_storage in coco:
-            coco_json_bytes = file_storage.read()
-            coco_json_string = coco_json_bytes.decode('utf-8')
-            coco_json_files.append(coco_json_string)
+        if coco_files != None:
+            # Decoding from File Storage format to json strings
+            coco_json_files = []
+            for file_storage in coco_files:
+                coco_json_bytes = file_storage.read()
+                coco_json_string = coco_json_bytes.decode('utf-8')
+                coco_json_files.append(coco_json_string)
+            return dataset.import_coco_from_json_files(coco_json_files)
 
-        return dataset.import_coco_from_json_files(coco_json_files)
+        elif coco_files == None and path_to_dataset != "":
+            return dataset.import_coco(path_to_dataset)
 
 
 @api.route('/coco/<int:import_id>')
