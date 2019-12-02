@@ -454,51 +454,45 @@
                                 ></TagsInput>
                             </div>
 
-                            <div>
-                                <input type="radio" id="coco_format" name="type" value="coco"
-                                       v-model="exporting.format">
-                                <label for="coco_format">Coco</label>
-                                <input type="radio" id="tf_record_format" name="type" value="tfrecord"
-                                       v-model="exporting.format">
-                                <label for="tf_record_format">Tfrecord</label>
-                            </div>
-                            <div v-if="exporting.format == 'coco'" class="form-group">
-                                <label>COCO Annotation file (.json)</label>
-                            </div>
-                            <div v-if="exporting.format == 'tfrecord'" class="form-group">
-                                <label>Tfrecord files</label>
-                                <input v-model='exporting.validation' id="tfrecord_validation_size" type="number"
-                                       class="form-control"
-                                       placeholder="Number of images in validation subset (default: 0)">
-                                <input v-model='exporting.tfrecord_train_num_shards' id="tfrecord_train_num_shards"
-                                       type="number" class="form-control"
-                                       placeholder="Number of TF Records val shards (default: 1)">
-                                <input v-model='exporting.tfrecord_val_num_shards' id="tfrecord_val_num_shards"
-                                       type="number" class="form-control"
-                                       placeholder="Number of TF Records train shards (default: 1)">
-                            </div>
-                        </form>
-                    </div>
-                    <div class="modal-footer">
-                        <button
-                                type="button"
-                                class="btn btn-primary"
-                                @click="exportCOCO"
-                        >
-                            Export
-                        </button>
-                        <button
-                                type="button"
-                                class="btn btn-secondary"
-                                data-dismiss="modal"
-                        >
-                            Close
-                        </button>
-                    </div>
-                </div>
-            </div>
+                       <div>
+                        <input type="radio" id="coco_format" name="type" value="coco" checked  v-model="exporting.format">
+                        <label for="coco_format">Coco</label>
+                         <input type="radio" id="tf_record_format" name="type" value="tfrecord" v-model="exporting.format">
+                        <label for="tf_record_format">Tfrecord</label>
+                        </div>
+                  <div v-if="exporting.format == 'coco'" class="form-group">
+                <label>COCO Annotation file (.json)</label>
+              </div>
+                <div v-if="exporting.format == 'tfrecord'" class="form-group">
+                <label>Tfrecord files</label>
+                    <input v-model='exporting.validation_set_size' id="tfrecord_validation_size" type="number"  class="form-control" placeholder="Number of images in validation subset (default: 0)">
+                    <input v-model='exporting.test_set_size' id="tfrecord_test_size" type="number"  class="form-control" placeholder="Number of images in testing subset (default: 0)">
+                    <input v-model='exporting.tfrecord_train_num_shards' id="tfrecord_train_num_shards" type="number"  class="form-control" placeholder="Number of TF Records train shards (default: 1)">
+                    <input v-model='exporting.tfrecord_val_num_shards' id="tfrecord_val_num_shards" type="number"  class="form-control" placeholder="Number of TF Records val shards (default: 1)">
+                    <input v-model='exporting.tfrecord_test_num_shards' id="tfrecord_test_num_shards" type="number"  class="form-control" placeholder="Number of TF Records test shards (default: 1)">
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-primary"
+              @click="exportCOCO"
+            >
+              Export
+            </button>
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-dismiss="modal"
+            >
+              Close
+            </button>
+          </div>
         </div>
+      </div>
     </div>
+  </div>
 </template>
 
 <script>
@@ -580,9 +574,11 @@
                     id: null
                 },
                 exporting: {
-                    validation: '',
+                    validation_set_size: '',
+                    test_set_size: '',
                     tfrecord_train_num_shards: null,
                     tfrecord_val_num_shards: null,
+                    tfrecord_test_num_shards: null,
                     format: 'coco',
                     categories: [],
                     progress: 0,
@@ -692,48 +688,50 @@
                     return;
                 }
 
-                Dataset.scan(this.dataset.id)
-                    .then(response => {
-                        let id = response.data.id;
-                        this.scan.id = id;
-                    })
-                    .catch(error => {
-                        this.axiosReqestError(
-                            "Scanning Dataset",
-                            error.response.data.message
-                        );
-                    })
-                    .finally(() => this.removeProcess(process));
-            },
-            exportModal() {
-                if (this.exporting.id != null) {
-                    this.$router.push({path: "/tasks", query: {id: this.exporting.id}});
-                    return;
-                }
-                $("#exportDataset").modal("show");
-            },
-            exportCOCO() {
-                $("#exportDataset").modal("hide");
-                Dataset.exportingCOCO(this.dataset.id, this.exporting.categories, this.exporting.format, this.exporting.validation,
-                    this.exporting.tfrecord_train_num_shards, this.exporting.tfrecord_val_num_shards)
-                    .then(response => {
-                        let id = response.data.id;
-                        this.exporting.id = id;
-                    })
-                    .catch(error => {
-                        this.axiosReqestError("Exporting COCO", error.response.data.message);
-                    })
-                    .finally(() => this.removeProcess(process));
-            },
-            removeFolder(folder) {
-                let index = this.folders.indexOf(folder);
-                this.folders.splice(index + 1, this.folders.length);
-            },
-            importModal() {
-                if (this.importing.id != null) {
-                    this.$router.push({path: "/tasks", query: {id: this.importing.id}});
-                    return;
-                }
+      Dataset.scan(this.dataset.id)
+        .then(response => {
+          let id = response.data.id;
+          this.scan.id = id;
+        })
+        .catch(error => {
+          this.axiosReqestError(
+            "Scanning Dataset",
+            error.response.data.message
+          );
+        })
+        .finally(() => this.removeProcess(process));
+    },
+    exportModal() {
+      if (this.exporting.id != null) {
+        this.$router.push({ path: "/tasks", query: { id: this.exporting.id } });
+        return;
+      }
+      $("#exportDataset").modal("show");
+    },
+    exportCOCO() {
+      $("#exportDataset").modal("hide");
+      Dataset.exportingCOCO(this.dataset.id, this.exporting.categories, this.exporting.format,
+              this.exporting.validation_set_size,
+      this.exporting.test_set_size, this.exporting.tfrecord_train_num_shards, this.exporting.tfrecord_val_num_shards,
+              this.exporting.tfrecord_test_num_shards)
+        .then(response => {
+          let id = response.data.id;
+          this.exporting.id = id;
+        })
+        .catch(error => {
+          this.axiosReqestError("Exporting COCO", error.response.data.message);
+        })
+        .finally(() => this.removeProcess(process));
+    },
+    removeFolder(folder) {
+      let index = this.folders.indexOf(folder);
+      this.folders.splice(index + 1, this.folders.length);
+    },
+    importModal() {
+      if (this.importing.id != null) {
+        this.$router.push({ path: "/tasks", query: { id: this.importing.id } });
+        return;
+      }
 
                 $("#cocoUpload").modal("show");
             },

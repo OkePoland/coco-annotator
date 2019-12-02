@@ -99,7 +99,8 @@ class DatasetModel(DynamicDocument):
             "name": task.name
         }
 
-    def export_tf_record(self, *, train_shards, val_shards, categories=None, validation_set_size=0, style="TF Record"):
+    def export_tf_record(self, *, train_shards, val_shards, test_shards, categories=None, validation_set_size=0,
+                         testing_set_size=0, style="TF Record"):
 
         from workers.tasks import export_annotations_to_tf_record
 
@@ -114,7 +115,8 @@ class DatasetModel(DynamicDocument):
         task.save()
 
         cel_task = export_annotations_to_tf_record.delay(task.id, self.id, categories, validation_set_size,
-                                                         train_shards, val_shards)
+                                                         testing_set_size,
+                                                         train_shards, val_shards, test_shards)
 
         return {
             "celery_id": cel_task.id,
