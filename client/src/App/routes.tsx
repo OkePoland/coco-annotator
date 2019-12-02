@@ -1,6 +1,6 @@
 import React from 'react';
-import { View } from 'react-navi';
-import { compose, mount, route, withView, redirect } from 'navi';
+import { View, useCurrentRoute, NotFoundBoundary } from 'react-navi';
+import { compose, mount, route, withView, redirect, map } from 'navi';
 
 import Layout from './Layout';
 import Auth from '../Auth/Auth';
@@ -8,17 +8,38 @@ import Datasets from '../Datasets/Datasets';
 import {
     withAuthentication,
     withAdminContentProtection,
+    Context,
 } from '../Auth/authenticatedRoute';
+import ErrorBoundary from './ErrorBoundary';
 
-const routesWithHeader = compose(
-    withView(() => (
-        <Layout>
-            <View />
-        </Layout>
-    )),
+const AppView = () => {
+    const route = useCurrentRoute();
+
+    if (route.data.hideLayout) {
+        return (
+            <NotFoundBoundary render={() => <ErrorBoundary />}>
+                <View />
+            </NotFoundBoundary>
+        );
+    } else {
+        return (
+            <Layout>
+                <NotFoundBoundary render={() => <ErrorBoundary />}>
+                    <View />
+                </NotFoundBoundary>
+            </Layout>
+        );
+    }
+};
+
+export default compose(
+    withView(<AppView />),
     mount({
-        '/': redirect('/datasets'),
-
+        '/': withAuthentication(
+            route({
+                view: <Datasets />,
+            }),
+        ),
         '/datasets': withAuthentication(
             route({
                 view: <Datasets />,
@@ -64,11 +85,17 @@ const routesWithHeader = compose(
                 view: <div />,
             }),
         ),
+        '/auth': map((_, context: Context) =>
+            context.currentUser
+                ? redirect('/')
+                : route({ view: <Auth />, data: { hideLayout: true } }),
+        ),
+        '*': route((_, context: Context) => {
+            return {
+                data: {
+                    hideLayout: context.currentUser ? false : true,
+                },
+            };
+        }),
     }),
 );
-export default mount({
-    '/auth': route({
-        view: <Auth />,
-    }),
-    '*': routesWithHeader,
-});

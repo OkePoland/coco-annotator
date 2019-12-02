@@ -73,7 +73,7 @@ const useForm = (activeTab: number): FormState => {
                 setError(response.error);
             } else if (response.user) {
                 await login(response.user);
-                navigation.navigate('/');
+                navigation.navigate('/datasets');
             }
         }
     };
@@ -94,7 +94,7 @@ const useForm = (activeTab: number): FormState => {
                 setError(response.error);
             } else if (response.user) {
                 await login(response.user);
-                navigation.navigate('/');
+                navigation.navigate('/datasets');
             }
         }
     };
