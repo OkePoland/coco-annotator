@@ -438,7 +438,6 @@ def convert_dataset(task_id, dataset_id, coco_json, dataset_name):
     socket = create_socket()
 
     task.info("===== Beginning Conversion =====")
-    logger = logging.getLogger('gunicorn.error')
     task.set_progress(0, socket=socket)
     task.info('Trying to import your dataset...')
     coco_json, success = convert_to_coco(coco_json, task)
