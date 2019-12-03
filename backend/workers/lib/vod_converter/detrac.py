@@ -29,16 +29,16 @@ class DETRACIngestor(Ingestor):
         for lab_type in lab_dirs:
             directory = root + '/' + lab_type
             for lab in os.scandir(directory):
-                #TODO: get image dimensions
+                # TODO: get image dimensions
                 mov_name = os.path.splitext(lab.name)[0]
                 tree = ET.parse(lab.path)
                 toor = tree.getroot()
                 accepted_tags = ['car', 'bus', 'van']
                 obj_id = -1
-                for frame in toor.iter('frame'):                # child = frame
+                for frame in toor.iter('frame'):  # child = frame
                     no_frame = frame.attrib['num']
                     img_name = 'img' + '0' * (5 - len(str(no_frame))) + str(no_frame)
-                    for target in frame:                 
+                    for target in frame:
                         detections = []
                         for obj in target:
                             obj_id += 1
@@ -68,7 +68,7 @@ class DETRACIngestor(Ingestor):
                         img['image']['file_name'] = img_name + '.jpg'
                         img_det.append(img)
         return img_det
-    
+
     @staticmethod
     def _image_dimensions(path):
         with Image.open(path) as image:

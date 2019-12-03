@@ -5,7 +5,6 @@
             [frame, ID, left, top, width, height, 1, -1, -1, -1]
 """
 
-
 import csv
 import os
 import traceback

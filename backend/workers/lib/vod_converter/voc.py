@@ -20,7 +20,6 @@ from .validation_schemas import get_blank_image_detection_schema, get_blank_dete
 
 
 class VOCIngestor(Ingestor):
-
     iii = 0
     detection_counter = 0
 
@@ -103,7 +102,8 @@ class VOCIngestor(Ingestor):
         single_img_detection["image"]["height"] = image_height
         single_img_detection["image"]["file_name"] = f"{image_id}.jpg"
 
-        single_img_detection["detections"] = self._get_detections(xml_root, image_id, segmented_path, segmented_objects, image_width, image_height)
+        single_img_detection["detections"] = self._get_detections(xml_root, image_id, segmented_path, segmented_objects,
+                                                                  image_width, image_height)
 
         return single_img_detection
 

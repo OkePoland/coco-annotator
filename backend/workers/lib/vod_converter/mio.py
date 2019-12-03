@@ -5,8 +5,8 @@ photo_id|label|x1|y1|x2|y2
 titles above should be added to csv as column names
 """
 import pandas as pd
-from .abstract import Ingestor
 
+from .abstract import Ingestor
 
 labels = {
     "pedestrian": "Pedestrian",

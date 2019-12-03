@@ -12,8 +12,7 @@ from .abstract import Ingestor
 from .validation_schemas import get_blank_image_detection_schema, get_blank_detection_schema
 
 
-class VOC_CITY_Ingestor(Ingestor):
-
+class VocCityIngestor(Ingestor):
     iii = 0
     detection_counter = 0
 
@@ -72,7 +71,7 @@ class VOC_CITY_Ingestor(Ingestor):
         tree = ET.parse(annotation_path)
         xml_root = tree.getroot()
         size = xml_root.find('size')
-        #segmented = xml_root.find('segmented').text == '1'
+        # segmented = xml_root.find('segmented').text == '1'
         segmented = False
         segmented_path = None
         if segmented:
@@ -92,8 +91,10 @@ class VOC_CITY_Ingestor(Ingestor):
         single_img_detection["image"]["height"] = image_height
         single_img_detection["image"]["file_name"] = f"{image_id}.jpg"
 
-        detections = [self._get_detection(node, image_id, False, image_width, image_height) for node in xml_root.findall('vehicle')]
-        detections2 = [self._get_detection(node, image_id, True, image_width, image_height) for node in xml_root.findall('passengers')]
+        detections = [self._get_detection(node, image_id, False, image_width, image_height) for node in
+                      xml_root.findall('vehicle')]
+        detections2 = [self._get_detection(node, image_id, True, image_width, image_height) for node in
+                       xml_root.findall('passengers')]
         for detection in detections2:
             detections.append(detection)
 
@@ -150,4 +151,3 @@ class VOC_CITY_Ingestor(Ingestor):
         # }
 
         return curr_detection
-

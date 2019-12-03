@@ -14,24 +14,23 @@ from .labels_and_aliases import output_labels
 
 
 class VOCIngestor(Ingestor):
-
-    iii =0
+    iii = 0
 
     def validate(self, root, folder_names):
         if folder_names is None:
-            folder_names={'images': 'JPEGImages', 'annotations': "Annotations", "trainval": "ImageSets/Main"}
+            folder_names = {'images': 'JPEGImages', 'annotations': "Annotations", "trainval": "ImageSets/Main"}
         path = f"{root}"
         print(root)
         for subdir in folder_names.values():
             if not os.path.isdir(os.path.join(root, subdir)):
                 return False, f"Expected subdirectory {subdir}"
-            if not os.path.isfile(os.path.join(path, os.path.join(folder_names['trainval'], 'trainval.txt' ))):
+            if not os.path.isfile(os.path.join(path, os.path.join(folder_names['trainval'], 'trainval.txt'))):
                 return False, f"Expected main image set ImageSets/Main/trainval.txt to exist within {path}"
         return True, None
 
     def ingest(self, path, folder_names=None):
         if folder_names is None:
-            folder_names={'images': 'JPEGImages', 'annotations': "Annotations", "trainval": "ImageSets/Main"}
+            folder_names = {'images': 'JPEGImages', 'annotations': "Annotations", "trainval": "ImageSets/Main"}
         image_names = self._get_image_ids(path, folder_names)
         return [self._get_image_detection(path, image_name, folder_names) for image_name in image_names]
 
@@ -39,11 +38,11 @@ class VOCIngestor(Ingestor):
         if folder_names is None:
             path = f"{root}/ImageSets/mk/trainval.txt"
         else:
-            path = os.path.join(os.path.join(root, os.path.join(folder_names['trainval'], 'trainval.txt' )))
+            path = os.path.join(os.path.join(root, os.path.join(folder_names['trainval'], 'trainval.txt')))
 
         with open(path, 'r+') as f:
             lines = f.readlines()
-            if len(lines) ==0:
+            if len(lines) == 0:
                 fnames = [Path(file).stem for file in os.listdir(folder_names['images'])]
                 f.writelines(fnames)
             else:
@@ -53,7 +52,7 @@ class VOCIngestor(Ingestor):
     def _get_image_detection(self, root, image_id, folder_names):
         print(self.iii)
 
-        self.iii +=1
+        self.iii += 1
         path = f"{root}"
         image_path = os.path.join(os.path.join(root, os.path.join(folder_names['images'], f"{image_id}.jpg")))
         if not os.path.isfile(image_path):

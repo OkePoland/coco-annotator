@@ -30,7 +30,6 @@ from .validation_schemas import get_blank_detection_schema, get_blank_image_dete
 
 
 class COCOIngestor(Ingestor):
-
     default_label_file = 'labels.json'
     categories = None
 
@@ -172,15 +171,16 @@ class COCOEgestor(Egestor):
                 new_detection["iscrowd"] = detection["iscrowd"]
                 new_detection["isbbox"] = detection["isbbox"]
                 # Bbox = [x left upper corner, y left upper corner, width, height]
-                new_detection["bbox"] = [detection["left"], detection["top"], detection["right"]-detection["left"],
-                                         detection["bottom"]-detection["top"]]
+                new_detection["bbox"] = [detection["left"], detection["top"], detection["right"] - detection["left"],
+                                         detection["bottom"] - detection["top"]]
 
                 if new_detection["isbbox"] == True and detection["segmentation"] is None:
                     # segmentation from bbox = [x right upper corner, y right upper corner, x right lower corner,
                     # y right lower corner, x left lower corner, y left lower corner, x left upper corner,
                     # y left upper corner]
                     new_detection["segmentation"] = [
-                        [detection["right"], detection["top"], detection["right"], detection["bottom"], detection["left"], detection["bottom"], detection["left"], detection["top"]]
+                        [detection["right"], detection["top"], detection["right"], detection["bottom"],
+                         detection["left"], detection["bottom"], detection["left"], detection["top"]]
                     ]
                 else:
                     new_detection["segmentation"] = detection["segmentation"]

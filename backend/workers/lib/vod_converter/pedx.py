@@ -95,10 +95,10 @@ class PEDXIngestor(Ingestor):
 
     def _get_keypoints(self, keypoints_dict):
         ALL_KEYPOINTS = [
-            "nose","leye","reye","lear","rear",
-            "lsho","rsho","lelb","relb",
-            "lwri","rwri","lhip","rhip",
-            "lknee","rknee","lankl","rankl"
+            "nose", "leye", "reye", "lear", "rear",
+            "lsho", "rsho", "lelb", "relb",
+            "lwri", "rwri", "lhip", "rhip",
+            "lknee", "rknee", "lankl", "rankl"
         ]
         no_keypoints = len(keypoints_dict)
         list_keypoints = []
@@ -116,9 +116,8 @@ class PEDXIngestor(Ingestor):
                 list_keypoints.append(0)
                 list_keypoints.append(0)
         return list_keypoints, no_keypoints
-                    
+
     @staticmethod
     def _image_dimensions(path):
         with Image.open(path) as image:
             return image.width, image.height
-

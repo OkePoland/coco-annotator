@@ -24,7 +24,7 @@ def main(labels_to_split, output_dir, labels_per_file):
     for annotation in data['annotations']:
         annotations_base[annotation['image_id']].append(annotation)
 
-    print(f"Creating {chunk+1} subjsons")
+    print(f"Creating {chunk + 1} subjsons")
     for i in range(chunk + 1):
         print(f"Saving JSON file nr {i}")
 

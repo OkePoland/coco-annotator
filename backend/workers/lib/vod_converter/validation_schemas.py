@@ -96,19 +96,19 @@ _raw_image_detection_schema = {
 # Better use functions below to get copy of these dicts
 # !!!
 _raw_detection_schema = {
-            "id": None,
-            "image_id": None,
-            "label": None,
-            "segmentation": None,
-            "area": None,
-            "top": None,
-            "left": None,
-            "right": None,
-            "bottom": None,
-            "iscrowd": None,
-            "isbbox": None,
-            "keypoints": []
-        }
+    "id": None,
+    "image_id": None,
+    "label": None,
+    "segmentation": None,
+    "area": None,
+    "top": None,
+    "left": None,
+    "right": None,
+    "bottom": None,
+    "iscrowd": None,
+    "isbbox": None,
+    "keypoints": []
+}
 
 # !!!
 # Warning: If you use raw_schemas you need to make copy of it with .copy() in every iteration, because dict in python
@@ -197,7 +197,8 @@ DETECTION_SCHEMA = {
         'keypoints': {'type': 'array'},
 
     },
-    'required': ['id', 'image_id', 'label', 'segmentation', 'area', 'top', 'left', 'right', 'bottom', 'iscrowd', 'isbbox', 'keypoints']
+    'required': ['id', 'image_id', 'label', 'segmentation', 'area', 'top', 'left', 'right', 'bottom', 'iscrowd',
+                 'isbbox', 'keypoints']
 }
 
 CATEGORIES_SCHEMA = {

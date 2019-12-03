@@ -23,9 +23,8 @@ INGESTORS = {
     'coco': coco.COCOIngestor,
     'kitti': kitti.KITTIIngestor(),
     'kitti-tracking': kitti_tracking.KITTITrackingIngestor(),
-    'voc': voc.VOCIngestor(), 
+    'voc': voc.VOCIngestor(),
     'caltech': caltech.CaltechIngestor(), }
-
 
 EGESTORS = {
     'voc': voc.VOCEgestor(),

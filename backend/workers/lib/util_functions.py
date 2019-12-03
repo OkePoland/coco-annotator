@@ -1,22 +1,23 @@
 import json
 import os
 import sys
-from .vod_converter import converter
 from contextlib import redirect_stdout
 
+from .vod_converter import converter
+
 INGESTORS = [
-    'mio',              # NOT tested
-    'pedx',             # tested and working
-    'citycam',          # tested and working
-    'coco',             # tested and working
+    'mio',  # NOT tested
+    'pedx',  # tested and working
+    'citycam',  # tested and working
+    'coco',  # tested and working
     # 'daimler',        TODO: daimler needs more strict validation
-    'kitti',            # tested and working
-    'kitti-tracking',   # NOT tested
-    'voc',              # tested and working
-    'aicity',           # tested and working
-    'detrac',           # tested and working
-    'caltech',          # tested and working
-    'town-centre']      # tested and working
+    'kitti',  # tested and working
+    'kitti-tracking',  # NOT tested
+    'voc',  # tested and working
+    'aicity',  # tested and working
+    'detrac',  # tested and working
+    'caltech',  # tested and working
+    'town-centre']  # tested and working
 
 
 class RedirectStream:

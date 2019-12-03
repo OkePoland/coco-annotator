@@ -24,9 +24,9 @@ from .kitti_tracking import *
 from .mio import *  # something is wrong with mio file, probably imports fault
 from .mot_aicity import *
 from .pedx import *
+from .town_centre import TownCentreIngestor
 from .validation_schemas import IMAGE_DETECTION_SCHEMA
 from .voc import *
-from .town_centre import TownCentreIngestor
 
 
 def validate_schema(data, schema):
@@ -39,7 +39,7 @@ def validate_schema(data, schema):
 
 INGESTORS = {
     'pedx': PEDXIngestor(),
-    'citycam': VOC_CITY_Ingestor(),
+    'citycam': VocCityIngestor(),
     'coco': COCOIngestor(),
     'mio': MIOIngestor(),
     'daimler': DAIMLERIngestor(),
@@ -50,7 +50,7 @@ INGESTORS = {
     'detrac': DETRACIngestor(),
     'caltech': CaltechIngestor(),
     'town-centre': TownCentreIngestor()
-    }
+}
 
 EGESTORS = {
     'voc': VOCEgestor(),
