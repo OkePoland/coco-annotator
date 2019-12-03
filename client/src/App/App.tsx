@@ -1,6 +1,6 @@
 import React, { Suspense, useState, useEffect } from 'react';
 import { ThemeProvider } from '@material-ui/core/styles';
-import { Router, View, NotFoundBoundary } from 'react-navi';
+import { Router, View } from 'react-navi';
 
 import { UserInfo } from '../common/types';
 import { theme } from '../common/theme';
@@ -23,9 +23,7 @@ const App: React.FC = () => {
                     <SocketProvider>
                         <GlobalProvider>
                             <Suspense fallback={null}>
-                                <NotFoundBoundary render={renderNotFound}>
-                                    <View />
-                                </NotFoundBoundary>
+                                <View />
                             </Suspense>
                         </GlobalProvider>
                     </SocketProvider>
@@ -34,11 +32,5 @@ const App: React.FC = () => {
         </ThemeProvider>
     );
 };
-
-const renderNotFound = () => (
-    <div>
-        <h1>404 - Not Found</h1>
-    </div>
-);
 
 export default App;

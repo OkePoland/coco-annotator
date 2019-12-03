@@ -30,7 +30,7 @@ export const Admin: NavItem = {
 
 export const API: NavItem = {
     title: 'API',
-    href: '/api',
+    href: process.env.REACT_APP_API_BASE_URL!,
 };
 
 export const Help: NavItem = {
