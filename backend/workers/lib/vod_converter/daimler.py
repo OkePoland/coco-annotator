@@ -25,7 +25,6 @@ Ingestor for DAIMLER formats.
 """
 
 import json
-import logging
 import os
 
 from PIL import Image
@@ -43,6 +42,7 @@ daimler_dict = {
 
 }
 
+
 class DAIMLERIngestor(Ingestor):
     def validate(self, path, folder_names):
         expected_dirs = [
@@ -58,7 +58,6 @@ class DAIMLERIngestor(Ingestor):
         return self._get_image_detection(path, image_ext='png', folder_names=folder_names)
 
     def _get_image_detection(self, root, folder_names,  image_ext='png', ):
-        logger = logging.getLogger('gunicorn.error')
         # image_width, image_height = 100, 100
         image_detection_schema = []
         labels = os.listdir((f"{root}/labels"))
@@ -78,8 +77,8 @@ class DAIMLERIngestor(Ingestor):
                     except Exception as e:
                         print(e)
                         continue
-                    logger.info('id: ')
-                    logger.info(str(image_id))
+                    print('id: ')
+                    print(str(image_id))
                     image_detection_schema.append({
                         'image': {
                             'id': image_id,

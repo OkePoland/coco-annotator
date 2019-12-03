@@ -19,7 +19,6 @@ license{
 """
 import collections
 import json
-import logging
 import os
 
 from PIL import Image
@@ -138,8 +137,6 @@ class COCOEgestor(Egestor):
 
         print("Processing data by COCO Egestor...")
 
-        logger = logging.getLogger('gunicorn.error')
-
         labels = {"images": [], "categories": self.generate_categories(), "annotations": []}
 
         detection_counter = 0
@@ -204,8 +201,7 @@ class COCOEgestor(Egestor):
                 labels["annotations"].append(new_detection)
 
         print("Saving json file...")
-        logger.info('ZAKONCZYLEM EGESTOWANIE COCO')
-        logger.info(str(type(labels)))
+        print('Finished egesting COCO')
 
         encoded_labels = json.dumps(labels)
         return encoded_labels

@@ -11,8 +11,6 @@ can output the data to the filesystem.
 See `main.py` for the supported types, and `voc.py` and `kitti.py` for reference.
 """
 
-import logging
-
 from jsonschema import validate as raw_validate
 from jsonschema.exceptions import ValidationError as SchemaError
 
@@ -29,7 +27,6 @@ from .pedx import *
 from .validation_schemas import IMAGE_DETECTION_SCHEMA
 from .voc import *
 
-logger = logging.getLogger('gunicorn.error')
 
 def validate_schema(data, schema):
     """Wraps default implementation but accepting tuples as arrays too.
@@ -79,7 +76,7 @@ def convert(*, from_path, ingestor_key, to_path, egestor_key, select_only_known_
     ingestor = INGESTORS[ingestor_key]
     egestor = EGESTORS[egestor_key]
     from_valid, from_msg = ingestor.validate(from_path, folder_names)
-    logger.info(from_msg)
+    print(from_msg)
     if not from_valid:
         return from_valid, from_msg
 
@@ -97,15 +94,15 @@ def convert(*, from_path, ingestor_key, to_path, egestor_key, select_only_known_
 
 
 def validate_image_detections(image_detections):
-    logger.info("Validating...")
+    print("Validating...")
     deleted_img_detections = 0
     for i, image_detection in enumerate(image_detections):
         if i % 100 == 0:
-            logger.info(f"Validated {i} image detections")
+            print(f"Validated {i} image detections")
         try:
             validate_schema(image_detection, IMAGE_DETECTION_SCHEMA)
         except SchemaError as se:
-            logger.info(se)
+            print(se)
             image_detections.remove(image_detection)
             continue
         image = image_detection['image']
@@ -122,16 +119,16 @@ def validate_image_detections(image_detections):
                         # os.remove(image['path'])
                         raise ValueError(f"Image {image} has zero dimension bbox {detection}")
                 except Exception as ve:
-                    logger.info(ve)
+                    print(ve)
                     image_detections.remove(image_detection)
                     deleted_img_detections += 1
                     break
-    logger.info(f"Deleted labels for {deleted_img_detections} images")
+    print(f"Deleted labels for {deleted_img_detections} images")
 
 
 def convert_labels(*, image_detections, expected_labels,
                    select_only_known_labels, filter_images_without_labels):
-    logger.info("Converting labels...")
+    print("Converting labels...")
     convert_dict = {}
     for label, aliases in expected_labels.items():
         convert_dict[label.lower()] = label
@@ -141,7 +138,7 @@ def convert_labels(*, image_detections, expected_labels,
     final_image_detections = []
     for i, image_detection in enumerate(image_detections):
         if i % 100 == 0:
-            logger.info(f"Converted {i} labels")
+            print(f"Converted {i} labels")
 
         detections = []
         try:
@@ -159,5 +156,5 @@ def convert_labels(*, image_detections, expected_labels,
             elif not filter_images_without_labels:
                 final_image_detections.append(image_detection)
         except Exception as e:
-            logger.info(e)
+            print(e)
     return final_image_detections
