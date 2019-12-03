@@ -15,7 +15,8 @@ INGESTORS = [
     'voc',              # tested and working
     'aicity',           # tested and working
     'detrac',           # tested and working
-    'caltech']          # tested and working
+    'caltech',          # tested and working
+    'town-centre']      # tested and working
 
 
 class RedirectStream:
@@ -52,6 +53,7 @@ def convert_to_coco(ann_file, current_task):
     success = False
     with redirect_stdout(RedirectStream(current_task)):
         for from_key in INGESTORS:
+            print(f"\nConverting from {from_key} to {to_key}.")
             try:
                 success, encoded_labels = converter.convert(from_path=ann_file, to_path=None, ingestor_key=from_key,
                                                             egestor_key=to_key,

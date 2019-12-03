@@ -26,6 +26,7 @@ from .mot_aicity import *
 from .pedx import *
 from .validation_schemas import IMAGE_DETECTION_SCHEMA
 from .voc import *
+from .town_centre import TownCentreIngestor
 
 
 def validate_schema(data, schema):
@@ -47,7 +48,8 @@ INGESTORS = {
     'voc': VOCIngestor(),
     'aicity': MOT_AICITYIngestor(),
     'detrac': DETRACIngestor(),
-    'caltech': CaltechIngestor()
+    'caltech': CaltechIngestor(),
+    'town-centre': TownCentreIngestor()
     }
 
 EGESTORS = {
@@ -76,7 +78,7 @@ def convert(*, from_path, ingestor_key, to_path, egestor_key, select_only_known_
     ingestor = INGESTORS[ingestor_key]
     egestor = EGESTORS[egestor_key]
     from_valid, from_msg = ingestor.validate(from_path, folder_names)
-    print(from_msg)
+    # print(from_msg)
     if not from_valid:
         return from_valid, from_msg
 
