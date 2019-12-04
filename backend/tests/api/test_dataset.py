@@ -42,7 +42,7 @@ class TestDataset:
     @pytest.mark.skip
     def test_scan_dataset(self, client):
         inria_id = self._get_inria_id(client)
-        url = "/api/dataset/" + str(inria_id) + "/scan"
+        url = os.path.join("/api/dataset/", str(inria_id), "scan")
         resp = client.get(url)
         sleep(0.5)
         assert resp.status_code == 200
@@ -52,7 +52,7 @@ class TestDataset:
     @pytest.mark.skip
     def test_import_by_path(self, client):
         inria_id = self._get_inria_id(client)
-        url = "/api/dataset/" + str(inria_id) + "/coco"
+        url = os.path.join("/api/dataset/", str(inria_id), "coco")
         data = {"path_string": "/datasets/test_inria"}
         resp = client.post(url, json=data)
         sleep(2.5)
@@ -64,7 +64,7 @@ class TestDataset:
     @pytest.mark.skip
     def test_delete(self, client):
         inria_id = self._get_inria_id(client)
-        url = "/api/dataset/" + str(inria_id)
+        url = os.path.join("/api/dataset/", str(inria_id))
         resp = client.delete(url)
         assert resp.status_code == 200
         url = "/api/undo/"
