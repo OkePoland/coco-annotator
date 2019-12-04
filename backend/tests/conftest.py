@@ -1,6 +1,7 @@
-import pytest
 import json
+import os
 
+import pytest
 from webserver import app
 
 
@@ -11,19 +12,19 @@ def get_credentials():
 
 
 def create(s):
-    url = 'http://127.0.0.1:8080/api/' + 'user/register'
+    url = os.path.join("http://127.0.0.1:8080/api/", "user/register")
     data = get_credentials()
     data = json.dumps(data)
-    resp = s.post(url, data=data, headers={'content-type': 'application/json'})
-    print('create: ' + str(resp))
+    resp = s.post(url, data=data, headers={"content-type": "application/json"})
+    print("create: " + str(resp))
 
 
 def login(s):
-    url = 'http://127.0.0.1:8080/api/' + 'user/login'
+    url = os.path.join("http://127.0.0.1:8080/api/", "user/login")
     data = get_credentials()
     data = json.dumps(data)
-    resp = s.post(url, data=data, headers={'content-type': 'application/json'})
-    with open('response_code_here', 'w') as f:
+    resp = s.post(url, data=data, headers={"content-type": "application/json"})
+    with open("response_code_here", "w") as f:
         f.write(str(resp))
 
 

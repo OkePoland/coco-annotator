@@ -68,7 +68,6 @@ class DatasetModel(DynamicDocument):
         )
         task.save()
         cel_task = load_annotation_files.delay(task.id, self.id, coco_json_strings, self.name)
-
         return {
             "celery_id": cel_task.id,
             "id": task.id,
@@ -81,16 +80,13 @@ class DatasetModel(DynamicDocument):
 
         if categories is None or len(categories) == 0:
             categories = self.categories
-
         task = TaskModel(
             name=f"Exporting {self.name} into {style} format",
             dataset_id=self.id,
             group="Annotation Export"
         )
         task.save()
-
         cel_task = export_annotations.delay(task.id, self.id, categories)
-
         return {
             "celery_id": cel_task.id,
             "id": task.id,
@@ -104,18 +100,15 @@ class DatasetModel(DynamicDocument):
 
         if categories is None or len(categories) == 0:
             categories = self.categories
-
         task = TaskModel(
             name=f"Exporting {self.name} into {style} format",
             dataset_id=self.id,
             group="Annotation Export"
         )
         task.save()
-
         cel_task = export_annotations_to_tf_record.delay(task.id, self.id, categories, validation_set_size,
                                                          testing_set_size,
                                                          train_shards, val_shards, test_shards)
-
         return {
             "celery_id": cel_task.id,
             "id": task.id,
@@ -132,9 +125,7 @@ class DatasetModel(DynamicDocument):
             group="Directory Image Scan"
         )
         task.save()
-        
         cel_task = scan_dataset.delay(task.id, self.id)
-
         return {
             "celery_id": cel_task.id,
             "id": task.id,
