@@ -20,7 +20,7 @@ class PEDXIngestor(Ingestor):
             "timestamps"
         ]
         for subdir in expected_dirs:
-            if not os.path.isdir(f"{path}/{subdir}"):
+            if not os.path.isdir(os.path.join(path, subdir)):
                 return False, f"Expected subdirectory {subdir} within {path}"
         return True, None
 
@@ -34,7 +34,7 @@ class PEDXIngestor(Ingestor):
         detcs = {}
         image_width = {}
         image_height = {}
-        path_labs = os.path.join(root, "labels/2d/")
+        path_labs = os.path.join(root, "labels", "2d/")
         path_imgs = os.path.join(root, "images/")
         for date in os.scandir(path_imgs):
             for cam in os.scandir(date):
@@ -44,7 +44,7 @@ class PEDXIngestor(Ingestor):
         for im_name in names:
             detcs[im_name] = []
             im_name_seg = im_name.split("_")
-            image_path = path_imgs + im_name_seg[0] + "/" + im_name_seg[1] + "/" + im_name + ".jpg"
+            image_path = os.path.join(path_imgs, im_name_seg[0], im_name_seg[1], f"{im_name}.jpg")
             image_width[im_name], image_height[im_name] = self._image_dimensions(image_path)
         for date in os.scandir(path_labs):
             for lab in os.scandir(date):
@@ -59,7 +59,7 @@ class PEDXIngestor(Ingestor):
             im_schema = get_blank_image_detection_schema()
             if im_name in detcs:
                 im_name_seg = im_name.split("_")
-                im_path = path_imgs + im_name_seg[0] + "/" + im_name_seg[1] + "/" + im_name + ".jpg"
+                im_path = os.path.join(path_imgs, im_name_seg[0], im_name_seg[1], f"{im_name}.jpg")
                 if os.path.isfile(im_path) and im_name in detcs and len(detcs[im_name]) != 0:
                     im_schema["image"]["id"] = im_name
                     im_schema["image"]["path"] = im_path

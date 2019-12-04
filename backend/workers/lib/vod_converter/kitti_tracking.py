@@ -67,18 +67,18 @@ class KITTITrackingIngestor(Ingestor):
             "label_02"
         ]
         for subdir in expected_dirs:
-            if not os.path.isdir(f"{path}/{subdir}"):
+            if not os.path.isdir(os.path.join(path, subdir)):
                 return False, f"Expected subdirectory {subdir} within {path}"
         return True, None
 
     def ingest(self, path):
-        fs = os.listdir(f"{path}/label_02")
+        fs = os.listdir(os.path.join(path, "label_02"))
         label_fnames = [f for f in fs if LABEL_F_PATTERN.match(f)]
         image_detections = []
         for label_fname in label_fnames:
             frame_name = label_fname.split(".")[0]
-            labels_path = f"{path}/label_02/{label_fname}"
-            images_dir = f"{path}/image_02/{frame_name}"
+            labels_path = os.path.join(path, "label_02", label_fname)
+            images_dir = os.path.join(path, "image_02", frame_name)
             image_detections.extend(
                 self._get_track_image_detections(frame_name=frame_name, labels_path=labels_path, images_dir=images_dir))
         return image_detections
@@ -102,9 +102,9 @@ class KITTITrackingIngestor(Ingestor):
         image_detections = []
         for frame_id in sorted(detections_by_frame.keys()):
             frame_dets = detections_by_frame[frame_id]
-            image_path = f"{images_dir}/{frame_id:06d}.png"
+            image_path = os.path.join(images_dir, f"{frame_id:06d}.png")
             if not os.path.exists(image_path):
-                image_path = f"{images_dir}/{frame_id:06d}.jpg"
+                image_path = os.path.join(images_dir, f"{frame_id:06d}.jpg")
             with Image.open(image_path) as image:
                 image_width = image.width
                 image_height = image.height

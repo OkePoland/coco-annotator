@@ -48,10 +48,10 @@ class VOCIngestor(Ingestor):
     @staticmethod
     def _get_image_ids(root, folder_names):
         if folder_names is None:
-            path = f"{root}/Annotations"
+            path = os.path.join(root, "Annotations")
         else:
-            path = f"{root}/{folder_names['annotations']}"
-        fnames = [xml_file.split("/")[-1].split(".")[0] for xml_file in glob.glob(f"{path}/*.xml")]
+            path = os.path.join(root, folder_names['annotations'])
+        fnames = [xml_file.split("/")[-1].split(".")[0] for xml_file in glob.glob(os.path.join(path, "*.xml"))]
         return fnames
 
     def _get_image_detection(self, root, image_id, folder_names):
@@ -74,8 +74,8 @@ class VOCIngestor(Ingestor):
         segmented_path = None
         segmented_objects = None
         if segmented:
-            segmented_path = f"{root}/{folder_names['segmentation_classes']}/{image_id}.png"
-            segmented_objects = f"{root}/{folder_names['segmentation_object']}/{image_id}.png"
+            segmented_path = os.path.join(root, folder_names['segmentation_classes'], f"{image_id}.png")
+            segmented_objects = os.path.join(root, folder_names['segmentation_object'], f"{image_id}.png")
             if not os.path.isfile(segmented_path):
                 raise Exception(f"Expected segmentation file {segmented_path} to exist.")
             if not os.path.isfile(segmented_objects):
@@ -197,10 +197,10 @@ class VOCEgestor(Egestor):
         return output_labels
 
     def egest(self, *, image_detections, root, folder_names):
-        image_sets_path = f"{root}/ImageSets/Main"
+        image_sets_path = os.path.join(root, "ImageSets", "Main")
         images_path = os.path.join(root, folder_names["images"])
         annotations_path = os.path.join(root, folder_names["annotations"])
-        segmentations_path = f"{root}/SegmentationObject"
+        segmentations_path = os.path.join(root, "SegmentationObject")
         segmentations_dir_created = False
 
         for to_create in [image_sets_path, images_path, annotations_path]:
@@ -209,16 +209,16 @@ class VOCEgestor(Egestor):
             image = image_detection["image"]
             image_id = image["id"]
             src_extension = image["path"].split(".")[-1]
-            shutil.copyfile(image["path"], f"{images_path}/{image_id}.{src_extension}")
+            shutil.copyfile(image["path"], os.path.join(images_path, f"{image_id}.{src_extension}"))
 
-            with open(f"{image_sets_path}/trainval.txt", "a") as out_image_index_file:
+            with open(os.path.join(image_sets_path, "trainval.txt"), "a") as out_image_index_file:
                 out_image_index_file.write(f"{image_id}\n")
 
             if image["segmented_path"] is not None:
                 if not segmentations_dir_created:
                     os.makedirs(segmentations_path)
                     segmentations_dir_created = True
-                shutil.copyfile(image["segmented_path"], f"{segmentations_path}/{image_id}.png")
+                shutil.copyfile(image["segmented_path"], os.path.join(segmentations_path, f"{image_id}.png"))
 
             xml_root = ET.Element("annotation")
             add_text_node(xml_root, "filename", f"{image_id}.{src_extension}")
@@ -250,7 +250,7 @@ class VOCEgestor(Egestor):
                     "ymin": detection["top"] + 1,
                     "ymax": detection["bottom"] + 1
                 })
-            ET.ElementTree(xml_root).write(f"{annotations_path}/{image_id}.xml")
+            ET.ElementTree(xml_root).write(os.path.join(annotations_path, f"{image_id}.xml"))
 
 
 def add_sub_node(node, name, kvs):

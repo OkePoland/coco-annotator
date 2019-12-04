@@ -24,11 +24,11 @@ class MOT_AICITYIngestor(Ingestor):
             "images"
         ]
         for directory in expected_dirs:
-            if not os.path.isdir(f"{path}/{directory}"):
+            if not os.path.isdir(os.path.join(path, directory)):
                 return False, f"Expected subdirectory {directory} within {path}"
             else:
                 for subdirectory in expected_subdirs:
-                    if not os.path.isdir(f"{path}/{directory}/{subdirectory}"):
+                    if not os.path.isdir(os.path.join(path, directory, subdirectory)):
                         return False, f"Expected subdirectory {subdirectory} within {path}/{directory}"
         return True, "Validation OK"
 
@@ -48,10 +48,10 @@ class MOT_AICITYIngestor(Ingestor):
         images = {}
         det_id = 0
         path_ann = [
-            os.path.join(root, "train/annotations")
+            os.path.join(root, "train", "annotations")
         ]
         path_img = [
-            os.path.join(root, "/train/images")
+            os.path.join(root, "train", "images")
         ]
         for i in range(len(path_ann)):
             for ann in os.scandir(path_ann[i]):

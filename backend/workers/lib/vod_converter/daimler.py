@@ -50,7 +50,7 @@ class DAIMLERIngestor(Ingestor):
             "labels"
         ]
         for subdir in expected_dirs:
-            if not os.path.isdir(f"{path}/{subdir}"):
+            if not os.path.isdir(os.path.join(path, subdir)):
                 return False, f"Expected subdirectory {subdir} within {path}"
         return True, None
 
@@ -59,14 +59,14 @@ class DAIMLERIngestor(Ingestor):
 
     def _get_image_detection(self, root, folder_names, image_ext="png", ):
         image_detection_schema = []
-        labels = os.listdir(f"{root}/labels")
+        labels = os.listdir(os.path.join(root, "labels"))
         for filename in labels:
             try:
                 path = os.path.join(root, "labels", filename)
                 with open(path) as f:
                     data = json.load(f)
                     image_id = data["imagename"].split(".")[0]
-                    image_path = f"{root}/images/{image_id}.{image_ext}"
+                    image_path = os.path.join(root, "images", f"{image_id}.{image_ext}")
 
                     detections = self._get_detections(data["children"])
                     detections = [det for det in detections if

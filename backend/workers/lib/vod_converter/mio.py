@@ -5,7 +5,7 @@ photo_id|label|x1|y1|x2|y2
 titles above should be added to csv as column names
 """
 import pandas as pd
-
+import os
 from .abstract import Ingestor
 
 labels = {
@@ -56,7 +56,7 @@ class MIOIngestor(Ingestor):
             detections = [det for det in detections if
                           det["left"] < det["right"] and det["top"] < det["bottom"]]
             image_id = row["id"]
-            image_path = f"{file}/train/{image_id}.jpg"
+            image_path = os.path.join(file, "train", f"{image_id}.jpg")
             file_name = f"{image_id}.jpg"
             image_width, image_height = 1920, 1080
 

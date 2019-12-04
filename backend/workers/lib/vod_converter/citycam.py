@@ -39,9 +39,9 @@ class VocCityIngestor(Ingestor):
 
     def _get_image_ids(self, root, folder_names):
         if folder_names is None:
-            path = f"{root}/{self.folder_names['sets']}/{self.chosen_set}"
+            path = os.path.join(root, self.folder_names['sets'], self.chosen_set)
         else:
-            path = f"{root}/{folder_names['sets']}/{self.chosen_set}"
+            path = os.path.join(root, folder_names['sets'], self.chosen_set)
 
         with open(path, "r+") as f:
             lines = f.readlines()
@@ -68,7 +68,7 @@ class VocCityIngestor(Ingestor):
         segmented = False
         segmented_path = None
         if segmented:
-            segmented_path = f"{root}/SegmentationObject/{image_id}.png"
+            segmented_path = os.path.join(root, "SegmentationObject", f"{image_id}.png")
             if not os.path.isfile(segmented_path):
                 raise Exception(f"Expected segmentation file {segmented_path} to exist.")
         image_width = int(xml_root.find("width").text)

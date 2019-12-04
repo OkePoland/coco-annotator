@@ -57,9 +57,9 @@ class CaltechIngestor(Ingestor):
             "images",
         ]
         for subdir in expected_dirs:
-            if not os.path.isdir(f"{path}/{subdir}"):
+            if not os.path.isdir(os.path.join(path, subdir)):
                 return False, f"Expected subdirectory {subdir} within {path}"
-        if not os.path.isfile(f"{path}/annotations.json"):
+        if not os.path.isfile(os.path.join(path, "annotations.json")):
             return False, f"Expected annotations.json file within {path}"
         return True, None
 
@@ -69,7 +69,7 @@ class CaltechIngestor(Ingestor):
     def _get_image_detection(self, root, folder_names):
         annotations = []
         failed_loads = 0
-        path = f"{root}/annotations.json"
+        path = os.path.join(root, "annotations.json")
         with open(path) as f:
             data = json.load(f)
             total_sets = len(data)
@@ -82,7 +82,7 @@ class CaltechIngestor(Ingestor):
                             single_img_detection = get_blank_image_detection_schema()
 
                             image_id = f"{data_set_key}_{video_key}_{frame_key}"
-                            image_path = f"{root}/images/{image_id}.png"
+                            image_path = os.path.join(root, "images", f"{image_id}.png")
                             image_width, image_height = self._image_dimensions(image_path)
 
                             detections = self._get_detections(frame_dict, image_id, image_width, image_height)

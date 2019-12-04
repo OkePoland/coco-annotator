@@ -26,8 +26,6 @@ each row corresponds to one object. The 15 columns represent:
    1    rotation_y   Rotation ry around Y-axis in camera coordinates [-pi..pi]
    1    score        Only for results: Float, indicating confidence in
                      detection, needed for p/r curves, higher is better.
-
-
 """
 
 import csv
@@ -47,9 +45,9 @@ class KITTIIngestor(Ingestor):
             "labels"
         ]
         for subdir in expected_dirs:
-            if not os.path.isdir(f"{path}/{subdir}"):
+            if not os.path.isdir(os.path.join(path, subdir)):
                 return False, f"Expected subdirectory {subdir} within {path}"
-        if not os.path.isfile(f"{path}/train.txt"):
+        if not os.path.isfile(os.path.join(path, "train.txt")):
             return False, f"Expected train.txt file within {path}"
         return True, None
 
@@ -67,22 +65,22 @@ class KITTIIngestor(Ingestor):
     @staticmethod
     def find_image_ext(root, image_id):
         for image_ext in ["png", "jpg"]:
-            if os.path.exists(f"{root}/images/{image_id}.{image_ext}"):
+            if os.path.exists(os.path.join(root, "images", f"{image_id}.{image_ext}")):
                 return image_ext
-        raise Exception(f"could not find jpg or png for {image_id} at {root}/images")
+        raise Exception(f"could not find jpg or png for {image_id} at {os.path.join(root, 'images')}")
 
     @staticmethod
     def _get_image_ids(root):
-        path = f"{root}/train.txt"
+        path = os.path.join(root, "train.txt")
         with open(path) as f:
             return f.read().strip().split("\n")
 
     def _get_image_detection(self, root, image_id, *, image_ext="png", folder_names):
         try:
-            detections_fpath = f"{root}/labels/{image_id}.txt"
+            detections_fpath = os.path.join(root, "labels", f"{image_id}.txt")
             detections = self._get_detections(detections_fpath, image_id)
             detections = [det for det in detections if det["left"] < det["right"] and det["top"] < det["bottom"]]
-            image_path = f"{root}/images/{image_id}.{image_ext}"
+            image_path = os.path.join(root, "images", f"{image_id}.{image_ext}")
             image_width, image_height = _image_dimensions(image_path)
             return {
                 "image": {
@@ -143,18 +141,18 @@ class KITTIEgestor(Egestor):
         return output_labels
 
     def egest(self, *, image_detections, root, folder_names):
-        images_dir = f"{root}/images"
+        images_dir = os.path.join(root, "images")
         os.makedirs(images_dir, exist_ok=True)
-        labels_dir = f"{root}/labels"
+        labels_dir = os.path.join(root, "labels")
         os.makedirs(labels_dir, exist_ok=True)
-        id_file = f"{root}/train.txt"
+        id_file = os.path.join(root, "train.txt")
 
         for image_detection in image_detections:
             image = image_detection["image"]
             image_id = image["id"]
             src_extension = image["path"].split(".")[-1]
             try:
-                shutil.copyfile(image["path"], f"{images_dir}/{image_id}.{src_extension}")
+                shutil.copyfile(image["path"], os.path.join(images_dir, f"{image_id}.{src_extension}"))
             except FileNotFoundError as e:
                 print(e)
                 continue
@@ -162,7 +160,7 @@ class KITTIEgestor(Egestor):
             with open(id_file, "a") as out_image_index_file:
                 out_image_index_file.write(f"{image_id}\n")
 
-            out_labels_path = f"{labels_dir}/{image_id}.txt"
+            out_labels_path = os.path.join(labels_dir, f"{image_id}.txt")
             with open(out_labels_path, "w") as csvfile:
                 csvwriter = csv.writer(csvfile, delimiter=" ", quoting=csv.QUOTE_MINIMAL)
 

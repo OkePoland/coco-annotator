@@ -16,7 +16,7 @@ class DETRACIngestor(Ingestor):
             "DETRAC-test-data"
         ]
         for subdir in expected_dirs:
-            if not os.path.isdir(f"{path}/{subdir}"):
+            if not os.path.isdir(os.path.join(path, subdir)):
                 return False, f"Expected subdirectory {subdir} within {path}"
         return True, None
 

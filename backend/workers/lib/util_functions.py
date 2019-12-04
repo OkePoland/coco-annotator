@@ -10,7 +10,7 @@ INGESTORS = [
     "pedx",  # tested and working
     "citycam",  # tested and working
     "coco",  # tested and working
-    # "daimler",        TODO: daimler needs more strict validation
+    # "daimler",   # NOT tested
     "kitti",  # tested and working
     "kitti-tracking",  # NOT tested
     "voc",  # tested and working

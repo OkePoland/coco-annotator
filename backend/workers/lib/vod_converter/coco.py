@@ -38,9 +38,9 @@ class COCOIngestor(Ingestor):
             "images"
         ]
         for subdir in expected_dirs:
-            if not os.path.isdir(f"{path}/{subdir}"):
+            if not os.path.isdir(os.path.join(path, subdir)):
                 return False, f"Expected subdirectory {subdir} within {path}"
-        if not os.path.isfile(f"{path}/{self.default_label_file}"):
+        if not os.path.isfile(os.path.join(path, self.default_label_file)):
             return False, f"Expected {self.default_label_file} file within {path}"
         return True, None
 
@@ -48,7 +48,7 @@ class COCOIngestor(Ingestor):
         return self._get_image_detection(path, folder_names=folder_names)
 
     def _get_image_ids(self, root):
-        path = f"{root}/{self.default_label_file}"
+        path = os.path.join(root, self.default_label_file)
         with open(path) as f:
             data = json.load(f)
             image_ids = [element["file_name"] for element in data["images"]]
