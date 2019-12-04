@@ -114,37 +114,4 @@ export const deleteImage = async (id: number) => {
 
 export const downloadImage = async () => {
     // TODO
-    /*
-    downloadURI(uri, exportName) {
-      let link = document.createElement("a");
-      link.href = uri;
-      link.download = exportName;
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-    },
-    openAnnotator() {
-      this.$router.push({
-        name: "annotate",
-        params: { identifier: this.image.id }
-      });
-    },
-    onDownloadClick() {
-      this.downloadURI(
-        "/api/image/" + this.image.id + "?asAttachment=true",
-        this.image.file_name
-      );
-
-      axios.get("/api/image/" + this.image.id + "/coco").then(reponse => {
-        let dataStr =
-          "data:text/json;charset=utf-8," +
-          encodeURIComponent(JSON.stringify(reponse.data));
-        this.downloadURI(
-          dataStr,
-          this.image.file_name.replace(/\.[^/.]+$/, "") + ".json"
-        );
-      });
-    },    
-    
-    */
 };
