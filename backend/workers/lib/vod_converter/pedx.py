@@ -1,6 +1,6 @@
-'''
+"""
     Ingestor for PedX dataset format. PedX annotations are stored in json format.
-'''
+"""
 import json
 import os
 
@@ -93,7 +93,8 @@ class PEDXIngestor(Ingestor):
         temp["bottom"] = 0
         return temp
 
-    def _get_keypoints(self, keypoints_dict):
+    @staticmethod
+    def _get_keypoints(keypoints_dict):
         ALL_KEYPOINTS = [
             "nose", "leye", "reye", "lear", "rear",
             "lsho", "rsho", "lelb", "relb",

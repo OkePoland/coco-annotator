@@ -57,7 +57,6 @@ class VocCityIngestor(Ingestor):
             print(f"Processed {self.iii} xmls")
         self.iii += 1
 
-        path = f"{root}"
         image_path = os.path.join(os.path.join(root, os.path.join(folder_names["images"], f"{image_id}.jpg")))
         if not os.path.isfile(image_path):
             raise Exception(f"Expected {image_path} to exist.")
@@ -69,7 +68,7 @@ class VocCityIngestor(Ingestor):
         segmented = False
         segmented_path = None
         if segmented:
-            segmented_path = f"{path}/SegmentationObject/{image_id}.png"
+            segmented_path = f"{root}/SegmentationObject/{image_id}.png"
             if not os.path.isfile(segmented_path):
                 raise Exception(f"Expected segmentation file {segmented_path} to exist.")
         image_width = int(xml_root.find("width").text)

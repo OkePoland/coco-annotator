@@ -35,7 +35,6 @@ class TownCentreIngestor(Ingestor):
         for i, image_path in enumerate(glob.glob(os.path.join(root, "images", "*.png"))):
             if i % 100 == 0:
                 print(f"Ingested {i} images")
-
             single_img_detection = get_blank_image_detection_schema()
             img_file_name = image_path.split("/")[-1]
             img_name = image_path.split("/")[-1].split(".")[0]
@@ -47,10 +46,9 @@ class TownCentreIngestor(Ingestor):
             single_img_detection["image"]["width"] = img_width
             single_img_detection["image"]["height"] = img_height
             single_img_detection["image"]["file_name"] = img_file_name
-
             single_img_detection["detections"] = self._get_detections(annotations_base, img_name, img_width, img_height)
-            image_detections.append(single_img_detection)
 
+            image_detections.append(single_img_detection)
         return image_detections
 
     def _create_annotations_base(self, root):
@@ -77,7 +75,6 @@ class TownCentreIngestor(Ingestor):
         detections_for_curr_img = []
         for groundtruth_annotation in annotations_base[img_name]:
             curr_detection = get_blank_detection_schema()
-
             curr_detection["id"] = self.detection_counter
             self.detection_counter += 1
             curr_detection["image_id"] = int(img_name.split("_")[-1])
@@ -93,8 +90,8 @@ class TownCentreIngestor(Ingestor):
             curr_detection["iscrowd"] = False
             curr_detection["isbbox"] = True
             curr_detection["keypoints"] = []
-            detections_for_curr_img.append(curr_detection)
 
+            detections_for_curr_img.append(curr_detection)
         return detections_for_curr_img
 
     @staticmethod

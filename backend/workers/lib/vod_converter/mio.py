@@ -33,14 +33,13 @@ class MIOIngestor(Ingestor):
         return self._get_image_detection(path, folder_names=folder_names)
 
     def _get_image_detection(self, file, folder_names):
-        image_detection_schema = []
-        image_detection_schema.append({"image": {"id": "00000000", "file_name": "temp"}, "detections": {}})
+        image_detection_schema = [{"image": {"id": "00000000", "file_name": "temp"}, "detections": {}}]
         df = pd.read_csv(file[0], dtype=str)
         for index, row in df.iterrows():
             if len(image_detection_schema) % 50 == 1000:
-                print(len(image_detection_schema))
-            if int(image_detection_schema[-1]["image"]["id"]) < int(row["id"]) and image_detection_schema[-1]["image"][
-                "file_name"] != file_name:
+                print(f"Processed {len(image_detection_schema)} images")
+            if int(image_detection_schema[-1]["image"]["id"]) < int(row["id"]) \
+                    and image_detection_schema[-1]["image"]["file_name"] != file_name:
                 image_detection_schema.append({
                     "image": {
                         "id": image_id,
@@ -87,10 +86,11 @@ class MIOIngestor(Ingestor):
 
                 })
             except ValueError as ve:
-                print(ve + row)
+                print(f"{ve} - {row}")
         return detections
 
-    def _get_category(self, data, category_id):
+    @staticmethod
+    def _get_category(data, category_id):
         for category in data["categories"]:
             if category["id"] == category_id:
                 return category["name"]

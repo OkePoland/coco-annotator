@@ -21,7 +21,6 @@ def split_coco_labels(json_string, max_byte_size):
     img_chunk_size = int(len(images) / number_of_chunks)
 
     print(f"Splitting {len(images)} images to substrings with {img_chunk_size} images per string")
-
     image_chunks = [images[i * img_chunk_size: (i + 1) * img_chunk_size] for i in range(number_of_chunks)]
     image_chunks.append(images[number_of_chunks * img_chunk_size:])
 

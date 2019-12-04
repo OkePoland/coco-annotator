@@ -1,5 +1,5 @@
 """
-    Ingestor for AICity format. TODO: test if works for original MOT Challenge format
+    Ingestor for AICity format.
         - Stored in txt files, one file for all frames from one camera.
         - Ground truth stored as following:
             [frame, ID, left, top, width, height, 1, -1, -1, -1]
@@ -17,7 +17,6 @@ from .abstract import Ingestor
 class MOT_AICITYIngestor(Ingestor):
     def validate(self, path, folder_names):
         expected_dirs = [
-            # "test",
             "train"
         ]
         expected_subdirs = [
@@ -38,9 +37,9 @@ class MOT_AICITYIngestor(Ingestor):
             ret = self._get_image_detection(path, folder_names=folder_names)
             print(type(ret))
             return ret
-        except Exception:
+        except Exception as e:
             print(traceback.format_exc())
-            print("Ingesting failed")
+            print(f"Ingesting failed - {e}")
             exit()
 
     def _get_image_detection(self, root, folder_names):
@@ -64,7 +63,6 @@ class MOT_AICITYIngestor(Ingestor):
                         img_name = f"{img_name_base}{'0000'[:4 - len(frame_id)]}{frame_id}.jpg"
                         img_path = os.path.join(path_img[i], img_name)
                         success, width, height = self._image_dimensions(img_path)
-                        # success, width, height = True, 1000, 1000
                         if not success:
                             continue
                         if frame_id not in images.keys():
@@ -87,9 +85,7 @@ class MOT_AICITYIngestor(Ingestor):
                                 detections[frame_id].append(det)
                             det_id += 1
                         else:
-                            print("Parsing row failed")
-                            print(row)
-                            print(det)
+                            print(f"Parsing failed, row: {row}, detection: {det}")
                             continue
         for k, v in images.items():
             image_detections.append({
@@ -126,5 +122,6 @@ class MOT_AICITYIngestor(Ingestor):
         try:
             with Image.open(path) as image:
                 return True, image.width, image.height
-        except Exception:
+        except FileNotFoundError as e:
+            print(e)
             return False, -1, -1
