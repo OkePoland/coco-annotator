@@ -96,7 +96,6 @@ class CaltechIngestor(Ingestor):
                             single_img_detection["image"]["file_name"] = image_path.split("/")[-1]
 
                             single_img_detection["detections"] = detections
-
                             annotations.append(single_img_detection)
 
                         except Exception as e:
@@ -105,10 +104,8 @@ class CaltechIngestor(Ingestor):
 
                     video_processed += 1
                     print(f"Processed {video_processed} videos in current set")
-
                 sets_processed += 1
                 print(f"Loaded {sets_processed} sets on {total_sets}...")
-
         print(f"Unable to load {failed_loads} images")
         return annotations
 
@@ -117,7 +114,6 @@ class CaltechIngestor(Ingestor):
         for i, annotation in enumerate(frame):
             curr_detection = get_blank_detection_schema()
             try:
-
                 curr_detection["id"] = i
                 curr_detection["image_id"] = img_id
                 curr_detection["label"] = annotation["lbl"]
@@ -133,7 +129,6 @@ class CaltechIngestor(Ingestor):
                 curr_detection["keypoints"] = []
 
                 detections.append(curr_detection)
-
             except Exception as e:
                 print(e)
         return detections

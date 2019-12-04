@@ -58,10 +58,8 @@ class DAIMLERIngestor(Ingestor):
         return self._get_image_detection(path, image_ext="png", folder_names=folder_names)
 
     def _get_image_detection(self, root, folder_names, image_ext="png", ):
-        # image_width, image_height = 100, 100
         image_detection_schema = []
-        labels = os.listdir((f"{root}/labels"))
-        path = os.path.join(root, "labels")
+        labels = os.listdir(f"{root}/labels")
         for filename in labels:
             try:
                 path = os.path.join(root, "labels", filename)
@@ -75,11 +73,10 @@ class DAIMLERIngestor(Ingestor):
                                   det["left"] < det["right"] and det["top"] < det["bottom"]]
                     try:
                         image_width, image_height = _image_dimensions(image_path)
-                    except Exception as e:
+                    except FileNotFoundError as e:
                         print(e)
                         continue
-                    print("id: ")
-                    print(str(image_id))
+                    print(f"id: {image_id}")
                     image_detection_schema.append({
                         "image": {
                             "id": image_id,
@@ -90,11 +87,13 @@ class DAIMLERIngestor(Ingestor):
                         },
                         "detections": detections
                     })
-            except:
+            except FileNotFoundError as e:
+                print(e)
                 continue
         return image_detection_schema
 
-    def _get_detections(self, children):
+    @staticmethod
+    def _get_detections(children):
         detections = []
         for element in children:
             if len(element) == 0:
@@ -113,7 +112,7 @@ class DAIMLERIngestor(Ingestor):
                     "bottom": y2
                 })
             except ValueError as ve:
-                print(element)
+                print(f"{ve} - {element}")
         return detections
 
 

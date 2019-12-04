@@ -21,7 +21,7 @@ from .daimler import *
 from .detrac import *
 from .kitti import *
 from .kitti_tracking import *
-from .mio import *  # something is wrong with mio file, probably imports fault
+from .mio import *
 from .mot_aicity import *
 from .pedx import *
 from .town_centre import TownCentreIngestor
@@ -78,7 +78,6 @@ def convert(*, from_path, ingestor_key, to_path, egestor_key, select_only_known_
     ingestor = INGESTORS[ingestor_key]
     egestor = EGESTORS[egestor_key]
     from_valid, from_msg = ingestor.validate(from_path, folder_names)
-    # print(from_msg)
     if not from_valid:
         return from_valid, from_msg
 
@@ -112,13 +111,10 @@ def validate_image_detections(image_detections):
             if detection["isbbox"] is True:
                 try:
                     if detection["right"] > image["width"]:
-                        # os.remove(image["path"])
                         raise ValueError(f"Image {image} has out of bounds bounding box {detection}")
                     if detection["bottom"] > image["height"]:
-                        # os.remove(image["path"])
                         raise ValueError(f"Image {image} has out of bounds bounding box {detection}")
                     if detection["right"] <= detection["left"] or detection["bottom"] <= detection["top"]:
-                        # os.remove(image["path"])
                         raise ValueError(f"Image {image} has zero dimension bbox {detection}")
                 except Exception as ve:
                     print(ve)

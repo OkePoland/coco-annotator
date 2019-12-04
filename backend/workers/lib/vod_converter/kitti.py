@@ -64,13 +64,15 @@ class KITTIIngestor(Ingestor):
         print(f"size: {len(tmp)}")
         return tmp
 
-    def find_image_ext(self, root, image_id):
+    @staticmethod
+    def find_image_ext(root, image_id):
         for image_ext in ["png", "jpg"]:
             if os.path.exists(f"{root}/images/{image_id}.{image_ext}"):
                 return image_ext
         raise Exception(f"could not find jpg or png for {image_id} at {root}/images")
 
-    def _get_image_ids(self, root):
+    @staticmethod
+    def _get_image_ids(root):
         path = f"{root}/train.txt"
         with open(path) as f:
             return f.read().strip().split("\n")
@@ -122,7 +124,7 @@ class KITTIIngestor(Ingestor):
                         "keypoints": []
                     })
                 except ValueError as ve:
-                    print(row)
+                    print(f"{ve} - {row}")
         return detections
 
 
@@ -145,13 +147,11 @@ class KITTIEgestor(Egestor):
         os.makedirs(images_dir, exist_ok=True)
         labels_dir = f"{root}/labels"
         os.makedirs(labels_dir, exist_ok=True)
-
         id_file = f"{root}/train.txt"
 
         for image_detection in image_detections:
             image = image_detection["image"]
             image_id = image["id"]
-            print(image_id)
             src_extension = image["path"].split(".")[-1]
             try:
                 shutil.copyfile(image["path"], f"{images_dir}/{image_id}.{src_extension}")

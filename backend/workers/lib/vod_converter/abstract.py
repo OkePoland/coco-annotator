@@ -22,7 +22,6 @@ class Ingestor:
 
 
 class Egestor:
-
     def expected_labels(self):
         """
         Return a dict with a key for each label generally expected by this dataset format and

@@ -65,10 +65,8 @@ def convert_to_coco(ann_file, current_task):
             if success:
                 print(f"Successfully converted from {from_key} to {to_key}.")
                 coco = encoded_labels
-                sys.stdout = sys.__stdout__
                 return coco, True
             else:
                 print(f"Failed to convert from {from_key} to {to_key}")
 
-        sys.stdout = sys.__stdout__
         return None, False

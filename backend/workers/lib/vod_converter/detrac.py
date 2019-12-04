@@ -29,7 +29,6 @@ class DETRACIngestor(Ingestor):
         for lab_type in lab_dirs:
             directory = os.path.join(root, lab_type)
             for lab in os.scandir(directory):
-                # TODO: get image dimensions
                 mov_name = os.path.splitext(lab.name)[0]
                 tree = ET.parse(lab.path)
                 toor = tree.getroot()

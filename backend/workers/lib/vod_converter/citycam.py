@@ -15,7 +15,6 @@ from .validation_schemas import get_blank_image_detection_schema, get_blank_dete
 class VocCityIngestor(Ingestor):
     iii = 0
     detection_counter = 0
-
     folder_names = {"images": "JPEGImages", "annotations": "Annotations", "sets": "ImageSets/Main"}
     chosen_set = "trainval.txt"
 
@@ -23,13 +22,11 @@ class VocCityIngestor(Ingestor):
         self.chosen_set = chosen_set
         if folder_names is None:
             folder_names = self.folder_names
-        path = f"{root}"
-        print(root)
         for subdir in folder_names.values():
             if not os.path.isdir(os.path.join(root, subdir)):
                 return False, f"Expected subdirectory {subdir}"
-            if not os.path.isfile(os.path.join(path, os.path.join(folder_names["sets"], chosen_set))):
-                return False, f"Expected {chosen_set} to exist within {os.path.join(path, folder_names['sets'])}"
+            if not os.path.isfile(os.path.join(root, os.path.join(folder_names["sets"], chosen_set))):
+                return False, f"Expected {chosen_set} to exist within {os.path.join(root, folder_names['sets'])}"
         return True, None
 
     def ingest(self, path, folder_names=None):
@@ -64,14 +61,11 @@ class VocCityIngestor(Ingestor):
         image_path = os.path.join(os.path.join(root, os.path.join(folder_names["images"], f"{image_id}.jpg")))
         if not os.path.isfile(image_path):
             raise Exception(f"Expected {image_path} to exist.")
-
         annotation_path = os.path.join(os.path.join(root, os.path.join(folder_names["annotations"], f"{image_id}.xml")))
         if not os.path.isfile(annotation_path):
             raise Exception(f"Expected annotation file {annotation_path} to exist.")
         tree = ET.parse(annotation_path)
         xml_root = tree.getroot()
-        size = xml_root.find("size")
-        # segmented = xml_root.find("segmented").text == "1"
         segmented = False
         segmented_path = None
         if segmented:
@@ -82,7 +76,6 @@ class VocCityIngestor(Ingestor):
         image_height = int(xml_root.find("height").text)
 
         single_img_detection = get_blank_image_detection_schema()
-
         single_img_detection["image"]["id"] = image_id
         single_img_detection["image"]["dataset_id"] = None
         single_img_detection["image"]["path"] = image_path
@@ -99,14 +92,12 @@ class VocCityIngestor(Ingestor):
             detections.append(detection)
 
         single_img_detection["detections"] = detections
-
         return single_img_detection
 
     def _get_detection(self, node, img_id, passenger, width, height):
         curr_detection = get_blank_detection_schema()
 
         bndbox = node.find("bndbox")
-
         curr_detection["id"] = self.detection_counter
         self.detection_counter += 1
         curr_detection["image_id"] = str(img_id)
