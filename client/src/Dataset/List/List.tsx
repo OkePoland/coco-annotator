@@ -1,4 +1,5 @@
 import React from 'react';
+import Container from '@material-ui/core/Container';
 import Box from '@material-ui/core/Box';
 import Grid from '@material-ui/core/Grid';
 import Button from '@material-ui/core/Button';
@@ -9,13 +10,13 @@ import MenuItem from '@material-ui/core/MenuItem';
 import Pagination from 'material-ui-flat-pagination';
 import MuiTextField from '@material-ui/core/TextField';
 
-import { useStyles } from './datasets.styles';
-import { useDatasetsPage, useFormikCreate } from './datasets.hooks';
-import DatasetCard from './DatasetCard';
-import CustomDialog from '../common/components/CustomDialog';
-import TextField from '../common/components/Formik/TextField';
+import { useStyles } from './list.styles';
+import { useDatasetsPage, useFormikCreate } from './list.hooks';
+import DatasetCard from './ListCard';
+import CustomDialog from '../../common/components/CustomDialog';
+import TextField from '../../common/components/Formik/TextField';
 
-const Datasets: React.FC = () => {
+const List: React.FC = () => {
     const classes = useStyles();
     const {
         list: { datasets, page, pageCount, setPage, refreshPage },
@@ -80,7 +81,7 @@ const Datasets: React.FC = () => {
                 </Box>
             </Box>
 
-            <Box mt={2}>
+            <Container>
                 {datasets.length > 0 ? (
                     <Box>
                         <Box textAlign="center" mb={1}>
@@ -123,7 +124,7 @@ const Datasets: React.FC = () => {
                 ) : (
                     <Box textAlign="center">You need to create a dataset!</Box>
                 )}
-            </Box>
+            </Container>
 
             {/* Container Dialogs */}
             <CustomDialog
@@ -223,4 +224,4 @@ const Datasets: React.FC = () => {
     );
 };
 
-export default Datasets;
+export default List;

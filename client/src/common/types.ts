@@ -42,6 +42,14 @@ export interface Dataset {
     };
 }
 
+export interface Image {
+    id: number;
+    file_name: string;
+    annotated: boolean;
+    annotating: [];
+    num_annotations: number;
+}
+
 interface IDict {
     [key: string]: any;
 }

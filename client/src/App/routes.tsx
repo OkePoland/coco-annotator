@@ -4,7 +4,9 @@ import { compose, mount, route, withView, redirect, map } from 'navi';
 
 import Layout from './Layout';
 import Auth from '../Auth/Auth';
-import Datasets from '../Datasets/Datasets';
+import DatasetsList from '../Dataset/List/List';
+import DatasetDetails from '../Dataset/Details/Details';
+
 import {
     withAuthentication,
     withAdminContentProtection,
@@ -37,12 +39,12 @@ export default compose(
     mount({
         '/': withAuthentication(
             route({
-                view: <Datasets />,
+                view: <DatasetsList />,
             }),
         ),
         '/datasets': withAuthentication(
             route({
-                view: <Datasets />,
+                view: <DatasetsList />,
             }),
         ),
         '/categories': withAuthentication(
@@ -71,8 +73,10 @@ export default compose(
             }),
         ),
         '/dataset/:id': withAuthentication(
-            route({
-                view: <div />,
+            route(async req => {
+                return {
+                    view: <DatasetDetails id={parseInt(req.params.id)} />,
+                };
             }),
         ),
         '/user': withAuthentication(

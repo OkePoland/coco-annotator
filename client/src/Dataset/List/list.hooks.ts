@@ -3,10 +3,10 @@ import { useNavigation } from 'react-navi';
 import { useFormik, FormikProps } from 'formik';
 import * as Yup from 'yup';
 
-import { Dataset } from '../common/types';
-import * as DatasetApi from './datasets.api';
-import useGlobalContext from '../common/hooks/useGlobalContext';
-import { addProcess, removeProcess } from '../common/utils/globalActions';
+import { Dataset } from '../../common/types';
+import * as DatasetApi from '../datasets.api';
+import useGlobalContext from '../../common/hooks/useGlobalContext';
+import { addProcess, removeProcess } from '../../common/utils/globalActions';
 
 // interfaces
 interface DatasetsState {
