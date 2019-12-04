@@ -38,24 +38,24 @@ def validate_schema(data, schema):
 
 
 INGESTORS = {
-    'pedx': PEDXIngestor(),
-    'citycam': VocCityIngestor(),
-    'coco': COCOIngestor(),
-    'mio': MIOIngestor(),
-    'daimler': DAIMLERIngestor(),
-    'kitti': KITTIIngestor(),
-    'kitti-tracking': KITTITrackingIngestor(),
-    'voc': VOCIngestor(),
-    'aicity': MOT_AICITYIngestor(),
-    'detrac': DETRACIngestor(),
-    'caltech': CaltechIngestor(),
-    'town-centre': TownCentreIngestor()
+    "pedx": PEDXIngestor(),
+    "citycam": VocCityIngestor(),
+    "coco": COCOIngestor(),
+    "mio": MIOIngestor(),
+    "daimler": DAIMLERIngestor(),
+    "kitti": KITTIIngestor(),
+    "kitti-tracking": KITTITrackingIngestor(),
+    "voc": VOCIngestor(),
+    "aicity": MOT_AICITYIngestor(),
+    "detrac": DETRACIngestor(),
+    "caltech": CaltechIngestor(),
+    "town-centre": TownCentreIngestor()
 }
 
 EGESTORS = {
-    'voc': VOCEgestor(),
-    'kitti': KITTIEgestor(),
-    'coco': COCOEgestor()
+    "voc": VOCEgestor(),
+    "kitti": KITTIEgestor(),
+    "coco": COCOEgestor()
 }
 
 
@@ -107,18 +107,18 @@ def validate_image_detections(image_detections):
             print(se)
             image_detections.remove(image_detection)
             continue
-        image = image_detection['image']
-        for detection in image_detection['detections']:
-            if detection['isbbox'] is True:
+        image = image_detection["image"]
+        for detection in image_detection["detections"]:
+            if detection["isbbox"] is True:
                 try:
-                    if detection['right'] > image['width']:
-                        # os.remove(image['path'])
+                    if detection["right"] > image["width"]:
+                        # os.remove(image["path"])
                         raise ValueError(f"Image {image} has out of bounds bounding box {detection}")
-                    if detection['bottom'] > image['height']:
-                        # os.remove(image['path'])
+                    if detection["bottom"] > image["height"]:
+                        # os.remove(image["path"])
                         raise ValueError(f"Image {image} has out of bounds bounding box {detection}")
-                    if detection['right'] <= detection['left'] or detection['bottom'] <= detection['top']:
-                        # os.remove(image['path'])
+                    if detection["right"] <= detection["left"] or detection["bottom"] <= detection["top"]:
+                        # os.remove(image["path"])
                         raise ValueError(f"Image {image} has zero dimension bbox {detection}")
                 except Exception as ve:
                     print(ve)
@@ -144,15 +144,15 @@ def convert_labels(*, image_detections, expected_labels,
 
         detections = []
         try:
-            for detection in image_detection['detections']:
-                label = detection['label']
+            for detection in image_detection["detections"]:
+                label = detection["label"]
 
                 fallback_label = label if not select_only_known_labels else None
                 final_label = convert_dict.get(label.lower(), fallback_label)
                 if final_label:
-                    detection['label'] = final_label
+                    detection["label"] = final_label
                     detections.append(detection)
-            image_detection['detections'] = detections
+            image_detection["detections"] = detections
             if detections:
                 final_image_detections.append(image_detection)
             elif not filter_images_without_labels:

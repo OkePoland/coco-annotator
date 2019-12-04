@@ -36,19 +36,19 @@ class UdacityCrowdAIIngestor(Ingestor):
         for idx, image_path in enumerate(glob.glob(f"{root}/*.jpg")):
             f_name = image_path.split("/")[-1]
             f_image_labels = image_labels[f_name]
-            fname_id = f_name.split('.')[0]
+            fname_id = f_name.split(".")[0]
 
             image_width, image_height = _image_dimensions(image_path)
 
             def clamp_bbox(det):
-                if det['right'] > image_width - 1:
-                    det['right'] = image_width - 1
-                if det['bottom'] > image_height - 1:
-                    det['bottom'] = image_height - 1
+                if det["right"] > image_width - 1:
+                    det["right"] = image_width - 1
+                if det["bottom"] > image_height - 1:
+                    det["bottom"] = image_height - 1
                 return det
 
             def valid_bbox(det):
-                return det['right'] > det['left'] and det['bottom'] > det['top']
+                return det["right"] > det["left"] and det["bottom"] > det["top"]
 
             detections = []
 
@@ -56,24 +56,24 @@ class UdacityCrowdAIIngestor(Ingestor):
                 x1, y1, x2, y2 = map(float, image_label[0:4])
                 label = image_label[5]
                 detections.append({
-                    'label': label,
-                    'left': x1,
-                    'right': x2,
-                    'top': y1,
-                    'bottom': y2
+                    "label": label,
+                    "left": x1,
+                    "right": x2,
+                    "top": y1,
+                    "bottom": y2
                 })
 
             filtered_detections = [clamp_bbox(det) for det in detections if valid_bbox(det)]
             if filtered_detections:
                 image_detections.append({
-                    'image': {
-                        'id': fname_id,
-                        'path': image_path,
-                        'segmented_path': None,
-                        'width': image_width,
-                        'height': image_height
+                    "image": {
+                        "id": fname_id,
+                        "path": image_path,
+                        "segmented_path": None,
+                        "width": image_width,
+                        "height": image_height
                     },
-                    'detections': filtered_detections
+                    "detections": filtered_detections
                 })
         return image_detections
 
@@ -90,7 +90,7 @@ class UdacityAuttiIngestor(Ingestor):
         image_labels = defaultdict(list)
 
         with open(labels_path) as labels_file:
-            labels_csv = csv.reader(labels_file, delimiter=' ')
+            labels_csv = csv.reader(labels_file, delimiter=" ")
             next(labels_csv, None)  # skip header
             for idx, row in enumerate(labels_csv):
                 image_labels[row[0]].append(row)
@@ -99,19 +99,19 @@ class UdacityAuttiIngestor(Ingestor):
         for idx, image_path in enumerate(glob.glob(f"{root}/*.jpg")):
             f_name = image_path.split("/")[-1]
             f_image_labels = image_labels[f_name]
-            fname_id = f_name.split('.')[0]
+            fname_id = f_name.split(".")[0]
 
             image_width, image_height = _image_dimensions(image_path)
 
             def clamp_bbox(det):
-                if det['right'] > image_width - 1:
-                    det['right'] = image_width - 1
-                if det['bottom'] > image_height - 1:
-                    det['bottom'] = image_height - 1
+                if det["right"] > image_width - 1:
+                    det["right"] = image_width - 1
+                if det["bottom"] > image_height - 1:
+                    det["bottom"] = image_height - 1
                 return det
 
             def valid_bbox(det):
-                return det['right'] > det['left'] and det['bottom'] > det['top']
+                return det["right"] > det["left"] and det["bottom"] > det["top"]
 
             detections = []
 
@@ -119,24 +119,24 @@ class UdacityAuttiIngestor(Ingestor):
                 x1, y1, x2, y2, x, label = image_label[1:7]
                 x1, y1, x2, y2 = map(float, (x1, y1, x2, y2))
                 detections.append({
-                    'label': label,
-                    'left': x1,
-                    'right': x2,
-                    'top': y1,
-                    'bottom': y2
+                    "label": label,
+                    "left": x1,
+                    "right": x2,
+                    "top": y1,
+                    "bottom": y2
                 })
 
             filtered_detections = [clamp_bbox(det) for det in detections if valid_bbox(det)]
             if filtered_detections:
                 image_detections.append({
-                    'image': {
-                        'id': fname_id,
-                        'path': image_path,
-                        'segmented_path': None,
-                        'width': image_width,
-                        'height': image_height
+                    "image": {
+                        "id": fname_id,
+                        "path": image_path,
+                        "segmented_path": None,
+                        "width": image_width,
+                        "height": image_height
                     },
-                    'detections': filtered_detections
+                    "detections": filtered_detections
                 })
         return image_detections
 

@@ -16,20 +16,20 @@ import lib.vod_converter.kitti as kitti
 import lib.vod_converter.kitti_tracking as kitti_tracking
 import lib.vod_converter.voc as voc
 
-logger = logging.getLogger('gunicorn.error')
+logger = logging.getLogger("gunicorn.error")
 logger.setLevel(logging.INFO)
 
 INGESTORS = {
-    'coco': coco.COCOIngestor,
-    'kitti': kitti.KITTIIngestor(),
-    'kitti-tracking': kitti_tracking.KITTITrackingIngestor(),
-    'voc': voc.VOCIngestor(),
-    'caltech': caltech.CaltechIngestor(), }
+    "coco": coco.COCOIngestor,
+    "kitti": kitti.KITTIIngestor(),
+    "kitti-tracking": kitti_tracking.KITTITrackingIngestor(),
+    "voc": voc.VOCIngestor(),
+    "caltech": caltech.CaltechIngestor(), }
 
 EGESTORS = {
-    'voc': voc.VOCEgestor(),
-    'kitti': kitti.KITTIEgestor(),
-    'coco': coco.COCOEgestor()
+    "voc": voc.VOCEgestor(),
+    "kitti": kitti.KITTIEgestor(),
+    "coco": coco.COCOEgestor()
 
 }
 
@@ -47,36 +47,36 @@ def main(*, from_path, from_key, to_path, to_key):
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='Convert visual object datasets.')
+    parser = argparse.ArgumentParser(description="Convert visual object datasets.")
     parser._action_groups.pop()
-    required = parser.add_argument_group('required arguments')
-    optional = parser.add_argument_group('optional arguments')
-    required.add_argument('--from',
-                          dest='from_key',
+    required = parser.add_argument_group("required arguments")
+    optional = parser.add_argument_group("optional arguments")
+    required.add_argument("--from",
+                          dest="from_key",
                           required=True,
-                          help=f'Format to convert from: one of {", ".join(INGESTORS.keys())}', type=str)
-    required.add_argument('--from-path', dest='from_path',
+                          help=f"Format to convert from: one of {', '.join(INGESTORS.keys())}", type=str)
+    required.add_argument("--from-path", dest="from_path",
                           required=True,
-                          help=f'Path to dataset you wish to convert.', type=str)
-    required.add_argument('--to', dest='to_key', required=True,
-                          help=f'Format to convert to: one of {", ".join(EGESTORS.keys())}',
+                          help=f"Path to dataset you wish to convert.", type=str)
+    required.add_argument("--to", dest="to_key", required=True,
+                          help=f"Format to convert to: one of {', '.join(EGESTORS.keys())}",
                           type=str)
     required.add_argument(
-        '--to-path',
-        dest='to_path', required=True,
+        "--to-path",
+        dest="to_path", required=True,
         help="Path to output directory for converted dataset.", type=str)
     optional.add_argument(
-        '--select-only-known-labels',
+        "--select-only-known-labels",
         help="only include labels known to the destination dataset (e.g skip 'trafficlight' if VOC doesn't know about it)",
         required=False,
-        action='store_true',
+        action="store_true",
         default=False
     )
     optional.add_argument(
-        '--filter-images-without-labels',
+        "--filter-images-without-labels",
         help="skip images that don't have any (known) labels",
         required=False,
-        action='store_true',
+        action="store_true",
         default=False
     )
 
@@ -85,7 +85,7 @@ def parse_args():
     return args
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     args = parse_args()
     sys.exit(main(from_path=args.from_path, from_key=args.from_key,
                   to_path=args.to_path, to_key=args.to_key,

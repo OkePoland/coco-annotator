@@ -30,7 +30,7 @@ from .validation_schemas import get_blank_detection_schema, get_blank_image_dete
 
 
 class COCOIngestor(Ingestor):
-    default_label_file = 'labels.json'
+    default_label_file = "labels.json"
     categories = None
 
     def __init__(self):
@@ -38,7 +38,7 @@ class COCOIngestor(Ingestor):
 
     def validate(self, path, folder_names):
         expected_dirs = [
-            'images'
+            "images"
         ]
         for subdir in expected_dirs:
             if not os.path.isdir(f"{path}/{subdir}"):
@@ -54,8 +54,8 @@ class COCOIngestor(Ingestor):
         path = f"{root}/{self.default_label_file}"
         with open(path) as f:
             data = json.load(f)
-            image_ids = [element['file_name'] for element in data['images']]
-            coco_image_ids = [element['id'] for element in data['images']]
+            image_ids = [element["file_name"] for element in data["images"]]
+            coco_image_ids = [element["id"] for element in data["images"]]
             return image_ids, coco_image_ids
 
     def _get_image_detection(self, root, folder_names):
@@ -64,21 +64,21 @@ class COCOIngestor(Ingestor):
         with open(path) as f:
             data = json.load(f)
 
-        self.categories = {category['id']: category['name'] for category in data['categories']}
-        annotations_base = self._create_annotations_base(data['annotations'])
-        for i, image_dict in enumerate(data['images']):
+        self.categories = {category["id"]: category["name"] for category in data["categories"]}
+        annotations_base = self._create_annotations_base(data["annotations"])
+        for i, image_dict in enumerate(data["images"]):
             if i % 1000 == 0:
                 print(f"Ingested {i} images")
 
             single_img_detection = get_blank_image_detection_schema()
 
-            single_img_detection["image"]["id"] = image_dict['id']
+            single_img_detection["image"]["id"] = image_dict["id"]
             single_img_detection["image"]["dataset_id"] = None
-            single_img_detection["image"]["path"] = image_dict['path']
+            single_img_detection["image"]["path"] = image_dict["path"]
             single_img_detection["image"]["segmented_path"] = None
-            single_img_detection["image"]["width"] = image_dict['width']
-            single_img_detection["image"]["height"] = image_dict['height']
-            single_img_detection["image"]["file_name"] = image_dict['file_name']
+            single_img_detection["image"]["width"] = image_dict["width"]
+            single_img_detection["image"]["height"] = image_dict["height"]
+            single_img_detection["image"]["file_name"] = image_dict["file_name"]
 
             single_img_detection["detections"] = self._get_detections(
                 annotations_base[single_img_detection["image"]["id"]])
@@ -92,18 +92,18 @@ class COCOIngestor(Ingestor):
             try:
                 curr_detection = get_blank_detection_schema()
 
-                curr_detection["id"] = annotation['id']
-                curr_detection["image_id"] = annotation['image_id']
-                curr_detection["label"] = self.categories[annotation['category_id']]
-                curr_detection["segmentation"] = annotation['segmentation'] \
-                    if (annotation['segmentation'] != [] and annotation['segmentation'] != [[]]) else None
-                curr_detection["left"] = annotation['bbox'][0]
-                curr_detection["top"] = annotation['bbox'][1]
-                curr_detection["right"] = annotation['bbox'][2] + annotation['bbox'][0]
-                curr_detection["bottom"] = annotation['bbox'][3] + annotation['bbox'][1]
-                curr_detection["iscrowd"] = annotation['iscrowd']
-                curr_detection["isbbox"] = annotation['isbbox']
-                curr_detection["keypoints"] = annotation['keypoints']
+                curr_detection["id"] = annotation["id"]
+                curr_detection["image_id"] = annotation["image_id"]
+                curr_detection["label"] = self.categories[annotation["category_id"]]
+                curr_detection["segmentation"] = annotation["segmentation"] \
+                    if (annotation["segmentation"] != [] and annotation["segmentation"] != [[]]) else None
+                curr_detection["left"] = annotation["bbox"][0]
+                curr_detection["top"] = annotation["bbox"][1]
+                curr_detection["right"] = annotation["bbox"][2] + annotation["bbox"][0]
+                curr_detection["bottom"] = annotation["bbox"][3] + annotation["bbox"][1]
+                curr_detection["iscrowd"] = annotation["iscrowd"]
+                curr_detection["isbbox"] = annotation["isbbox"]
+                curr_detection["keypoints"] = annotation["keypoints"]
 
                 detections.append(curr_detection)
             except ValueError as ve:
@@ -113,7 +113,7 @@ class COCOIngestor(Ingestor):
     def _create_annotations_base(self, annotations):
         annotations_dict = collections.defaultdict(list)
         for annotation in annotations:
-            annotations_dict[annotation['image_id']].append(annotation)
+            annotations_dict[annotation["image_id"]].append(annotation)
 
         return annotations_dict
 
@@ -124,7 +124,7 @@ class COCOIngestor(Ingestor):
 
 
 class COCOEgestor(Egestor):
-    default_label_file = 'labels.json'
+    default_label_file = "labels.json"
 
     def __init__(self):
         pass
@@ -144,17 +144,17 @@ class COCOEgestor(Egestor):
             if i % 100 == 0:
                 print(f"Processed {i} image detections")
 
-            image = image_detection['image']
+            image = image_detection["image"]
             new_image = {"id": i,
                          "dataset_id": None,
                          "path": image["path"],
-                         "width": image['width'],
-                         "height": image['height'],
-                         "file_name": image['path'].split('/')[-1]}
+                         "width": image["width"],
+                         "height": image["height"],
+                         "file_name": image["path"].split("/")[-1]}
 
             labels["images"].append(new_image)
 
-            for detection in image_detection['detections']:
+            for detection in image_detection["detections"]:
 
                 category_id = next((category["id"] for category in labels["categories"]
                                     if category["name"] == detection["label"]), None)
@@ -184,24 +184,24 @@ class COCOEgestor(Egestor):
                     ]
                 else:
                     new_detection["segmentation"] = detection["segmentation"]
-                detection['area'] = None
+                detection["area"] = None
                 if detection["area"] is None:
                     try:
-                        # rs = mask.frPyObjects(new_detection['segmentation'], new_image["height"], new_image["width"])
+                        # rs = mask.frPyObjects(new_detection["segmentation"], new_image["height"], new_image["width"])
                         # a = mask.area(rs)
-                        new_detection['area'] = int(sum(mask.area(mask.frPyObjects(
-                            new_detection['segmentation'], new_image['height'], new_image['width']))))
+                        new_detection["area"] = int(sum(mask.area(mask.frPyObjects(
+                            new_detection["segmentation"], new_image["height"], new_image["width"]))))
 
                     except Exception as e:
                         print(f"Unable to automatically calculate area from segmentation: {e}")
-                        new_detection['area'] = 0
+                        new_detection["area"] = 0
 
                 new_detection["keypoints"] = detection["keypoints"]
 
                 labels["annotations"].append(new_detection)
 
         print("Saving json file...")
-        print('Finished egesting COCO')
+        print("Finished egesting COCO")
 
         encoded_labels = json.dumps(labels)
         return encoded_labels

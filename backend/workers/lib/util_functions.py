@@ -6,18 +6,18 @@ from contextlib import redirect_stdout
 from .vod_converter import converter
 
 INGESTORS = [
-    'mio',  # NOT tested
-    'pedx',  # tested and working
-    'citycam',  # tested and working
-    'coco',  # tested and working
-    # 'daimler',        TODO: daimler needs more strict validation
-    'kitti',  # tested and working
-    'kitti-tracking',  # NOT tested
-    'voc',  # tested and working
-    'aicity',  # tested and working
-    'detrac',  # tested and working
-    'caltech',  # tested and working
-    'town-centre']  # tested and working
+    "mio",  # NOT tested
+    "pedx",  # tested and working
+    "citycam",  # tested and working
+    "coco",  # tested and working
+    # "daimler",        TODO: daimler needs more strict validation
+    "kitti",  # tested and working
+    "kitti-tracking",  # NOT tested
+    "voc",  # tested and working
+    "aicity",  # tested and working
+    "detrac",  # tested and working
+    "caltech",  # tested and working
+    "town-centre"]  # tested and working
 
 
 class RedirectStream:
@@ -43,14 +43,14 @@ def check_coco(ann_file):
         c_json = json.loads(ann_file)
     except Exception as error:
         return False, ann_file
-    if all(x in c_json.keys() for x in ['images', 'categories', 'annotations']):
+    if all(x in c_json.keys() for x in ["images", "categories", "annotations"]):
         return True, ann_file
     else:
         return False, ann_file
 
 
 def convert_to_coco(ann_file, current_task):
-    to_key = 'coco'
+    to_key = "coco"
     success = False
     with redirect_stdout(RedirectStream(current_task)):
         for from_key in INGESTORS:

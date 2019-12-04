@@ -10,9 +10,9 @@ each row corresponds to one object. The 15 columns represent:
 
 #Values    Name      Description
 ----------------------------------------------------------------------------
-   1    type         Describes the type of object: 'Car', 'Van', 'Truck',
-                     'Pedestrian', 'Person_sitting', 'Cyclist', 'Tram',
-                     'Misc' or 'DontCare'
+   1    type         Describes the type of object: "Car', "Van", "Truck",
+                     "Pedestrian", "Person_sitting", "Cyclist", "Tram",
+                     "Misc" or "DontCare'
    1    truncated    Float from 0 (non-truncated) to 1 (truncated), where
                      truncated refers to the object leaving image boundaries
    1    occluded     Integer (0,1,2,3) indicating occlusion state:
@@ -43,8 +43,8 @@ from .labels_and_aliases import output_labels
 class KITTIIngestor(Ingestor):
     def validate(self, path, folder_names):
         expected_dirs = [
-            'images',
-            'labels'
+            "images",
+            "labels"
         ]
         for subdir in expected_dirs:
             if not os.path.isdir(f"{path}/{subdir}"):
@@ -55,17 +55,17 @@ class KITTIIngestor(Ingestor):
 
     def ingest(self, path, folder_names):
         image_ids = self._get_image_ids(path)
-        image_ext = 'png'
+        image_ext = "png"
         if len(image_ids):
             first_image_id = image_ids[0]
             image_ext = self.find_image_ext(path, first_image_id)
         tmp = [self._get_image_detection(path, image_name, image_ext=image_ext, folder_names=folder_names) for
                image_name in image_ids]
-        print('size: ' + str(len(tmp)))
+        print("size: " + str(len(tmp)))
         return tmp
 
     def find_image_ext(self, root, image_id):
-        for image_ext in ['png', 'jpg']:
+        for image_ext in ["png", "jpg"]:
             if os.path.exists(f"{root}/images/{image_id}.{image_ext}"):
                 return image_ext
         raise Exception(f"could not find jpg or png for {image_id} at {root}/images")
@@ -73,26 +73,26 @@ class KITTIIngestor(Ingestor):
     def _get_image_ids(self, root):
         path = f"{root}/train.txt"
         with open(path) as f:
-            return f.read().strip().split('\n')
+            return f.read().strip().split("\n")
 
-    def _get_image_detection(self, root, image_id, *, image_ext='png', folder_names):
+    def _get_image_detection(self, root, image_id, *, image_ext="png", folder_names):
         try:
             detections_fpath = f"{root}/labels/{image_id}.txt"
             detections = self._get_detections(detections_fpath, image_id)
-            detections = [det for det in detections if det['left'] < det['right'] and det['top'] < det['bottom']]
+            detections = [det for det in detections if det["left"] < det["right"] and det["top"] < det["bottom"]]
             image_path = f"{root}/images/{image_id}.{image_ext}"
             image_width, image_height = _image_dimensions(image_path)
             return {
-                'image': {
-                    'id': image_id,
-                    'dataset_id': None,
-                    'path': image_path,
-                    'segmented_path': None,
-                    'width': image_width,
-                    'height': image_height,
-                    'file_name': image_id + '.' + image_ext
+                "image": {
+                    "id": image_id,
+                    "dataset_id": None,
+                    "path": image_path,
+                    "segmented_path": None,
+                    "width": image_width,
+                    "height": image_height,
+                    "file_name": image_id + "." + image_ext
                 },
-                'detections': detections
+                "detections": detections
             }
         except Exception as e:
             print(e)
@@ -100,7 +100,7 @@ class KITTIIngestor(Ingestor):
     def _get_detections(self, detections_fpath, image_id):
         detections = []
         with open(detections_fpath) as f:
-            f_csv = csv.reader(f, delimiter=' ')
+            f_csv = csv.reader(f, delimiter=" ")
             for row in f_csv:
                 if len(row) == 0:
                     continue
@@ -108,18 +108,18 @@ class KITTIIngestor(Ingestor):
                     x1, y1, x2, y2 = map(float, row[4:8])
                     label = row[0]
                     detections.append({
-                        'id': image_id,
-                        'image_id': image_id,
-                        'label': label,
-                        'left': x1,
-                        'right': x2,
-                        'top': y1,
-                        'bottom': y2,
-                        'area': None,
-                        'segmentation': None,
-                        'isbbox': True,
-                        'iscrowd': False,
-                        'keypoints': []
+                        "id": image_id,
+                        "image_id": image_id,
+                        "label": label,
+                        "left": x1,
+                        "right": x2,
+                        "top": y1,
+                        "bottom": y2,
+                        "area": None,
+                        "segmentation": None,
+                        "isbbox": True,
+                        "iscrowd": False,
+                        "keypoints": []
                     })
                 except ValueError as ve:
                     print(row)
@@ -149,31 +149,31 @@ class KITTIEgestor(Egestor):
         id_file = f"{root}/train.txt"
 
         for image_detection in image_detections:
-            image = image_detection['image']
-            image_id = image['id']
+            image = image_detection["image"]
+            image_id = image["id"]
             print(image_id)
-            src_extension = image['path'].split('.')[-1]
+            src_extension = image["path"].split(".")[-1]
             try:
-                shutil.copyfile(image['path'], f"{images_dir}/{image_id}.{src_extension}")
+                shutil.copyfile(image["path"], f"{images_dir}/{image_id}.{src_extension}")
             except FileNotFoundError as e:
                 print(e)
                 continue
 
-            with open(id_file, 'a') as out_image_index_file:
-                out_image_index_file.write(f'{image_id}\n')
+            with open(id_file, "a") as out_image_index_file:
+                out_image_index_file.write(f"{image_id}\n")
 
             out_labels_path = f"{labels_dir}/{image_id}.txt"
-            with open(out_labels_path, 'w') as csvfile:
-                csvwriter = csv.writer(csvfile, delimiter=' ', quoting=csv.QUOTE_MINIMAL)
+            with open(out_labels_path, "w") as csvfile:
+                csvwriter = csv.writer(csvfile, delimiter=" ", quoting=csv.QUOTE_MINIMAL)
 
-                for detection in image_detection['detections']:
+                for detection in image_detection["detections"]:
                     kitti_row = [-1] * 15
-                    kitti_row[0] = detection['label']
+                    kitti_row[0] = detection["label"]
                     kitti_row[1] = DEFAULT_TRUNCATED
                     kitti_row[2] = DEFAULT_OCCLUDED
-                    x1 = detection['left']
-                    x2 = detection['right']
-                    y1 = detection['top']
-                    y2 = detection['bottom']
+                    x1 = detection["left"]
+                    x2 = detection["right"]
+                    y1 = detection["top"]
+                    y2 = detection["bottom"]
                     kitti_row[4:8] = x1, y1, x2, y2
                     csvwriter.writerow(kitti_row)

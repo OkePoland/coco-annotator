@@ -54,7 +54,7 @@ from .validation_schemas import get_blank_image_detection_schema, get_blank_dete
 class CaltechIngestor(Ingestor):
     def validate(self, path, folder_names):
         expected_dirs = [
-            'images',
+            "images",
         ]
         for subdir in expected_dirs:
             if not os.path.isdir(f"{path}/{subdir}"):
@@ -93,7 +93,7 @@ class CaltechIngestor(Ingestor):
                             single_img_detection["image"]["segmented_path"] = None
                             single_img_detection["image"]["width"] = image_width
                             single_img_detection["image"]["height"] = image_height
-                            single_img_detection["image"]["file_name"] = image_path.split('/')[-1]
+                            single_img_detection["image"]["file_name"] = image_path.split("/")[-1]
 
                             single_img_detection["detections"] = detections
 

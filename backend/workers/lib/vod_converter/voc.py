@@ -23,13 +23,13 @@ class VOCIngestor(Ingestor):
     iii = 0
     detection_counter = 0
 
-    folder_names = {'images': 'JPEGImages', 'annotations': "Annotations", 'segmentation_classes': "SegmentationClass",
-                    'segmentation_object': "SegmentationObject"}
+    folder_names = {"images": "JPEGImages", "annotations": "Annotations", "segmentation_classes": "SegmentationClass",
+                    "segmentation_object": "SegmentationObject"}
 
-    segmentation_labels = {"1": 'aeroplane', "2": 'bicycle', "3": 'bird', "4": 'boat', "5": 'bottle',
-                           "6": 'bus', "7": 'car', "8": 'cat', "9": 'chair', "10": 'cow',
-                           "11": 'diningtable', "12": 'dog', "13": 'horse', "14": 'motorbike', "15": 'person',
-                           "16": 'pottedplant', "17": 'sheep', "18": 'sofa', "19": 'train', "20": 'tvmonitor'}
+    segmentation_labels = {"1": "aeroplane", "2": "bicycle", "3": "bird", "4": "boat", "5": "bottle",
+                           "6": "bus", "7": "car", "8": "cat", "9": "chair", "10": "cow",
+                           "11": "diningtable", "12": "dog", "13": "horse", "14": "motorbike", "15": "person",
+                           "16": "pottedplant", "17": "sheep", "18": "sofa", "19": "train", "20": "tvmonitor"}
 
     def validate(self, root, folder_names):
         if folder_names is None:
@@ -68,18 +68,18 @@ class VOCIngestor(Ingestor):
         self.iii += 1
 
         path = f"{root}"
-        image_path = os.path.join(os.path.join(root, os.path.join(folder_names['images'], f"{image_id}.jpg")))
+        image_path = os.path.join(os.path.join(root, os.path.join(folder_names["images"], f"{image_id}.jpg")))
         if not os.path.isfile(image_path):
             raise Exception(f"Expected {image_path} to exist.")
 
-        annotation_path = os.path.join(os.path.join(root, os.path.join(folder_names['annotations'], f"{image_id}.xml")))
+        annotation_path = os.path.join(os.path.join(root, os.path.join(folder_names["annotations"], f"{image_id}.xml")))
         if not os.path.isfile(annotation_path):
             raise Exception(f"Expected annotation file {annotation_path} to exist.")
 
         tree = ET.parse(annotation_path)
         xml_root = tree.getroot()
-        size = xml_root.find('size')
-        segmented = xml_root.find('segmented').text == '1'
+        size = xml_root.find("size")
+        segmented = xml_root.find("segmented").text == "1"
         segmented_path = None
         segmented_objects = None
         if segmented:
@@ -89,8 +89,8 @@ class VOCIngestor(Ingestor):
                 raise Exception(f"Expected segmentation file {segmented_path} to exist.")
             if not os.path.isfile(segmented_objects):
                 raise Exception(f"Expected segmentation file {segmented_path} to exist.")
-        image_width = int(size.find('width').text)
-        image_height = int(size.find('height').text)
+        image_width = int(size.find("width").text)
+        image_height = int(size.find("height").text)
 
         single_img_detection = get_blank_image_detection_schema()
 
@@ -109,7 +109,7 @@ class VOCIngestor(Ingestor):
 
     def _get_detections(self, xml_root, img_id, segmented_classes, segmented_objects, image_width, image_height):
         if segmented_classes is None:
-            return [self._get_detection(node, img_id) for node in xml_root.findall('object')]
+            return [self._get_detection(node, img_id) for node in xml_root.findall("object")]
         else:
             detections = []
 
@@ -167,17 +167,17 @@ class VOCIngestor(Ingestor):
     def _get_detection(self, node, img_id):
         curr_detection = get_blank_detection_schema()
 
-        bndbox = node.find('bndbox')
+        bndbox = node.find("bndbox")
 
         curr_detection["id"] = self.detection_counter
         self.detection_counter += 1
         curr_detection["image_id"] = img_id
-        curr_detection["label"] = node.find('name').text
+        curr_detection["label"] = node.find("name").text
         curr_detection["segmentation"] = None
-        curr_detection["top"] = float(bndbox.find('ymin').text)
-        curr_detection["left"] = float(bndbox.find('xmin').text)
-        curr_detection["right"] = float(bndbox.find('xmax').text)
-        curr_detection["bottom"] = float(bndbox.find('ymax').text)
+        curr_detection["top"] = float(bndbox.find("ymin").text)
+        curr_detection["left"] = float(bndbox.find("xmin").text)
+        curr_detection["right"] = float(bndbox.find("xmax").text)
+        curr_detection["bottom"] = float(bndbox.find("ymax").text)
         curr_detection["iscrowd"] = False
         curr_detection["isbbox"] = True
         curr_detection["keypoints"] = []
@@ -196,7 +196,7 @@ class VOCIngestor(Ingestor):
                 if pixel != 0 and pixel != 255:
                     pixel_str = str(pixel)
                     if sub_masks.get(pixel_str) is None:
-                        sub_masks[pixel_str] = Image.new('1', (width, height))
+                        sub_masks[pixel_str] = Image.new("1", (width, height))
 
                     sub_masks[pixel_str].putpixel((x, y), 1)
 
@@ -223,57 +223,57 @@ class VOCEgestor(Egestor):
 
     def egest(self, *, image_detections, root, folder_names):
         image_sets_path = f"{root}/ImageSets/Main"
-        images_path = os.path.join(root, folder_names['images'])
-        annotations_path = os.path.join(root, folder_names['annotations'])
+        images_path = os.path.join(root, folder_names["images"])
+        annotations_path = os.path.join(root, folder_names["annotations"])
         segmentations_path = f"{root}/SegmentationObject"
         segmentations_dir_created = False
 
         for to_create in [image_sets_path, images_path, annotations_path]:
             os.makedirs(to_create, exist_ok=True)
         for image_detection in image_detections:
-            image = image_detection['image']
-            image_id = image['id']
-            src_extension = image['path'].split('.')[-1]
-            shutil.copyfile(image['path'], f"{images_path}/{image_id}.{src_extension}")
+            image = image_detection["image"]
+            image_id = image["id"]
+            src_extension = image["path"].split(".")[-1]
+            shutil.copyfile(image["path"], f"{images_path}/{image_id}.{src_extension}")
 
-            with open(f"{image_sets_path}/trainval.txt", 'a') as out_image_index_file:
-                out_image_index_file.write(f'{image_id}\n')
+            with open(f"{image_sets_path}/trainval.txt", "a") as out_image_index_file:
+                out_image_index_file.write(f"{image_id}\n")
 
-            if image['segmented_path'] is not None:
+            if image["segmented_path"] is not None:
                 if not segmentations_dir_created:
                     os.makedirs(segmentations_path)
                     segmentations_dir_created = True
-                shutil.copyfile(image['segmented_path'], f"{segmentations_path}/{image_id}.png")
+                shutil.copyfile(image["segmented_path"], f"{segmentations_path}/{image_id}.png")
 
-            xml_root = ET.Element('annotation')
-            add_text_node(xml_root, 'filename', f"{image_id}.{src_extension}")
-            add_text_node(xml_root, 'folder', root.split('/')[-1])
-            add_text_node(xml_root, 'segmented', int(segmentations_dir_created))
+            xml_root = ET.Element("annotation")
+            add_text_node(xml_root, "filename", f"{image_id}.{src_extension}")
+            add_text_node(xml_root, "folder", root.split("/")[-1])
+            add_text_node(xml_root, "segmented", int(segmentations_dir_created))
 
-            add_sub_node(xml_root, 'size', {
-                'depth': 3,
-                'width': image['width'],
-                'height': image['height']
+            add_sub_node(xml_root, "size", {
+                "depth": 3,
+                "width": image["width"],
+                "height": image["height"]
             })
-            add_sub_node(xml_root, 'source', {
-                'annotation': 'Dummy',
-                'database': 'Dummy',
-                'image': 'Dummy'
+            add_sub_node(xml_root, "source", {
+                "annotation": "Dummy",
+                "database": "Dummy",
+                "image": "Dummy"
             })
 
-            for detection in image_detection['detections']:
-                x_object = add_sub_node(xml_root, 'object', {
-                    'name': detection['label'],
-                    'difficult': 0,
-                    'occluded': 0,
-                    'truncated': 0,
-                    'pose': 'Unspecified'
+            for detection in image_detection["detections"]:
+                x_object = add_sub_node(xml_root, "object", {
+                    "name": detection["label"],
+                    "difficult": 0,
+                    "occluded": 0,
+                    "truncated": 0,
+                    "pose": "Unspecified"
                 })
-                add_sub_node(x_object, 'bndbox', {
-                    'xmin': detection['left'] + 1,
-                    'xmax': detection['right'] + 1,
-                    'ymin': detection['top'] + 1,
-                    'ymax': detection['bottom'] + 1
+                add_sub_node(x_object, "bndbox", {
+                    "xmin": detection["left"] + 1,
+                    "xmax": detection["right"] + 1,
+                    "ymin": detection["top"] + 1,
+                    "ymax": detection["bottom"] + 1
                 })
 
             ET.ElementTree(xml_root).write(f"{annotations_path}/{image_id}.xml")

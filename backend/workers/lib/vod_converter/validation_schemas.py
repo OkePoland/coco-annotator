@@ -14,8 +14,8 @@ In raw_image_detection_schema:
             "dataset_id": Optional (int) or can be left as None
             "path": Mandatory (string)
             "segmented_path": Optional (string) or can be left as None
-            'width': Mandatory (int)
-            'height': Mandatory (int)
+            "width": Mandatory (int)
+            "height": Mandatory (int)
             "file_name": Mandatory (string)
         },
     "detections": List of raw_image_detection_schema - need to be filled with raw_image_detection_schema objects or
@@ -71,7 +71,7 @@ In raw_categories_schema:
 """
 # !!!
 # Warning: If you use raw_schemas you need to make copy of it with .copy() in every iteration, because dict in python
-# are addressed by reference, so if you change dict's values without copy, you will be changing values from every
+# are addressed by reference, so if you change dict"s values without copy, you will be changing values from every
 # iteration
 # Better use functions below to get copy of these dicts
 # !!!
@@ -82,8 +82,8 @@ _raw_image_detection_schema = {
             "dataset_id": None,
             "path": None,
             "segmented_path": None,
-            'width': None,
-            'height': None,
+            "width": None,
+            "height": None,
             "file_name": None},
 
     "detections": []
@@ -91,7 +91,7 @@ _raw_image_detection_schema = {
 
 # !!!
 # Warning: If you use raw_schemas you need to make copy of it with .copy() in every iteration, because dict in python
-# are addressed by reference, so if you change dict's values without copy, you will be changing values from every
+# are addressed by reference, so if you change dict"s values without copy, you will be changing values from every
 # iteration
 # Better use functions below to get copy of these dicts
 # !!!
@@ -112,7 +112,7 @@ _raw_detection_schema = {
 
 # !!!
 # Warning: If you use raw_schemas you need to make copy of it with .copy() in every iteration, because dict in python
-# are addressed by reference, so if you change dict's values without copy, you will be changing values from every
+# are addressed by reference, so if you change dict"s values without copy, you will be changing values from every
 # iteration
 # Better use functions below to get copy of these dicts
 # !!!
@@ -136,89 +136,89 @@ def get_blank_categories_schema():
 
 
 IMAGE_SCHEMA = {
-    'type': 'object',
-    'properties': {
-        'id': {
-            'anyOf': [
-                {'type': 'integer'},
-                {'type': 'string'}
+    "type": "object",
+    "properties": {
+        "id": {
+            "anyOf": [
+                {"type": "integer"},
+                {"type": "string"}
             ]},
-        'dataset_id': {
-            'anyOf': [
-                {'type': 'integer'},
-                {'type': 'null'}
+        "dataset_id": {
+            "anyOf": [
+                {"type": "integer"},
+                {"type": "null"}
             ]},
-        'path': {'type': 'string'},
-        'segmented_path': {
-            'anyOf': [
-                {'type': 'null'},
-                {'type': 'string'}
+        "path": {"type": "string"},
+        "segmented_path": {
+            "anyOf": [
+                {"type": "null"},
+                {"type": "string"}
             ]},
-        'width': {'type': 'integer', 'minimum': 10},
-        'height': {'type': 'integer', 'minimum': 10},
-        'file_name': {'type': 'string'},
+        "width": {"type": "integer", "minimum": 10},
+        "height": {"type": "integer", "minimum": 10},
+        "file_name": {"type": "string"},
 
     },
-    'required': ['id', 'dataset_id', 'path', 'segmented_path', 'width', 'height', 'file_name']
+    "required": ["id", "dataset_id", "path", "segmented_path", "width", "height", "file_name"]
 }
 
 DETECTION_SCHEMA = {
-    'type': 'object',
-    'properties': {
-        'id': {
-            'anyOf': [
-                {'type': 'integer'},
-                {'type': 'string'}
+    "type": "object",
+    "properties": {
+        "id": {
+            "anyOf": [
+                {"type": "integer"},
+                {"type": "string"}
             ]},
-        'image_id': {
-            'anyOf': [
-                {'type': 'integer'},
-                {'type': 'string'}
+        "image_id": {
+            "anyOf": [
+                {"type": "integer"},
+                {"type": "string"}
             ]},
 
-        'label': {'type': 'string'},
-        'segmentation': {
-            'anyOf': [
-                {'type': 'array'},
-                {'type': 'null'}
+        "label": {"type": "string"},
+        "segmentation": {
+            "anyOf": [
+                {"type": "array"},
+                {"type": "null"}
             ]},
-        'area': {
-            'anyOf': [
-                {'type': 'number'},
-                {'type': 'null'}
+        "area": {
+            "anyOf": [
+                {"type": "number"},
+                {"type": "null"}
             ]},
-        'top': {'type': 'number', 'minimum': 0},
-        'left': {'type': 'number', 'minimum': 0},
-        'right': {'type': 'number', 'minimum': 0},
-        'bottom': {'type': 'number', 'minimum': 0},
-        'iscrowd': {'type': 'boolean'},
-        'isbbox': {'type': 'boolean'},
-        'color': {'type': 'string'},
-        'keypoints': {'type': 'array'},
+        "top": {"type": "number", "minimum": 0},
+        "left": {"type": "number", "minimum": 0},
+        "right": {"type": "number", "minimum": 0},
+        "bottom": {"type": "number", "minimum": 0},
+        "iscrowd": {"type": "boolean"},
+        "isbbox": {"type": "boolean"},
+        "color": {"type": "string"},
+        "keypoints": {"type": "array"},
 
     },
-    'required': ['id', 'image_id', 'label', 'segmentation', 'area', 'top', 'left', 'right', 'bottom', 'iscrowd',
-                 'isbbox', 'keypoints']
+    "required": ["id", "image_id", "label", "segmentation", "area", "top", "left", "right", "bottom", "iscrowd",
+                 "isbbox", "keypoints"]
 }
 
 CATEGORIES_SCHEMA = {
-    'type': 'object',
-    'properties': {
-        'name': {'type': 'string'},
-        "keypoints": {'type': 'array'},
-        "skeleton": {'type': 'array'},
+    "type": "object",
+    "properties": {
+        "name": {"type": "string"},
+        "keypoints": {"type": "array"},
+        "skeleton": {"type": "array"},
     },
-    'required': ['name', 'keypoints', "skeleton"]
+    "required": ["name", "keypoints", "skeleton"]
 }
 
 IMAGE_DETECTION_SCHEMA = {
-    'type': 'object',
-    'properties': {
-        'image': IMAGE_SCHEMA,
-        'detections': {
-            'type': 'array',
-            'items': DETECTION_SCHEMA
+    "type": "object",
+    "properties": {
+        "image": IMAGE_SCHEMA,
+        "detections": {
+            "type": "array",
+            "items": DETECTION_SCHEMA
         },
     },
-    'required': ['image', 'detections']
+    "required": ["image", "detections"]
 }

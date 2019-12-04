@@ -10,10 +10,10 @@ from .validation_schemas import get_blank_detection_schema, get_blank_image_dete
 class DETRACIngestor(Ingestor):
     def validate(self, path, folder_names):
         expected_dirs = [
-            'DETRAC-Train-Annotations-XML',
-            'DETRAC-Test-Annotations-XML',
-            'DETRAC-Train-Data',
-            'DETRAC-test-data'
+            "DETRAC-Train-Annotations-XML",
+            "DETRAC-Test-Annotations-XML",
+            "DETRAC-Train-Data",
+            "DETRAC-test-data"
         ]
         for subdir in expected_dirs:
             if not os.path.isdir(f"{path}/{subdir}"):
@@ -24,48 +24,48 @@ class DETRACIngestor(Ingestor):
         return self._get_image_detection(path, folder_names=folder_names)
 
     def _get_image_detection(self, root, folder_names):
-        lab_dirs = ['DETRAC-Train-Annotations-XML', 'DETRAC-Test-Annotations-XML']
+        lab_dirs = ["DETRAC-Train-Annotations-XML", "DETRAC-Test-Annotations-XML"]
         img_det = []
         for lab_type in lab_dirs:
-            directory = root + '/' + lab_type
+            directory = root + "/" + lab_type
             for lab in os.scandir(directory):
                 # TODO: get image dimensions
                 mov_name = os.path.splitext(lab.name)[0]
                 tree = ET.parse(lab.path)
                 toor = tree.getroot()
-                accepted_tags = ['car', 'bus', 'van']
+                accepted_tags = ["car", "bus", "van"]
                 obj_id = -1
-                for frame in toor.iter('frame'):  # child = frame
-                    no_frame = frame.attrib['num']
-                    img_name = 'img' + '0' * (5 - len(str(no_frame))) + str(no_frame)
+                for frame in toor.iter("frame"):  # child = frame
+                    no_frame = frame.attrib["num"]
+                    img_name = "img" + "0" * (5 - len(str(no_frame))) + str(no_frame)
                     for target in frame:
                         detections = []
                         for obj in target:
                             obj_id += 1
-                            box = obj.find('box').attrib
-                            attr = obj.find('attribute').attrib
-                            if attr['vehicle_type'] in accepted_tags:
+                            box = obj.find("box").attrib
+                            attr = obj.find("attribute").attrib
+                            if attr["vehicle_type"] in accepted_tags:
                                 det = get_blank_detection_schema()
-                                det['id'] = obj_id
-                                det['image_id'] = mov_name + '/' + img_name
-                                det['iscrowd'] = False
-                                det['isbbox'] = True
-                                det['segmentation'] = None
-                                det['label'] = attr['vehicle_type']
-                                det['left'] = float(box['left'])
-                                det['right'] = float(box['left']) + float(box['width'])
-                                det['top'] = float(box['top'])
-                                det['bottom'] = float(box['top']) + float(box['height'])
-                                det['keypoints'] = []
+                                det["id"] = obj_id
+                                det["image_id"] = mov_name + "/" + img_name
+                                det["iscrowd"] = False
+                                det["isbbox"] = True
+                                det["segmentation"] = None
+                                det["label"] = attr["vehicle_type"]
+                                det["left"] = float(box["left"])
+                                det["right"] = float(box["left"]) + float(box["width"])
+                                det["top"] = float(box["top"])
+                                det["bottom"] = float(box["top"]) + float(box["height"])
+                                det["keypoints"] = []
                                 detections.append(det)
                         img = get_blank_image_detection_schema()
-                        img['detections'] = detections
-                        img['image']['id'] = mov_name + '/' + img_name
-                        img['image']['dataset_id'] = None
-                        img['image']['path'] = directory + '/' + mov_name + '/' + img_name + '.jpg'
-                        img['image']['width'] = 10000
-                        img['image']['height'] = 10000
-                        img['image']['file_name'] = img_name + '.jpg'
+                        img["detections"] = detections
+                        img["image"]["id"] = mov_name + "/" + img_name
+                        img["image"]["dataset_id"] = None
+                        img["image"]["path"] = directory + "/" + mov_name + "/" + img_name + ".jpg"
+                        img["image"]["width"] = 10000
+                        img["image"]["height"] = 10000
+                        img["image"]["file_name"] = img_name + ".jpg"
                         img_det.append(img)
         return img_det
 

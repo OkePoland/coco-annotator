@@ -15,7 +15,7 @@ class TownCentreIngestor(Ingestor):
 
     def validate(self, path, folder_names):
         expected_dirs = [
-            'images'
+            "images"
         ]
         for subdir in expected_dirs:
             if not os.path.isdir(f"{path}/{subdir}"):
@@ -57,16 +57,16 @@ class TownCentreIngestor(Ingestor):
         labels_path = os.path.join(root, self.default_label_file)
         annotations_dict = collections.defaultdict(list)
         with open(labels_path) as csv_file:
-            csv_reader = csv.reader(csv_file, delimiter=',')
+            csv_reader = csv.reader(csv_file, delimiter=",")
             labels_len = sum(1 for _ in csv_reader)
 
         with open(labels_path) as csv_file:
-            csv_reader = csv.reader(csv_file, delimiter=',')
+            csv_reader = csv.reader(csv_file, delimiter=",")
             for i, label in enumerate(csv_reader):
                 if label[3] == "1":  # Body label valid
-                    annotations_dict[f'town_centre_{int(label[1]):04d}'].append(
-                        {'left': float(label[8]), 'top': float(label[9]), 'right': float(label[10]),
-                         'bottom': float(label[11])})
+                    annotations_dict[f"town_centre_{int(label[1]):04d}"].append(
+                        {"left": float(label[8]), "top": float(label[9]), "right": float(label[10]),
+                         "bottom": float(label[11])})
                 else:
                     print(f"Label {i} invalid - no body region")
                 if i % 1000 == 0:
@@ -81,15 +81,15 @@ class TownCentreIngestor(Ingestor):
             curr_detection["id"] = self.detection_counter
             self.detection_counter += 1
             curr_detection["image_id"] = int(img_name.split("_")[-1])
-            curr_detection["label"] = 'person'
+            curr_detection["label"] = "person"
             curr_detection["segmentation"] = None
             curr_detection["area"] = None
-            curr_detection["top"] = 0 if groundtruth_annotation['top'] < 0 else groundtruth_annotation['top']
-            curr_detection["left"] = 0 if groundtruth_annotation['left'] < 0 else groundtruth_annotation['left']
-            curr_detection["right"] = img_width if groundtruth_annotation['right'] > img_width \
-                else groundtruth_annotation['right']
-            curr_detection["bottom"] = img_height if groundtruth_annotation['bottom'] > img_height \
-                else groundtruth_annotation['bottom']
+            curr_detection["top"] = 0 if groundtruth_annotation["top"] < 0 else groundtruth_annotation["top"]
+            curr_detection["left"] = 0 if groundtruth_annotation["left"] < 0 else groundtruth_annotation["left"]
+            curr_detection["right"] = img_width if groundtruth_annotation["right"] > img_width \
+                else groundtruth_annotation["right"]
+            curr_detection["bottom"] = img_height if groundtruth_annotation["bottom"] > img_height \
+                else groundtruth_annotation["bottom"]
             curr_detection["iscrowd"] = False
             curr_detection["isbbox"] = True
             curr_detection["keypoints"] = []

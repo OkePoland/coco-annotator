@@ -11,7 +11,7 @@ def main(labels_to_split, output_dir, labels_per_file):
     with open(labels_to_split) as file:
         data = json.load(file)
 
-    images = data['images']
+    images = data["images"]
     chunk = int(len(images) / labels_per_file)
     print("Splitting images")
     image_chunks = [images[i * labels_per_file:(i + 1) * labels_per_file] for i in range(chunk)]
@@ -21,34 +21,34 @@ def main(labels_to_split, output_dir, labels_per_file):
 
     print("Splitting annotations")
     annotations_base = collections.defaultdict(list)
-    for annotation in data['annotations']:
-        annotations_base[annotation['image_id']].append(annotation)
+    for annotation in data["annotations"]:
+        annotations_base[annotation["image_id"]].append(annotation)
 
     print(f"Creating {chunk + 1} subjsons")
     for i in range(chunk + 1):
         print(f"Saving JSON file nr {i}")
 
         out = {"images": image_chunks[i],
-               'categories': data['categories'],
-               'annotations': [annotation for img in image_chunks[i] for annotation in annotations_base[img['id']]]}
+               "categories": data["categories"],
+               "annotations": [annotation for img in image_chunks[i] for annotation in annotations_base[img["id"]]]}
 
         with open(f"{output_dir}/splitted_labels_{i}.json", "w") as annotation_file:
             json.dump(out, annotation_file)
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='Split JSON file with labels into smaller JSON files')
-    parser.add_argument('--labels-to-split', '--labels', dest='labels_to_split',
+    parser = argparse.ArgumentParser(description="Split JSON file with labels into smaller JSON files")
+    parser.add_argument("--labels-to-split", "--labels", dest="labels_to_split",
                         required=True,
                         help=f"Path to JSON file with input labels", type=str)
 
     parser.add_argument(
-        '--output-dir', '--dir',
-        dest='output_dir', required=True,
+        "--output-dir", "--dir",
+        dest="output_dir", required=True,
         help="Path to output directory for JSON files obtained from splitting input JSON file.", type=str)
 
     parser.add_argument(
-        '--nr-of-labels-per-file', '--nr',
+        "--nr-of-labels-per-file", "--nr",
         dest="nr_of_labels_per_file",
         help="How many labels per file in output JSON files",
         required=True, type=int)
