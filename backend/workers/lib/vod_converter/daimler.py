@@ -64,7 +64,7 @@ class DAIMLERIngestor(Ingestor):
         path = os.path.join(root, "labels")
         for filename in labels:
             try:
-                path = os.path.join(root + "/labels", filename)
+                path = os.path.join(root, "labels", filename)
                 with open(path) as f:
                     data = json.load(f)
                     image_id = data["imagename"].split(".")[0]

@@ -81,8 +81,8 @@ class CaltechIngestor(Ingestor):
                         try:
                             single_img_detection = get_blank_image_detection_schema()
 
-                            image_id = str(data_set_key + "_" + video_key + "_" + frame_key)
-                            image_path = f"{root}/images/" + image_id + ".png"
+                            image_id = f"{data_set_key}_{video_key}_{frame_key}"
+                            image_path = f"{root}/images/{image_id}.png"
                             image_width, image_height = self._image_dimensions(image_path)
 
                             detections = self._get_detections(frame_dict, image_id, image_width, image_height)

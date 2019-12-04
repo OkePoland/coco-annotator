@@ -27,7 +27,7 @@ class DETRACIngestor(Ingestor):
         lab_dirs = ["DETRAC-Train-Annotations-XML", "DETRAC-Test-Annotations-XML"]
         img_det = []
         for lab_type in lab_dirs:
-            directory = root + "/" + lab_type
+            directory = os.path.join(root, lab_type)
             for lab in os.scandir(directory):
                 # TODO: get image dimensions
                 mov_name = os.path.splitext(lab.name)[0]
@@ -37,7 +37,7 @@ class DETRACIngestor(Ingestor):
                 obj_id = -1
                 for frame in toor.iter("frame"):  # child = frame
                     no_frame = frame.attrib["num"]
-                    img_name = "img" + "0" * (5 - len(str(no_frame))) + str(no_frame)
+                    img_name = f"img{'0' * (5 - len(str(no_frame)))}{no_frame}"
                     for target in frame:
                         detections = []
                         for obj in target:
@@ -47,7 +47,7 @@ class DETRACIngestor(Ingestor):
                             if attr["vehicle_type"] in accepted_tags:
                                 det = get_blank_detection_schema()
                                 det["id"] = obj_id
-                                det["image_id"] = mov_name + "/" + img_name
+                                det["image_id"] = os.path.join(mov_name, img_name)
                                 det["iscrowd"] = False
                                 det["isbbox"] = True
                                 det["segmentation"] = None
@@ -60,12 +60,13 @@ class DETRACIngestor(Ingestor):
                                 detections.append(det)
                         img = get_blank_image_detection_schema()
                         img["detections"] = detections
-                        img["image"]["id"] = mov_name + "/" + img_name
+                        img["image"]["id"] = os.path.join(mov_name, img_name)
+                        img["image"]["id"] = os.path.join(mov_name, img_name)
                         img["image"]["dataset_id"] = None
-                        img["image"]["path"] = directory + "/" + mov_name + "/" + img_name + ".jpg"
+                        img["image"]["path"] = os.path.join(directory, mov_name, f"{img_name}.jpg")
                         img["image"]["width"] = 10000
                         img["image"]["height"] = 10000
-                        img["image"]["file_name"] = img_name + ".jpg"
+                        img["image"]["file_name"] = f"{img_name}.jpg"
                         img_det.append(img)
         return img_det
 

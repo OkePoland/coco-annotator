@@ -61,7 +61,7 @@ class KITTIIngestor(Ingestor):
             image_ext = self.find_image_ext(path, first_image_id)
         tmp = [self._get_image_detection(path, image_name, image_ext=image_ext, folder_names=folder_names) for
                image_name in image_ids]
-        print("size: " + str(len(tmp)))
+        print(f"size: {len(tmp)}")
         return tmp
 
     def find_image_ext(self, root, image_id):
@@ -90,7 +90,7 @@ class KITTIIngestor(Ingestor):
                     "segmented_path": None,
                     "width": image_width,
                     "height": image_height,
-                    "file_name": image_id + "." + image_ext
+                    "file_name": f"{image_id}.{image_ext}"
                 },
                 "detections": detections
             }

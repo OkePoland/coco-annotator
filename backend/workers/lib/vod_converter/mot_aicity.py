@@ -49,12 +49,10 @@ class MOT_AICITYIngestor(Ingestor):
         images = {}
         det_id = 0
         path_ann = [
-            # root + "/test/annotations",
-            root + "/train/annotations"
+            os.path.join(root, "train/annotations")
         ]
         path_img = [
-            # root + "/test/images",
-            root + "/train/images"
+            os.path.join(root, "/train/images")
         ]
         for i in range(len(path_ann)):
             for ann in os.scandir(path_ann[i]):
@@ -63,7 +61,7 @@ class MOT_AICITYIngestor(Ingestor):
                     f_csv = csv.reader(f, delimiter=",")
                     for row in f_csv:
                         frame_id = row[0]
-                        img_name = img_name_base + "0000"[:4 - len(frame_id)] + frame_id + "..jpg"
+                        img_name = f"{img_name_base}{'0000'[:4 - len(frame_id)]}{frame_id}.jpg"
                         img_path = os.path.join(path_img[i], img_name)
                         success, width, height = self._image_dimensions(img_path)
                         # success, width, height = True, 1000, 1000

@@ -34,8 +34,8 @@ class PEDXIngestor(Ingestor):
         detcs = {}
         image_width = {}
         image_height = {}
-        path_labs = root + "/labels/2d/"
-        path_imgs = root + "/images/"
+        path_labs = os.path.join(root, "labels/2d/")
+        path_imgs = os.path.join(root, "images/")
         for date in os.scandir(path_imgs):
             for cam in os.scandir(date):
                 for im in os.scandir(cam):
@@ -65,7 +65,7 @@ class PEDXIngestor(Ingestor):
                     im_schema["image"]["path"] = im_path
                     im_schema["image"]["width"] = image_width[im_name]
                     im_schema["image"]["height"] = image_height[im_name]
-                    im_schema["image"]["file_name"] = im_name + ".jpg"
+                    im_schema["image"]["file_name"] = f"{im_name}.jpg"
                     im_schema["detections"] = detcs[im_name]
                     image_detections.append(im_schema)
         return image_detections
