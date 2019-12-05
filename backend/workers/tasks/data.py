@@ -1,8 +1,8 @@
 import json
 import os
 import sys
-from datetime import datetime
 import zipfile
+from datetime import datetime
 
 import numpy as np
 from celery import shared_task
@@ -16,6 +16,7 @@ from database import (
     ExportModel
 )
 from workers.lib import convert_to_coco
+from workers.lib.tf_models.create_tf_record_from_coco import convert_coco_to_tfrecord
 from workers.lib.vod_converter.split_labels_from_json_string import split_coco_labels
 
 from ..socket import create_socket
@@ -59,8 +60,6 @@ def export_annotations_to_tf_record(task_id, dataset_id, categories, validation_
     to a single ZIP file accessible from:
     Datasets->Chosen Dataset -> Exports
     """
-    from workers.lib.tf_models.create_tf_record_from_coco import convert_coco_to_tfrecord
-
     task = TaskModel.objects.get(id=task_id)
     dataset = DatasetModel.objects.get(id=dataset_id)
     task.update(status="PROGRESS")
