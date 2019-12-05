@@ -137,7 +137,7 @@ const useDetails = (id: number): DetailsState => {
             addProcess(dispatch, process);
 
             // TODO add folder order param
-            const { data } = await DatasetApi.getDetails(id);
+            const data = await DatasetApi.getDetails({ id });
             setDataset(data.dataset);
             setImages(data.images);
             setCategories(data.categories);

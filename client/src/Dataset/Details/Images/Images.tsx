@@ -39,7 +39,7 @@ const Images: React.FC<Props> = ({
                     limit={1}
                     offset={page}
                     total={pagesCount}
-                    onClick={(e, offset) => setPage(offset)}
+                    onClick={(_, offset) => setPage(offset)}
                 />
             </Box>
 

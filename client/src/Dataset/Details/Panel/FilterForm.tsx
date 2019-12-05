@@ -44,21 +44,18 @@ const FilterForm: React.FC<Props> = ({ filters }) => {
             </Grid>
             <Grid item xs>
                 <FormControl className={classes.formControl}>
-                    <InputLabel id="demo-simple-select-label">Order</InputLabel>
+                    <InputLabel>Order</InputLabel>
                     <Select
-                        labelId="demo-simple-select-label"
                         className={clsx(classes.formControl, classes.formInput)}
                         variant="outlined"
                         value={order}
-                        onChange={(
-                            e: React.ChangeEvent<{ value: unknown }>,
-                        ) => {
+                        onChange={(e: ChangeEvent<{ value: unknown }>) => {
                             setOrder(e.target.value as string);
                         }}
                     >
-                        <MenuItem value={'File Name'}>File Name</MenuItem>
-                        <MenuItem value={'Id'}>Id</MenuItem>
-                        <MenuItem value={'File Path'}>File Path</MenuItem>
+                        <MenuItem value="File Name">File Name</MenuItem>
+                        <MenuItem value="Id">Id</MenuItem>
+                        <MenuItem value="File Path">File Path</MenuItem>
                     </Select>
                 </FormControl>
             </Grid>

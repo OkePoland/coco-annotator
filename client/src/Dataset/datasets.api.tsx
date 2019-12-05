@@ -1,12 +1,13 @@
 import Api from '../common/api';
+import { Image } from '../common/types';
 
 const baseURL = '/dataset';
 
 export const getAll = async (page: number, limit: number) => {
     const url = `${baseURL}/data`;
     const params = {
-        page: page,
-        limit: limit,
+        page,
+        limit,
     };
     const response = await Api.get(url, { params: params });
     return response;
@@ -15,50 +16,57 @@ export const getAll = async (page: number, limit: number) => {
 export const create = async (name: string, categories?: Array<string>) => {
     const url = `${baseURL}/`;
     const params = {
-        name: name,
+        name,
     };
     const body = { categories: categories != null ? categories : [] };
-    const response = await Api.post(url, body, { params: params });
+    const response = await Api.post(url, body, { params });
     return response;
 };
 
-export const getDetails = async (
-    id: number,
-    page?: number,
-    folder?: string,
-    order?: string,
-) => {
+interface IGetDetailsParams {
+    id: number;
+    page?: number;
+    folder?: string;
+    order?: string;
+}
+interface IGetDetailsResponse {
+    total: number;
+    per_page: number;
+    pages: number;
+    page: number;
+    images: Image[];
+    folder: string;
+    directory: string;
+    dataset: any;
+    categories: string[];
+    subdirectories: string[];
+    time_ms: number;
+}
+export const getDetails = async ({
+    id,
+    page,
+    folder,
+    order,
+}: IGetDetailsParams): Promise<IGetDetailsResponse> => {
     const url = `${baseURL}/${id}/data`;
 
     let params = {
         page: page != null ? page : null,
-        folder: folder,
-        order: order,
+        folder,
+        order,
         limit: 52,
     };
 
-    const response = await Api.get<{
-        total: number;
-        per_page: number;
-        pages: number;
-        page: number;
-        images: string[];
-        folder: string;
-        directory: string;
-        dataset: any;
-        categories: string[];
-        subdirectories: string[];
-        time_ms: number;
-    }>(url, { params: params });
+    const { data } = await Api.get<IGetDetailsResponse>(url, { params });
 
-    return response;
+    return data;
 };
 
 export const generate = async (id: number, keyword: string, limit: number) => {
     const url = `${baseURL}/${id}/generate`;
     const body = {
         keywords: [keyword],
-        limit: limit,
+        limit,
     };
     const response = await Api.post(url, body);
     return response;

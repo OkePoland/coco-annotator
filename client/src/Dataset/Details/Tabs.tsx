@@ -17,7 +17,7 @@ const Tabs: React.FC<Props> = ({ tabId, setTabId }) => {
             variant="fullWidth"
             indicatorColor="primary"
             value={tabId}
-            onChange={(event: ChangeEvent<{}>, newValue: number) => {
+            onChange={(_: ChangeEvent<{}>, newValue: number) => {
                 setTabId(newValue);
             }}
         >

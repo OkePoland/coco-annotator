@@ -12,7 +12,7 @@ interface Props {
 const Statistics: React.FC<Props> = ({ id }) => {
     const stats = useStatisticsPage(id);
 
-    if (stats == null) {
+    if (stats === null) {
         return <Box>Crunching numbers...</Box>;
     }
 
