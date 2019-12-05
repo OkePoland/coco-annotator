@@ -11,9 +11,9 @@ class TestDataset:
         url = "/api/dataset/"
         resp = client.get(url)
         resp = json.loads(resp.data)
-        for el in resp:
-            if el["name"] == "test_inria":
-                return el["id"]
+        matched_elem = next((el for el in resp if el["name"] == "test_inria"), None)
+        if matched_elem:
+            return matched_elem["id"]
 
     @staticmethod
     def _get_inria_info(client, inria_id):

@@ -154,6 +154,5 @@ class TestCategoryId:
 
 class TestCategoryData:
 
-    # TODO write tests for data
     def test(self):
         pass

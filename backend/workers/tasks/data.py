@@ -144,7 +144,7 @@ def collect_coco_annotations(task, categories, dataset, socket):
 
     total_annotations = db_annotations.count()
     total_images = db_images.count()
-    for image in fix_ids(db_images):
+    for img_counter, image in enumerate(fix_ids(db_images)):
         progress += 1
         task.set_progress((progress / total_items) * 50, socket=socket)
 
@@ -167,7 +167,7 @@ def collect_coco_annotations(task, categories, dataset, socket):
                 num_annotations += 1
                 coco.get('annotations').append(annotation)
 
-        task.info(f"Exporting {num_annotations} annotations for image {image.get('id')}")
+        task.info(f"Exporting {num_annotations} annotations for image {image.get('id')} ({img_counter+1}/{total_images})")
         coco.get('images').append(image)
     task.info(f"Done export {total_annotations} annotations and {total_images} images from {dataset.name}")
     return coco, category_names
@@ -246,9 +246,9 @@ def import_annotations(task_id, dataset_id, encoded_coco_json):
     # image id mapping ( file: database )
     images_id = {}
     categories_by_image = {}
-    images_size = len(coco_images)
+    total_images = len(coco_images)
     # Find all images
-    for image_number, image in enumerate(coco_images):
+    for image_counter, image in enumerate(coco_images):
         image_id = image.get('id')
         image_filename = image.get('file_name')
 
@@ -264,14 +264,14 @@ def import_annotations(task_id, dataset_id, encoded_coco_json):
             task.error(f"Too many images found with the same file name: {image_filename}")
             continue
 
-        task.info(f"Image {image_filename} found, loaded {image_number}/{images_size} images")
+        task.info(f"Image {image_filename} found ({image_counter+1}/{total_images})")
         image_model = image_model[0]
         images_id[image_id] = image_model
         categories_by_image[image_id] = list()
 
     task.info("===== Import Annotations =====")
-    annotation_list = len(coco_annotations)
-    for annotation_number, annotation in enumerate(coco_annotations):
+    total_annotations = len(coco_annotations)
+    for annotation_counter, annotation in enumerate(coco_annotations):
 
         image_id = annotation.get('image_id')
         category_id = annotation.get('category_id')
@@ -310,7 +310,8 @@ def import_annotations(task_id, dataset_id, encoded_coco_json):
         ).first()
 
         if annotation_model is None:
-            task.info(f"Creating annotation data ({image_id}, {category_id}), loaded {annotation_number}/{annotation_list} annotations")
+            task.info(f"Creating annotation data ({image_id}, {category_id}) "
+                      f"({annotation_counter+1}/{total_annotations})")
 
             annotation_model = AnnotationModel(image_id=image_model.id)
             annotation_model.category_id = category_model_id
@@ -330,7 +331,8 @@ def import_annotations(task_id, dataset_id, encoded_coco_json):
             image_categories.append(category_id)
         else:
             annotation_model.update(deleted=False, isbbox=isbbox)
-            task.info(f"Annotation already exists (i:{image_id}, c:{category_id})")
+            task.info(f"Annotation already exists (i:{image_id}, c:{category_id}) "
+                      f"({annotation_counter+1}/{total_annotations})")
 
     for image_id in images_id:
         image_model = images_id[image_id]
