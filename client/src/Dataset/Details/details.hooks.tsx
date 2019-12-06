@@ -50,7 +50,7 @@ interface NavigationState {
 
 // hooks
 export const usePage = (id: number): PageState => {
-    const { openAnnotator } = usePageNavigation();
+    const { navigate } = useNavigation();
     const tabs = useState(0);
     const filters = useFilterState();
     const folder = useState<string>('');
@@ -69,6 +69,9 @@ export const usePage = (id: number): PageState => {
     };
     const exportAction = async () => {
         // TODO
+    };
+    const annotateImageAction = (id: number) => {
+        navigate(`/annotate/${id}`);
     };
     const deleteImageAction = async (id: number) => {
         await DatasetApi.deleteImage(id);
@@ -93,7 +96,7 @@ export const usePage = (id: number): PageState => {
             importAction,
             exportAction,
             deleteImageAction,
-            annotateImageAction: openAnnotator,
+            annotateImageAction,
             downloadImageAction,
             resetMetadataAction,
         },
@@ -160,15 +163,5 @@ const useDetails = (id: number): DetailsState => {
         page,
         setPage,
         refreshPage,
-    };
-};
-
-const usePageNavigation = (): NavigationState => {
-    const navigation = useNavigation();
-    const openAnnotator = (id: number) => {
-        navigation.navigate(`/annotate/${id}`);
-    };
-    return {
-        openAnnotator: openAnnotator,
     };
 };

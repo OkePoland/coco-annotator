@@ -9,7 +9,7 @@ export const getAll = async (page: number, limit: number) => {
         page,
         limit,
     };
-    const response = await Api.get(url, { params: params });
+    const response = await Api.get(url, { params });
     return response;
 };
 
@@ -51,7 +51,7 @@ export const getDetails = async ({
     const url = `${baseURL}/${id}/data`;
 
     let params = {
-        page: page != null ? page : null,
+        page,
         folder,
         order,
         limit: 52,
