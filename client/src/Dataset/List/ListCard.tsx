@@ -10,8 +10,8 @@ import MoreVertIcon from '@material-ui/icons/MoreVert';
 import Menu from '@material-ui/core/Menu';
 import LinearProgress from '@material-ui/core/LinearProgress';
 
-import { Dataset } from '../common/types';
-import { useStyles } from './datasetCard.styles';
+import { Dataset } from '../../common/types';
+import { useStyles } from './listCard.styles';
 
 interface Props {
     item: Dataset;
