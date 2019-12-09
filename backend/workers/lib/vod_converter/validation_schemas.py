@@ -69,12 +69,6 @@ In raw_categories_schema:
 }
 
 """
-# !!!
-# Warning: If you use raw_schemas you need to make copy of it with .copy() in every iteration, because dict in python
-# are addressed by reference, so if you change dict"s values without copy, you will be changing values from every
-# iteration
-# Better use functions below to get copy of these dicts
-# !!!
 _raw_image_detection_schema = {
     "image":
         {
@@ -88,13 +82,6 @@ _raw_image_detection_schema = {
 
     "detections": []
 }
-
-# !!!
-# Warning: If you use raw_schemas you need to make copy of it with .copy() in every iteration, because dict in python
-# are addressed by reference, so if you change dict"s values without copy, you will be changing values from every
-# iteration
-# Better use functions below to get copy of these dicts
-# !!!
 _raw_detection_schema = {
     "id": None,
     "image_id": None,
@@ -109,13 +96,6 @@ _raw_detection_schema = {
     "isbbox": None,
     "keypoints": []
 }
-
-# !!!
-# Warning: If you use raw_schemas you need to make copy of it with .copy() in every iteration, because dict in python
-# are addressed by reference, so if you change dict"s values without copy, you will be changing values from every
-# iteration
-# Better use functions below to get copy of these dicts
-# !!!
 _raw_categories_schema = {
     "name": None,
     "keypoints": None,

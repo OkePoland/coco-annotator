@@ -233,7 +233,7 @@ def _split_dataset(annotations_file, val_size, test_size):
     chunks_lengths = [len(train_images_keys)-val_size-test_size, val_size, test_size]
     keys_iterator = iter(train_images_keys)
     divided_keys = [list(islice(keys_iterator, elem)) for elem in chunks_lengths]
-    # keys is struct: [[train_keys], [val_keys], [test_keys]]
+    # divided keys struct: [[train_keys], [val_keys], [test_keys]]
 
     train_data = {'images': [all_images_annotations[train_key]['image'] for train_key in divided_keys[0]],
                   'categories': groundtruth_data['categories'],

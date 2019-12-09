@@ -10,7 +10,6 @@ INGESTORS = [
     "pedx",  # tested and working
     "citycam",  # tested and working
     "coco",  # tested and working
-    # "daimler",   # NOT tested
     "kitti",  # tested and working
     "kitti-tracking",  # NOT tested
     "voc",  # tested and working
