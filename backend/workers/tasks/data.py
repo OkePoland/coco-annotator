@@ -356,7 +356,7 @@ def load_annotation_files(task_id, dataset_id, coco_json_strings, dataset_name):
     """
 
     task = TaskModel.objects.get(id=task_id)
-    max_json_string_size = 16000000
+    max_json_string_size = 32000000
 
     task.update(status="PROGRESS")
     socket = create_socket()
@@ -400,7 +400,7 @@ def load_annotation_files(task_id, dataset_id, coco_json_strings, dataset_name):
 @shared_task
 def convert_dataset(task_id, dataset_id, coco_json, dataset_name):
     task = TaskModel.objects.get(id=task_id)
-    max_json_string_size = 16000000
+    max_json_string_size = 32000000
 
     task.update(status="PROGRESS")
     socket = create_socket()
@@ -423,7 +423,7 @@ def convert_dataset(task_id, dataset_id, coco_json, dataset_name):
     if json_string_size > max_json_string_size:
         task.info("Json string to large")
         task.info("===== Splitting json string =====")
-        list_of_json_strings = split_coco_labels(coco_json, max_byte_size=14000000)
+        list_of_json_strings = split_coco_labels(coco_json, max_byte_size=max_json_string_size)
     else:
         task.info("Correct size of json string")
         list_of_json_strings = [coco_json]

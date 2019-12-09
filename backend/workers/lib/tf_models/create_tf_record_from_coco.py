@@ -34,6 +34,7 @@ import io
 import json
 import os
 import random
+from itertools import islice
 
 import PIL.Image
 import contextlib2
@@ -222,23 +223,33 @@ def _split_dataset(annotations_file, val_size, test_size):
     images = groundtruth_data["images"]
     annotations = groundtruth_data["annotations"]
 
-    val_images = random.sample(images, val_size)
-    images = [image for image in images if image not in val_images]
-    test_images = random.sample(images, test_size)
-    images = [image for image in images if image not in test_images]
+    all_images_annotations = {img["id"]: {"image": img, "annotations": []} for img in images}
+    for annotation in annotations:
+        all_images_annotations[annotation["image_id"]]["annotations"].append(annotation)
 
-    val_image_ids = [image["id"] for image in val_images]
-    test_image_ids = [image["id"] for image in test_images]
+    train_images_keys = list(all_images_annotations.keys())
+    random.shuffle(train_images_keys)
 
-    val_annotations = [annotation for annotation in annotations if annotation["image_id"] in val_image_ids]
-    test_annotations = [annotation for annotation in annotations if annotation["image_id"] in test_image_ids]
+    chunks_lengths = [len(train_images_keys)-val_size-test_size, val_size, test_size]
+    keys_iterator = iter(train_images_keys)
+    divided_keys = [list(islice(keys_iterator, elem)) for elem in chunks_lengths]
+    # keys is struct: [[train_keys], [val_keys], [test_keys]]
 
-    annotations = [annotation for annotation in annotations if annotation not in val_annotations and annotation not
-                   in test_annotations]
-    train_data = {"images": images, "categories": groundtruth_data["categories"], "annotations": annotations}
-    val_data = {"images": val_images, "categories": groundtruth_data["categories"], "annotations": val_annotations}
-    test_data = {"images": test_images, "categories": groundtruth_data["categories"],
-                 "annotations": test_annotations}
+    train_data = {'images': [all_images_annotations[train_key]['image'] for train_key in divided_keys[0]],
+                  'categories': groundtruth_data['categories'],
+                  'annotations': [annot for train_key in divided_keys[0] for annot in
+                                  all_images_annotations[train_key]['annotations']]}
+
+    val_data = {'images': [all_images_annotations[val_key]['image'] for val_key in divided_keys[1]],
+                'categories': groundtruth_data['categories'],
+                'annotations': [annot for val_key in divided_keys[1] for annot in
+                                all_images_annotations[val_key]['annotations']]}
+
+    test_data = {'images': [all_images_annotations[test_key]['image'] for test_key in divided_keys[2]],
+                 'categories': groundtruth_data['categories'],
+                 'annotations': [annot for test_key in divided_keys[2] for annot in
+                                 all_images_annotations[test_key]['annotations']]}
+
     return train_data, val_data, test_data
 
 
