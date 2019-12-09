@@ -3,7 +3,7 @@ Ingestor for KITTI tracking formats.
 
 http://www.cvlibs.net/datasets/kitti/eval_tracking.php
 
-Note: even though this is for tracking instead of object detection, sometime it's helpful to convert
+Note: even though this is for tracking instead of object detection, sometime it"s helpful to convert
 data from this for object detection training. This reads in the left color labels.
 
 Per devkit docs:
@@ -25,9 +25,9 @@ corresponds to one object. The 17 columns represent:
 ----------------------------------------------------------------------------
    1    frame        Frame within the sequence where the object appearers
    1    track id     Unique tracking id of this object within this sequence
-   1    type         Describes the type of object: 'Car', 'Van', 'Truck',
-                     'Pedestrian', 'Person_sitting', 'Cyclist', 'Tram',
-                     'Misc' or 'DontCare'
+   1    type         Describes the type of object: "Car", "Van", "Truck",
+                     "Pedestrian", "Person_sitting", "Cyclist", "Tram",
+                     "Misc" or "DontCare"
    1    truncated    Float from 0 (non-truncated) to 1 (truncated), where
                      truncated refers to the object leaving image boundaries.
 		     Truncation 2 indicates an ignored object (in particular
@@ -57,28 +57,28 @@ from PIL import Image
 
 from .abstract import Ingestor
 
-LABEL_F_PATTERN = re.compile('[0-9]+\.txt')
+LABEL_F_PATTERN = re.compile("[0-9]+\.txt")
 
 
 class KITTITrackingIngestor(Ingestor):
     def validate(self, path, folder_names):
         expected_dirs = [
-            'image_02',
-            'label_02'
+            "image_02",
+            "label_02"
         ]
         for subdir in expected_dirs:
-            if not os.path.isdir(f"{path}/{subdir}"):
+            if not os.path.isdir(os.path.join(path, subdir)):
                 return False, f"Expected subdirectory {subdir} within {path}"
         return True, None
 
     def ingest(self, path):
-        fs = os.listdir(f"{path}/label_02")
+        fs = os.listdir(os.path.join(path, "label_02"))
         label_fnames = [f for f in fs if LABEL_F_PATTERN.match(f)]
         image_detections = []
         for label_fname in label_fnames:
             frame_name = label_fname.split(".")[0]
-            labels_path = f"{path}/label_02/{label_fname}"
-            images_dir = f"{path}/image_02/{frame_name}"
+            labels_path = os.path.join(path, "label_02", label_fname)
+            images_dir = os.path.join(path, "image_02", frame_name)
             image_detections.extend(
                 self._get_track_image_detections(frame_name=frame_name, labels_path=labels_path, images_dir=images_dir))
         return image_detections
@@ -86,44 +86,44 @@ class KITTITrackingIngestor(Ingestor):
     def _get_track_image_detections(self, *, frame_name, labels_path, images_dir):
         detections_by_frame = defaultdict(list)
         with open(labels_path) as f:
-            f_csv = csv.reader(f, delimiter=' ')
+            f_csv = csv.reader(f, delimiter=" ")
             for row in f_csv:
                 frame_id = int(row[0])
                 x1, y1, x2, y2 = map(float, row[6:10])
                 label = row[2]
                 detections_by_frame[frame_id].append({
-                    'label': label,
-                    'left': x1,
-                    'right': x2,
-                    'top': y1,
-                    'bottom': y2
+                    "label": label,
+                    "left": x1,
+                    "right": x2,
+                    "top": y1,
+                    "bottom": y2
                 })
 
         image_detections = []
         for frame_id in sorted(detections_by_frame.keys()):
             frame_dets = detections_by_frame[frame_id]
-            image_path = f"{images_dir}/{frame_id:06d}.png"
+            image_path = os.path.join(images_dir, f"{frame_id:06d}.png")
             if not os.path.exists(image_path):
-                image_path = f"{images_dir}/{frame_id:06d}.jpg"
+                image_path = os.path.join(images_dir, f"{frame_id:06d}.jpg")
             with Image.open(image_path) as image:
                 image_width = image.width
                 image_height = image.height
 
                 def clamp_bbox(det):
-                    if det['right'] > image_width - 1:
-                        det['right'] = image_width - 1
-                    if det['bottom'] > image_height - 1:
-                        det['bottom'] = image_height - 1
+                    if det["right"] > image_width - 1:
+                        det["right"] = image_width - 1
+                    if det["bottom"] > image_height - 1:
+                        det["bottom"] = image_height - 1
                     return det
 
                 image_detections.append({
-                    'image': {
-                        'id': f"{frame_name}-{frame_id:06d}",
-                        'path': image_path,
-                        'segmented_path': None,
-                        'width': image.width,
-                        'height': image.height
+                    "image": {
+                        "id": f"{frame_name}-{frame_id:06d}",
+                        "path": image_path,
+                        "segmented_path": None,
+                        "width": image.width,
+                        "height": image.height
                     },
-                    'detections': [clamp_bbox(det) for det in frame_dets]
+                    "detections": [clamp_bbox(det) for det in frame_dets]
                 })
         return image_detections

@@ -21,12 +21,12 @@ from .daimler import *
 from .detrac import *
 from .kitti import *
 from .kitti_tracking import *
-from .mio import *  # something is wrong with mio file, probably imports fault
+from .mio import *
 from .mot_aicity import *
 from .pedx import *
+from .town_centre import TownCentreIngestor
 from .validation_schemas import IMAGE_DETECTION_SCHEMA
 from .voc import *
-from .town_centre import TownCentreIngestor
 
 
 def validate_schema(data, schema):
@@ -38,24 +38,24 @@ def validate_schema(data, schema):
 
 
 INGESTORS = {
-    'pedx': PEDXIngestor(),
-    'citycam': VOC_CITY_Ingestor(),
-    'coco': COCOIngestor(),
-    'mio': MIOIngestor(),
-    'daimler': DAIMLERIngestor(),
-    'kitti': KITTIIngestor(),
-    'kitti-tracking': KITTITrackingIngestor(),
-    'voc': VOCIngestor(),
-    'aicity': MOT_AICITYIngestor(),
-    'detrac': DETRACIngestor(),
-    'caltech': CaltechIngestor(),
-    'town-centre': TownCentreIngestor()
-    }
+    "pedx": PEDXIngestor(),
+    "citycam": VocCityIngestor(),
+    "coco": COCOIngestor(),
+    "mio": MIOIngestor(),
+    "daimler": DAIMLERIngestor(),
+    "kitti": KITTIIngestor(),
+    "kitti-tracking": KITTITrackingIngestor(),
+    "voc": VOCIngestor(),
+    "aicity": MOT_AICITYIngestor(),
+    "detrac": DETRACIngestor(),
+    "caltech": CaltechIngestor(),
+    "town-centre": TownCentreIngestor()
+}
 
 EGESTORS = {
-    'voc': VOCEgestor(),
-    'kitti': KITTIEgestor(),
-    'coco': COCOEgestor()
+    "voc": VOCEgestor(),
+    "kitti": KITTIEgestor(),
+    "coco": COCOEgestor()
 }
 
 
@@ -78,7 +78,6 @@ def convert(*, from_path, ingestor_key, to_path, egestor_key, select_only_known_
     ingestor = INGESTORS[ingestor_key]
     egestor = EGESTORS[egestor_key]
     from_valid, from_msg = ingestor.validate(from_path, folder_names)
-    # print(from_msg)
     if not from_valid:
         return from_valid, from_msg
 
@@ -107,18 +106,15 @@ def validate_image_detections(image_detections):
             print(se)
             image_detections.remove(image_detection)
             continue
-        image = image_detection['image']
-        for detection in image_detection['detections']:
-            if detection['isbbox'] is True:
+        image = image_detection["image"]
+        for detection in image_detection["detections"]:
+            if detection["isbbox"] is True:
                 try:
-                    if detection['right'] > image['width']:
-                        # os.remove(image['path'])
+                    if detection["right"] > image["width"]:
                         raise ValueError(f"Image {image} has out of bounds bounding box {detection}")
-                    if detection['bottom'] > image['height']:
-                        # os.remove(image['path'])
+                    if detection["bottom"] > image["height"]:
                         raise ValueError(f"Image {image} has out of bounds bounding box {detection}")
-                    if detection['right'] <= detection['left'] or detection['bottom'] <= detection['top']:
-                        # os.remove(image['path'])
+                    if detection["right"] <= detection["left"] or detection["bottom"] <= detection["top"]:
                         raise ValueError(f"Image {image} has zero dimension bbox {detection}")
                 except Exception as ve:
                     print(ve)
@@ -144,15 +140,15 @@ def convert_labels(*, image_detections, expected_labels,
 
         detections = []
         try:
-            for detection in image_detection['detections']:
-                label = detection['label']
+            for detection in image_detection["detections"]:
+                label = detection["label"]
 
                 fallback_label = label if not select_only_known_labels else None
                 final_label = convert_dict.get(label.lower(), fallback_label)
                 if final_label:
-                    detection['label'] = final_label
+                    detection["label"] = final_label
                     detections.append(detection)
-            image_detection['detections'] = detections
+            image_detection["detections"] = detections
             if detections:
                 final_image_detections.append(image_detection)
             elif not filter_images_without_labels:

@@ -54,12 +54,12 @@ from .validation_schemas import get_blank_image_detection_schema, get_blank_dete
 class CaltechIngestor(Ingestor):
     def validate(self, path, folder_names):
         expected_dirs = [
-            'images',
+            "images",
         ]
         for subdir in expected_dirs:
-            if not os.path.isdir(f"{path}/{subdir}"):
+            if not os.path.isdir(os.path.join(path, subdir)):
                 return False, f"Expected subdirectory {subdir} within {path}"
-        if not os.path.isfile(f"{path}/annotations.json"):
+        if not os.path.isfile(os.path.join(path, "annotations.json")):
             return False, f"Expected annotations.json file within {path}"
         return True, None
 
@@ -69,7 +69,7 @@ class CaltechIngestor(Ingestor):
     def _get_image_detection(self, root, folder_names):
         annotations = []
         failed_loads = 0
-        path = f"{root}/annotations.json"
+        path = os.path.join(root, "annotations.json")
         with open(path) as f:
             data = json.load(f)
             total_sets = len(data)
@@ -81,8 +81,8 @@ class CaltechIngestor(Ingestor):
                         try:
                             single_img_detection = get_blank_image_detection_schema()
 
-                            image_id = str(data_set_key + "_" + video_key + "_" + frame_key)
-                            image_path = f"{root}/images/" + image_id + ".png"
+                            image_id = f"{data_set_key}_{video_key}_{frame_key}"
+                            image_path = os.path.join(root, "images", f"{image_id}.png")
                             image_width, image_height = self._image_dimensions(image_path)
 
                             detections = self._get_detections(frame_dict, image_id, image_width, image_height)
@@ -93,10 +93,9 @@ class CaltechIngestor(Ingestor):
                             single_img_detection["image"]["segmented_path"] = None
                             single_img_detection["image"]["width"] = image_width
                             single_img_detection["image"]["height"] = image_height
-                            single_img_detection["image"]["file_name"] = image_path.split('/')[-1]
+                            single_img_detection["image"]["file_name"] = image_path.split("/")[-1]
 
                             single_img_detection["detections"] = detections
-
                             annotations.append(single_img_detection)
 
                         except Exception as e:
@@ -105,10 +104,8 @@ class CaltechIngestor(Ingestor):
 
                     video_processed += 1
                     print(f"Processed {video_processed} videos in current set")
-
                 sets_processed += 1
                 print(f"Loaded {sets_processed} sets on {total_sets}...")
-
         print(f"Unable to load {failed_loads} images")
         return annotations
 
@@ -117,7 +114,6 @@ class CaltechIngestor(Ingestor):
         for i, annotation in enumerate(frame):
             curr_detection = get_blank_detection_schema()
             try:
-
                 curr_detection["id"] = i
                 curr_detection["image_id"] = img_id
                 curr_detection["label"] = annotation["lbl"]
@@ -133,7 +129,6 @@ class CaltechIngestor(Ingestor):
                 curr_detection["keypoints"] = []
 
                 detections.append(curr_detection)
-
             except Exception as e:
                 print(e)
         return detections

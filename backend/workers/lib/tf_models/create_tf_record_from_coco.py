@@ -79,13 +79,13 @@ def create_tf_example(image,
     Raises:
       ValueError: if the image pointed to by data['filename'] is not a valid JPEG
     """
-    image_height = image['height']
-    image_width = image['width']
-    filename = image['file_name']
-    image_id = image['id']
+    image_height = image["height"]
+    image_width = image["width"]
+    filename = image["file_name"]
+    image_id = image["id"]
 
-    full_path = image['path']
-    with tf.gfile.GFile(full_path, 'rb') as fid:
+    full_path = image["path"]
+    with tf.gfile.GFile(full_path, "rb") as fid:
         encoded_jpg = fid.read()
     encoded_jpg_io = io.BytesIO(encoded_jpg)
     image = PIL.Image.open(encoded_jpg_io)
@@ -102,7 +102,7 @@ def create_tf_example(image,
     encoded_mask_png = []
     num_annotations_skipped = 0
     for object_annotations in annotations_list:
-        (x, y, width, height) = tuple(object_annotations['bbox'])
+        (x, y, width, height) = tuple(object_annotations["bbox"])
         if width <= 0 or height <= 0:
             num_annotations_skipped += 1
             continue
@@ -113,54 +113,54 @@ def create_tf_example(image,
         xmax.append(float(x + width) / image_width)
         ymin.append(float(y) / image_height)
         ymax.append(float(y + height) / image_height)
-        is_crowd.append(object_annotations['iscrowd'])
-        category_id = int(object_annotations['category_id'])
+        is_crowd.append(object_annotations["iscrowd"])
+        category_id = int(object_annotations["category_id"])
         category_ids.append(category_id)
-        category_names.append(category_index[category_id]['name'].encode('utf8'))
-        area.append(object_annotations['area'])
+        category_names.append(category_index[category_id]["name"].encode("utf8"))
+        area.append(object_annotations["area"])
 
         if include_masks:
-            run_len_encoding = mask.frPyObjects(object_annotations['segmentation'],
+            run_len_encoding = mask.frPyObjects(object_annotations["segmentation"],
                                                 image_height, image_width)
             binary_mask = mask.decode(run_len_encoding)
-            if not object_annotations['iscrowd']:
+            if not object_annotations["iscrowd"]:
                 binary_mask = np.amax(binary_mask, axis=2)
             pil_image = PIL.Image.fromarray(binary_mask)
             output_io = io.BytesIO()
-            pil_image.save(output_io, format='PNG')
+            pil_image.save(output_io, format="PNG")
             encoded_mask_png.append(output_io.getvalue())
     feature_dict = {
-        'image/height':
+        "image/height":
             dataset_util.int64_feature(image_height),
-        'image/width':
+        "image/width":
             dataset_util.int64_feature(image_width),
-        'image/filename':
-            dataset_util.bytes_feature(filename.encode('utf8')),
-        'image/source_id':
-            dataset_util.bytes_feature(str(image_id).encode('utf8')),
-        'image/key/sha256':
-            dataset_util.bytes_feature(key.encode('utf8')),
-        'image/encoded':
+        "image/filename":
+            dataset_util.bytes_feature(filename.encode("utf8")),
+        "image/source_id":
+            dataset_util.bytes_feature(str(image_id).encode("utf8")),
+        "image/key/sha256":
+            dataset_util.bytes_feature(key.encode("utf8")),
+        "image/encoded":
             dataset_util.bytes_feature(encoded_jpg),
-        'image/format':
-            dataset_util.bytes_feature('jpeg'.encode('utf8')),
-        'image/object/bbox/xmin':
+        "image/format":
+            dataset_util.bytes_feature("jpeg".encode("utf8")),
+        "image/object/bbox/xmin":
             dataset_util.float_list_feature(xmin),
-        'image/object/bbox/xmax':
+        "image/object/bbox/xmax":
             dataset_util.float_list_feature(xmax),
-        'image/object/bbox/ymin':
+        "image/object/bbox/ymin":
             dataset_util.float_list_feature(ymin),
-        'image/object/bbox/ymax':
+        "image/object/bbox/ymax":
             dataset_util.float_list_feature(ymax),
-        'image/object/class/text':
+        "image/object/class/text":
             dataset_util.bytes_list_feature(category_names),
-        'image/object/is_crowd':
+        "image/object/is_crowd":
             dataset_util.int64_list_feature(is_crowd),
-        'image/object/area':
+        "image/object/area":
             dataset_util.float_list_feature(area),
     }
     if include_masks:
-        feature_dict['image/object/mask'] = (
+        feature_dict["image/object/mask"] = (
             dataset_util.bytes_list_feature(encoded_mask_png))
     example = tf.train.Example(features=tf.train.Features(feature=feature_dict))
     return key, example, num_annotations_skipped
@@ -181,88 +181,88 @@ def _create_tf_record_from_coco_annotations(
     with contextlib2.ExitStack() as tf_record_close_stack:
         output_tfrecords, results_paths = tf_record_creation_util.open_sharded_output_tfrecords(
             tf_record_close_stack, output_path, num_shards)
-        images = groundtruth_data['images']
+        images = groundtruth_data["images"]
         category_index = label_map_util.create_category_index(
-            groundtruth_data['categories'])
+            groundtruth_data["categories"])
 
         annotations_index = {}
-        if 'annotations' in groundtruth_data:
+        if "annotations" in groundtruth_data:
             task.info(
-                'Found groundtruth annotations. Building annotations index.')
-            for annotation in groundtruth_data['annotations']:
-                image_id = annotation['image_id']
+                "Found groundtruth annotations. Building annotations index.")
+            for annotation in groundtruth_data["annotations"]:
+                image_id = annotation["image_id"]
                 if image_id not in annotations_index:
                     annotations_index[image_id] = []
                 annotations_index[image_id].append(annotation)
         missing_annotation_count = 0
         for image in images:
-            image_id = image['id']
+            image_id = image["id"]
             if image_id not in annotations_index:
                 missing_annotation_count += 1
                 annotations_index[image_id] = []
-        task.info(f'{missing_annotation_count} images are missing annotations.')
+        task.info(f"{missing_annotation_count} images are missing annotations.")
 
         total_num_annotations_skipped = 0
         for idx, image in enumerate(images):
             if idx % 100 == 0:
-                task.info(f'On image {idx} of {len(images)}')
-            annotations_list = annotations_index[image['id']]
+                task.info(f"On image {idx} of {len(images)}")
+            annotations_list = annotations_index[image["id"]]
             _, tf_example, num_annotations_skipped = create_tf_example(
                 image, annotations_list, dataset_dir, category_index, include_masks)
             total_num_annotations_skipped += num_annotations_skipped
             shard_idx = idx % num_shards
             output_tfrecords[shard_idx].write(tf_example.SerializeToString())
-        task.info(f'Finished writing, skipped {total_num_annotations_skipped} annotations.')
+        task.info(f"Finished writing, skipped {total_num_annotations_skipped} annotations.")
 
     return results_paths
 
 
 def _split_dataset(annotations_file, val_size, test_size):
     groundtruth_data = json.loads(annotations_file)
-    images = groundtruth_data['images']
-    annotations = groundtruth_data['annotations']
+    images = groundtruth_data["images"]
+    annotations = groundtruth_data["annotations"]
 
     val_images = random.sample(images, val_size)
     images = [image for image in images if image not in val_images]
     test_images = random.sample(images, test_size)
     images = [image for image in images if image not in test_images]
 
-    val_image_ids = [image['id'] for image in val_images]
-    test_image_ids = [image['id'] for image in test_images]
+    val_image_ids = [image["id"] for image in val_images]
+    test_image_ids = [image["id"] for image in test_images]
 
-    val_annotations = [annotation for annotation in annotations if annotation['image_id'] in val_image_ids]
-    test_annotations = [annotation for annotation in annotations if annotation['image_id'] in test_image_ids]
+    val_annotations = [annotation for annotation in annotations if annotation["image_id"] in val_image_ids]
+    test_annotations = [annotation for annotation in annotations if annotation["image_id"] in test_image_ids]
 
     annotations = [annotation for annotation in annotations if annotation not in val_annotations and annotation not
                    in test_annotations]
-    train_data = {'images': images, 'categories': groundtruth_data['categories'], 'annotations': annotations}
-    val_data = {'images': val_images, 'categories': groundtruth_data['categories'], 'annotations': val_annotations}
-    test_data = {'images': test_images, 'categories': groundtruth_data['categories'],
-                 'annotations': test_annotations}
+    train_data = {"images": images, "categories": groundtruth_data["categories"], "annotations": annotations}
+    val_data = {"images": val_images, "categories": groundtruth_data["categories"], "annotations": val_annotations}
+    test_data = {"images": test_images, "categories": groundtruth_data["categories"],
+                 "annotations": test_annotations}
     return train_data, val_data, test_data
 
 
 def convert_coco_to_tfrecord(dataset_dir, annotations_file, output_dir, val_size, test_size, task, train_shards,
                              val_shards, test_shards,
                              include_masks=False):
-    assert dataset_dir, '`image_dir` missing.'
-    assert annotations_file, '`annotations_file` missing.'
-    assert output_dir, '`output_dir` missing.'
+    assert dataset_dir, "`image_dir` missing."
+    assert annotations_file, "`annotations_file` missing."
+    assert output_dir, "`output_dir` missing."
     if val_size != 0:
-        assert val_size, '`val_size` missing'
+        assert val_size, "`val_size` missing"
     if test_size != 0:
-        assert test_size, '`test_size` missing'
-    assert train_shards, 'number of train shards missing'
-    assert val_shards, 'number of val shards missing'
-    assert test_shards, 'number of test shards missing'
+        assert test_size, "`test_size` missing"
+    assert train_shards, "number of train shards missing"
+    assert val_shards, "number of val shards missing"
+    assert test_shards, "number of test shards missing"
 
     if not tf.gfile.IsDirectory(output_dir):
         tf.gfile.MakeDirs(output_dir)
 
     tfrecords_name = dataset_dir.split("/")[-1]
-    train_output_path = os.path.join(output_dir, f'coco_train_{tfrecords_name}.record')
-    val_output_path = os.path.join(output_dir, f'coco_val_{tfrecords_name}.record')
-    test_output_path = os.path.join(output_dir, f'coco_test_{tfrecords_name}.record')
+    train_output_path = os.path.join(output_dir, f"coco_train_{tfrecords_name}.record")
+    val_output_path = os.path.join(output_dir, f"coco_val_{tfrecords_name}.record")
+    test_output_path = os.path.join(output_dir, f"coco_test_{tfrecords_name}.record")
 
     task.info("Splitting data into train, validation and test sets")
     train_annotation, val_annotation, test_annotation = _split_dataset(annotations_file, val_size, test_size)

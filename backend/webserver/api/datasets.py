@@ -1,6 +1,5 @@
 import datetime
 import json
-import logging
 import os
 from threading import Thread
 
@@ -21,7 +20,6 @@ from werkzeug.datastructures import FileStorage
 from ..util import query_util, coco_util, profile
 from ..util.pagination_util import Pagination
 
-logger = logging.getLogger('gunicorn.error')
 api = Namespace('dataset', description='Dataset related operations')
 
 dataset_create = reqparse.RequestParser()
@@ -173,21 +171,15 @@ class DatasetCleanAnnotations(Resource):
     @login_required
     def get(self, dataset_id):
         args = dataset_generate.parse_args()
-
         dataset = current_user.datasets.filter(id=dataset_id, deleted=False).first()
         if dataset is None:
             return {"message": "Invalid dataset id"}, 400
 
-        logger.info(f"Cleaning Annotations")
-
         AnnotationModel.objects(dataset_id=dataset.id).delete()
-
-        logger.info("Refreshing Images")
         ImageModel.objects(dataset_id=dataset.id).update(
             set__annotated=False,
             set__num_annotations=0
         )
-
         return {'success': True}
 
 
@@ -450,7 +442,6 @@ class DatasetExports(Resource):
 
         dict_export = []
         for export in exports:
-            # file_path = export.path
             extension = str(export.path).split(".")[-1]
             time_delta = datetime.datetime.utcnow() - export.created_at
             dict_export.append({
@@ -473,46 +464,35 @@ class DatasetExport(Resource):
         args = export.parse_args()
         categories = args.get('categories')
         export_format = args.get('export_format')
-        validation_size = args.get('validation_size')
-        testing_size = args.get('testing_size')
-        tfrecord_train_num_shards = args.get('tfrecord_train_num_shards')
-        tfrecord_val_num_shards = args.get('tfrecord_val_num_shards')
-        tfrecord_test_num_shards = args.get('tfrecord_test_num_shards')
-        logger.info(f"Export format: {export_format}")
 
         if len(categories) == 0:
             categories = []
-
         if len(categories) > 0 or isinstance(categories, str):
             categories = [int(c) for c in categories.split(',')]
 
         dataset = DatasetModel.objects(id=dataset_id).first()
-
         if not dataset:
             return {'message': 'Invalid dataset ID'}, 400
         if export_format == "coco":
             return dataset.export_coco(categories=categories)
         elif export_format == "tfrecord":
-            return dataset.export_tf_record(train_shards=tfrecord_train_num_shards, val_shards=tfrecord_val_num_shards,
-                                            test_shards=tfrecord_test_num_shards,
-                                            categories=categories, validation_set_size=validation_size,
-                                            testing_set_size=testing_size)
-        else:
-            logger.info("Unknown format")
+            return dataset.export_tf_record(train_shards=args.get('tfrecord_train_num_shards'),
+                                            val_shards=args.get('tfrecord_val_num_shards'),
+                                            test_shards=args.get('tfrecord_test_num_shards'),
+                                            categories=categories, validation_set_size=args.get('validation_size'),
+                                            testing_set_size=args.get('testing_size'))
 
     @api.expect(coco_upload)
     @login_required
     def post(self, dataset_id):
         """ Adds coco formatted annotations to the dataset """
         args = coco_upload.parse_args()
-        coco = args['coco']
-        logger.info("Loading ")
 
         dataset = current_user.datasets.filter(id=dataset_id).first()
         if dataset is None:
             return {'message': 'Invalid dataset ID'}, 400
 
-        return dataset.import_coco(json.load(coco))
+        return dataset.import_coco(json.load(args['coco']))
 
 
 @api.route('/<int:dataset_id>/coco')
@@ -541,7 +521,6 @@ class DatasetCoco(Resource):
         dataset = current_user.datasets.filter(id=dataset_id).first()
         if dataset is None:
             return {'message': 'Invalid dataset ID'}, 400
-
         if coco_files != None:
             # Decoding from File Storage format to json strings
             coco_json_files = []
@@ -550,7 +529,6 @@ class DatasetCoco(Resource):
                 coco_json_string = coco_json_bytes.decode('utf-8')
                 coco_json_files.append(coco_json_string)
             return dataset.import_coco_from_json_files(coco_json_files)
-
         elif coco_files == None and path_to_dataset != "":
             return dataset.import_coco(path_to_dataset)
 

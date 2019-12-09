@@ -8,6 +8,7 @@ class Ingestor:
         structure.
 
         :param path: Where the data is stored
+        :param folder_names: List of folders containing dataset
         :return: (sucess, error message), e.g (False, "error message") if anything is awry, (True, None) otherwise.
         """
         return True, None
@@ -16,13 +17,13 @@ class Ingestor:
         """
         Read in data from the filesytem.
         :param path: '/path/to/data/'
+        :param folder_names: List of folders containing dataset
         :return: an array of dicts conforming to `IMAGE_DETECTION_SCHEMA`
         """
         pass
 
 
 class Egestor:
-
     def expected_labels(self):
         """
         Return a dict with a key for each label generally expected by this dataset format and

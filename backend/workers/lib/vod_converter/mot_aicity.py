@@ -1,10 +1,9 @@
 """
-    Ingestor for AICity format. TODO: test if works for original MOT Challenge format
+    Ingestor for AICity format.
         - Stored in txt files, one file for all frames from one camera.
         - Ground truth stored as following:
             [frame, ID, left, top, width, height, 1, -1, -1, -1]
 """
-
 
 import csv
 import os
@@ -18,30 +17,29 @@ from .abstract import Ingestor
 class MOT_AICITYIngestor(Ingestor):
     def validate(self, path, folder_names):
         expected_dirs = [
-            # 'test',
-            'train'
+            "train"
         ]
         expected_subdirs = [
-            'annotations',
-            'images'
+            "annotations",
+            "images"
         ]
         for directory in expected_dirs:
-            if not os.path.isdir(f"{path}/{directory}"):
+            if not os.path.isdir(os.path.join(path, directory)):
                 return False, f"Expected subdirectory {directory} within {path}"
             else:
                 for subdirectory in expected_subdirs:
-                    if not os.path.isdir(f"{path}/{directory}/{subdirectory}"):
+                    if not os.path.isdir(os.path.join(path, directory, subdirectory)):
                         return False, f"Expected subdirectory {subdirectory} within {path}/{directory}"
-        return True, 'Validation OK'
+        return True, "Validation OK"
 
     def ingest(self, path, folder_names):
         try:
             ret = self._get_image_detection(path, folder_names=folder_names)
             print(type(ret))
             return ret
-        except Exception:
+        except Exception as e:
             print(traceback.format_exc())
-            print('Ingesting failed')
+            print(f"Ingesting failed - {e}")
             exit()
 
     def _get_image_detection(self, root, folder_names):
@@ -50,35 +48,32 @@ class MOT_AICITYIngestor(Ingestor):
         images = {}
         det_id = 0
         path_ann = [
-            # root + '/test/annotations',
-            root + '/train/annotations'
+            os.path.join(root, "train", "annotations")
         ]
         path_img = [
-            # root + '/test/images',
-            root + '/train/images'
+            os.path.join(root, "train", "images")
         ]
         for i in range(len(path_ann)):
             for ann in os.scandir(path_ann[i]):
                 img_name_base = ann.name[:9]
                 with open(ann.path) as f:
-                    f_csv = csv.reader(f, delimiter=',')
+                    f_csv = csv.reader(f, delimiter=",")
                     for row in f_csv:
                         frame_id = row[0]
-                        img_name = img_name_base + '0000'[:4 - len(frame_id)] + frame_id + '..jpg'
+                        img_name = f"{img_name_base}{'0000'[:4 - len(frame_id)]}{frame_id}.jpg"
                         img_path = os.path.join(path_img[i], img_name)
                         success, width, height = self._image_dimensions(img_path)
-                        # success, width, height = True, 1000, 1000
                         if not success:
                             continue
                         if frame_id not in images.keys():
                             img = {
-                                'id': frame_id,
-                                'dataset_id': None,
-                                'path': img_path,
-                                'segmented_path': None,
-                                'width': width,
-                                'height': height,
-                                'file_name': img_name
+                                "id": frame_id,
+                                "dataset_id": None,
+                                "path": img_path,
+                                "segmented_path": None,
+                                "width": width,
+                                "height": height,
+                                "file_name": img_name
                             }
                             images[frame_id] = img
                         success, det = self._get_detections(row, img_name, det_id)
@@ -90,14 +85,12 @@ class MOT_AICITYIngestor(Ingestor):
                                 detections[frame_id].append(det)
                             det_id += 1
                         else:
-                            print('Parsing row failed')
-                            print(row)
-                            print(det)
+                            print(f"Parsing failed, row: {row}, detection: {det}")
                             continue
         for k, v in images.items():
             image_detections.append({
-                'image': v,
-                'detections': detections[k]
+                "image": v,
+                "detections": detections[k]
             })
         return image_detections
 
@@ -107,18 +100,18 @@ class MOT_AICITYIngestor(Ingestor):
             x1, y1, w, h = map(int, row[2:6])
             label = row[6]
             det = {
-                'id': det_id,
-                'image_id': img_name,
-                'label': label,
-                'segmentation': None,
-                'area': None,
-                'top': y1,
-                'left': x1,
-                'right': x1 + w,
-                'bottom': y1 + h,
-                'iscrowd': False,
-                'isbbox': True,
-                'keypoints': []
+                "id": det_id,
+                "image_id": img_name,
+                "label": label,
+                "segmentation": None,
+                "area": None,
+                "top": y1,
+                "left": x1,
+                "right": x1 + w,
+                "bottom": y1 + h,
+                "iscrowd": False,
+                "isbbox": True,
+                "keypoints": []
             }
             return True, det
         except Exception as ex:
@@ -129,5 +122,6 @@ class MOT_AICITYIngestor(Ingestor):
         try:
             with Image.open(path) as image:
                 return True, image.width, image.height
-        except Exception:
+        except FileNotFoundError as e:
+            print(e)
             return False, -1, -1

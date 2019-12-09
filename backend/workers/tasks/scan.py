@@ -1,13 +1,13 @@
+import os
+
+from celery import shared_task
 from database import (
     ImageModel,
     TaskModel,
     DatasetModel
 )
 
-from celery import shared_task
 from ..socket import create_socket
-
-import os
 
 
 @shared_task
