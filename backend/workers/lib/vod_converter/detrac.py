@@ -34,9 +34,13 @@ class DETRACIngestor(Ingestor):
                 toor = tree.getroot()
                 accepted_tags = ["car", "bus", "van"]
                 obj_id = -1
-                for frame in toor.iter("frame"):  # child = frame
+                for frame in toor.iter("frame"):
                     no_frame = frame.attrib["num"]
                     img_name = f"img{'0' * (5 - len(str(no_frame)))}{no_frame}"
+                    try:
+                        im_width, im_height = self._image_dimensions(os.path.join(directory, mov_name, f"{img_name}.jpg"))
+                    except:
+                        im_width, im_height = 10000, 10000
                     for target in frame:
                         detections = []
                         for obj in target:
@@ -63,8 +67,8 @@ class DETRACIngestor(Ingestor):
                         img["image"]["id"] = os.path.join(mov_name, img_name)
                         img["image"]["dataset_id"] = None
                         img["image"]["path"] = os.path.join(directory, mov_name, f"{img_name}.jpg")
-                        img["image"]["width"] = 10000
-                        img["image"]["height"] = 10000
+                        img["image"]["width"] = im_width
+                        img["image"]["height"] = im_height
                         img["image"]["file_name"] = f"{img_name}.jpg"
                         img_det.append(img)
         return img_det
