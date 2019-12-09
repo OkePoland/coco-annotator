@@ -368,16 +368,6 @@
                                        v-model="import_type"> From path
 
                             </div>
-                            <!--                            <div>-->
-
-                            <!--                                &lt;!&ndash; <input type="radio" id="file" name="type" value="file" checked  v-model="file_type" >-->
-                            <!--                                <label for="file">File</label> &ndash;&gt;-->
-                            <!--                                <br/><b>or</b><br/><br/>-->
-                            <!--                                &lt;!&ndash;-->
-                            <!--                                <input type="radio" id="folder" name="type" value="folder" v-model="file_type">-->
-                            <!--                               <label for="folder">Folder</label>-->
-                            <!--                               &ndash;&gt;-->
-                            <!--                            </div>-->
                             <div v-if="import_type == 'files'" class="form-group">
                                 <br/>
 
@@ -390,12 +380,6 @@
                                 <label for="path_string">Path to folder with annotations</label>
                                 <input v-model=path_to_labels id="path_string" type="text" class="form-control">
                             </div>
-                            <!--
-                              <div v-if="file_type == 'folder'" class="form-group">
-                              <label for="coco">Folder with labels</label>
-                              <input type="file" class="form-control-file" id="coco" webkitdirectory allowdirs multiple/>
-                            </div>
-                            -->
                         </form>
                     </div>
                     <div class="modal-footer">
@@ -512,12 +496,6 @@
     let $ = JQuery;
 
     export default {
-        data: function () {
-            return {
-                nom: 'Nom',
-                prenom: 'Pierre'
-            }
-        },
         name: "Dataset",
         components: {
             ImageCard,
@@ -636,10 +614,6 @@
                         this.pages = data.pages;
 
                         this.subdirectories = data.subdirectories;
-                        // this.scan.id = data.scanId;
-                        // this.generate.id = data.generateId;
-                        // this.importing.id = data.importId;
-                        // this.exporting.id = data.exportId;
                     })
                     .catch(error => {
                         this.axiosReqestError("Loading Dataset", error.response.data.message);
