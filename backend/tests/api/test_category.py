@@ -150,9 +150,3 @@ class TestCategoryId:
         }
         response = client.put("/api/category/{}".format(category1_id), json=data)
         assert response.status_code == 200
-
-
-class TestCategoryData:
-
-    def test(self):
-        pass
