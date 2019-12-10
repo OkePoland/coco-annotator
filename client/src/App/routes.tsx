@@ -13,6 +13,7 @@ import {
     Context,
 } from '../Auth/authenticatedRoute';
 import ErrorBoundary from './ErrorBoundary';
+import AdminPanel from '../AdminPanel/AdminPanel';
 
 const AppView = () => {
     const route = useCurrentRoute();
@@ -86,7 +87,7 @@ export default compose(
         ),
         '/admin': withAdminContentProtection(
             route({
-                view: <div />,
+                view: <AdminPanel />,
             }),
         ),
         '/auth': map((_, context: Context) =>

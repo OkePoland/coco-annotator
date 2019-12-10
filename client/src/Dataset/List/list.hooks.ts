@@ -1,6 +1,6 @@
 import { useState, useEffect, Dispatch, SetStateAction } from 'react';
 import { useNavigation } from 'react-navi';
-import { useFormik, FormikProps } from 'formik';
+import { FormikConfig, FormikHelpers } from 'formik';
 import * as Yup from 'yup';
 
 import { Dataset } from '../../common/types';
@@ -113,28 +113,33 @@ const useDialogs = () => {
 
 export const useFormikCreate = (
     refeshPage: () => void,
-): FormikProps<FormCreateState> => {
-    const formik = useFormik<FormCreateState>({
-        initialValues: {
-            name: '',
-            categories: [],
-        },
-        validationSchema: Yup.object({
-            name: Yup.string()
-                .max(10, 'Must be 10 characters or less')
-                .required('Required'),
-            categories: Yup.array()
-                .of(Yup.string())
-                .max(2, 'Must be Max 2 categories'),
-        }),
-        onSubmit: async (values, { resetForm }) => {
-            await DatasetApi.create(values.name);
-
-            resetForm();
-            refeshPage();
-        },
+): FormikConfig<FormCreateState> => {
+    const initialValues = {
+        name: '',
+        categories: [],
+    };
+    const validationSchema = Yup.object({
+        name: Yup.string()
+            .max(10, 'Must be 10 characters or less')
+            .required('Required'),
+        categories: Yup.array()
+            .of(Yup.string())
+            .max(2, 'Must be Max 2 categories'),
     });
-    return formik;
+    const onSubmit = async (
+        values: FormCreateState,
+        { resetForm }: FormikHelpers<FormCreateState>,
+    ) => {
+        await DatasetApi.create(values.name);
+
+        resetForm();
+        refeshPage();
+    };
+    return {
+        initialValues,
+        validationSchema,
+        onSubmit,
+    };
 };
 
 export const useFormikImport = () => {
