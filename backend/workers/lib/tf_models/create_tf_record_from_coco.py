@@ -223,10 +223,13 @@ def _split_dataset(annotations_file, val_size, test_size):
     images = groundtruth_data["images"]
     annotations = groundtruth_data["annotations"]
 
+    print("Preparing images")
     all_images_annotations = {img["id"]: {"image": img, "annotations": []} for img in images}
+    print("Preparing annotations")
     for annotation in annotations:
         all_images_annotations[annotation["image_id"]]["annotations"].append(annotation)
 
+    print("Preparing keys")
     train_images_keys = list(all_images_annotations.keys())
     random.shuffle(train_images_keys)
 
@@ -235,21 +238,25 @@ def _split_dataset(annotations_file, val_size, test_size):
     divided_keys = [list(islice(keys_iterator, elem)) for elem in chunks_lengths]
     # divided keys struct: [[train_keys], [val_keys], [test_keys]]
 
+    print("Creating train set")
     train_data = {'images': [all_images_annotations[train_key]['image'] for train_key in divided_keys[0]],
                   'categories': groundtruth_data['categories'],
                   'annotations': [annot for train_key in divided_keys[0] for annot in
                                   all_images_annotations[train_key]['annotations']]}
 
+    print("Creating val set")
     val_data = {'images': [all_images_annotations[val_key]['image'] for val_key in divided_keys[1]],
                 'categories': groundtruth_data['categories'],
                 'annotations': [annot for val_key in divided_keys[1] for annot in
                                 all_images_annotations[val_key]['annotations']]}
 
+    print("Creating test set")
     test_data = {'images': [all_images_annotations[test_key]['image'] for test_key in divided_keys[2]],
                  'categories': groundtruth_data['categories'],
                  'annotations': [annot for test_key in divided_keys[2] for annot in
                                  all_images_annotations[test_key]['annotations']]}
 
+    print("Finished splitting dataset")
     return train_data, val_data, test_data
 
 
