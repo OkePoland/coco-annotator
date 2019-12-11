@@ -41,9 +41,9 @@ class VocCityIngestor(Ingestor):
 
     def _get_image_ids(self, root, folder_names):
         if folder_names is None:
-            path = os.path.join(root, self.folder_names['sets'], self.chosen_set)
+            path = os.path.join(root, self.folder_names["sets"], self.chosen_set)
         else:
-            path = os.path.join(root, folder_names['sets'], self.chosen_set)
+            path = os.path.join(root, folder_names["sets"], self.chosen_set)
 
         with open(path, "r+") as f:
             lines = f.readlines()

@@ -240,22 +240,22 @@ def _split_dataset(annotations_file, val_size, test_size):
     # divided keys struct: [[train_keys], [val_keys], [test_keys]]
 
     message("Creating train set")
-    train_data = {'images': [all_images_annotations[train_key]['image'] for train_key in divided_keys[0]],
-                  'categories': groundtruth_data['categories'],
-                  'annotations': [annot for train_key in divided_keys[0] for annot in
-                                  all_images_annotations[train_key]['annotations']]}
+    train_data = {"images": [all_images_annotations[train_key]["image"] for train_key in divided_keys[0]],
+                  "categories": groundtruth_data["categories"],
+                  "annotations": [annot for train_key in divided_keys[0] for annot in
+                                  all_images_annotations[train_key]["annotations"]]}
 
     message("Creating val set")
-    val_data = {'images': [all_images_annotations[val_key]['image'] for val_key in divided_keys[1]],
-                'categories': groundtruth_data['categories'],
-                'annotations': [annot for val_key in divided_keys[1] for annot in
-                                all_images_annotations[val_key]['annotations']]}
+    val_data = {"images": [all_images_annotations[val_key]["image"] for val_key in divided_keys[1]],
+                "categories": groundtruth_data["categories"],
+                "annotations": [annot for val_key in divided_keys[1] for annot in
+                                all_images_annotations[val_key]["annotations"]]}
 
     message("Creating test set")
-    test_data = {'images': [all_images_annotations[test_key]['image'] for test_key in divided_keys[2]],
-                 'categories': groundtruth_data['categories'],
-                 'annotations': [annot for test_key in divided_keys[2] for annot in
-                                 all_images_annotations[test_key]['annotations']]}
+    test_data = {"images": [all_images_annotations[test_key]["image"] for test_key in divided_keys[2]],
+                 "categories": groundtruth_data["categories"],
+                 "annotations": [annot for test_key in divided_keys[2] for annot in
+                                 all_images_annotations[test_key]["annotations"]]}
 
     message("Finished splitting dataset")
     return train_data, val_data, test_data
@@ -278,7 +278,7 @@ def convert_coco_to_tfrecord(dataset_dir, annotations_file, output_dir, val_size
     if not tf.gfile.IsDirectory(output_dir):
         tf.gfile.MakeDirs(output_dir)
 
-    tfrecords_name = os.path.split(dataset_dir)[1]
+    tfrecords_name = os.path.basename(dataset_dir)
     train_output_path = os.path.join(output_dir, f"coco_train_{tfrecords_name}.record")
     val_output_path = os.path.join(output_dir, f"coco_val_{tfrecords_name}.record")
     test_output_path = os.path.join(output_dir, f"coco_test_{tfrecords_name}.record")

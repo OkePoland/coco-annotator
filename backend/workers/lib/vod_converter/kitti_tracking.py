@@ -76,7 +76,7 @@ class KITTITrackingIngestor(Ingestor):
         label_fnames = [f for f in fs if LABEL_F_PATTERN.match(f)]
         image_detections = []
         for label_fname in label_fnames:
-            frame_name = label_fname.split(".")[0]
+            frame_name = path_base_name(label_fname)
             labels_path = os.path.join(path, "label_02", label_fname)
             images_dir = os.path.join(path, "image_02", frame_name)
             image_detections.extend(
@@ -127,3 +127,17 @@ class KITTITrackingIngestor(Ingestor):
                     "detections": [clamp_bbox(det) for det in frame_dets]
                 })
         return image_detections
+
+
+def file_base_name(file_name):
+    if "." in file_name:
+        separator_index = file_name.index(".")
+        base_name = file_name[:separator_index]
+        return base_name
+    else:
+        return file_name
+
+
+def path_base_name(path):
+    file_name = os.path.basename(path)
+    return file_base_name(file_name)

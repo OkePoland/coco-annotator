@@ -141,7 +141,7 @@ class COCOEgestor(Egestor):
                 "path": image["path"],
                 "width": image["width"],
                 "height": image["height"],
-                "file_name": os.path.split(image["path"])[1]
+                "file_name": os.path.basename(image["path"])
             }
 
             labels["images"].append(new_image)

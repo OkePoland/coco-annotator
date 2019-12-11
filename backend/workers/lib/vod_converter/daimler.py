@@ -66,7 +66,7 @@ class DAIMLERIngestor(Ingestor):
                 path = os.path.join(root, "labels", filename)
                 with open(path) as f:
                     data = json.load(f)
-                    image_id = data["imagename"].split(".")[0]
+                    image_id = path_base_name(data["imagename"])
                     image_path = os.path.join(root, "images", f"{image_id}.{image_ext}")
 
                     detections = self._get_detections(data["children"])
@@ -123,8 +123,8 @@ def _image_dimensions(path):
 
 
 def file_base_name(file_name):
-    if '.' in file_name:
-        separator_index = file_name.index('.')
+    if "." in file_name:
+        separator_index = file_name.index(".")
         base_name = file_name[:separator_index]
         return base_name
     else:

@@ -37,8 +37,8 @@ class TownCentreIngestor(Ingestor):
             if i % 100 == 0:
                 message(f"Ingested {i} images")
             single_img_detection = get_blank_image_detection_schema()
-            img_file_name = image_path.split("/")[-1]
-            img_name = image_path.split("/")[-1].split(".")[0]
+            img_file_name = os.path.basename(image_path)
+            img_name = path_base_name(image_path)
             single_img_detection["image"]["id"] = int(img_name.split("_")[-1])
             single_img_detection["image"]["dataset_id"] = None
             single_img_detection["image"]["path"] = image_path
@@ -99,3 +99,17 @@ class TownCentreIngestor(Ingestor):
     def _image_dimensions(path):
         with Image.open(path) as image:
             return image.width, image.height
+
+
+def file_base_name(file_name):
+    if "." in file_name:
+        separator_index = file_name.index(".")
+        base_name = file_name[:separator_index]
+        return base_name
+    else:
+        return file_name
+
+
+def path_base_name(path):
+    file_name = os.path.basename(path)
+    return file_base_name(file_name)

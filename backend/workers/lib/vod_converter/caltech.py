@@ -94,7 +94,7 @@ class CaltechIngestor(Ingestor):
                             single_img_detection["image"]["segmented_path"] = None
                             single_img_detection["image"]["width"] = image_width
                             single_img_detection["image"]["height"] = image_height
-                            single_img_detection["image"]["file_name"] = os.path.split(image_path)[1]
+                            single_img_detection["image"]["file_name"] = os.path.basename(image_path)
 
                             single_img_detection["detections"] = detections
                             annotations.append(single_img_detection)

@@ -21,7 +21,8 @@ labels = {
     "single_unit_truck": "truck",
     "work_van": "car",
     "motorized_vehicle": "car",
-    "non-motorized_vehicle": "non_motorized_vehicle"}
+    "non-motorized_vehicle": "non_motorized_vehicle"
+}
 
 
 class MIOIngestor(Ingestor):

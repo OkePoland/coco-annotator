@@ -151,9 +151,9 @@ class KITTIEgestor(Egestor):
         for image_detection in image_detections:
             image = image_detection["image"]
             image_id = image["id"]
-            src_extension = image["path"].split(".")[-1]
+            src_extension = os.path.splitext(image["path"])[-1]
             try:
-                shutil.copyfile(image["path"], os.path.join(images_dir, f"{image_id}.{src_extension}"))
+                shutil.copyfile(image["path"], os.path.join(images_dir, f"{image_id}{src_extension}"))
             except FileNotFoundError as e:
                 message(e)
                 continue
