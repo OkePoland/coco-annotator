@@ -8,6 +8,8 @@ import os
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
+from workers.lib.messenger import message
+
 from .abstract import Ingestor
 from .validation_schemas import get_blank_image_detection_schema, get_blank_detection_schema
 
@@ -54,7 +56,7 @@ class VocCityIngestor(Ingestor):
 
     def _get_image_detection(self, root, image_id, folder_names):
         if self.iii % 100 == 0:
-            print(f"Processed {self.iii} xmls")
+            message(f"Processed {self.iii} xmls")
         self.iii += 1
 
         image_path = os.path.join(os.path.join(root, os.path.join(folder_names["images"], f"{image_id}.jpg")))

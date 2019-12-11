@@ -33,6 +33,7 @@ import os
 import shutil
 
 from PIL import Image
+from workers.lib.messenger import message
 
 from .abstract import Ingestor, Egestor
 from .labels_and_aliases import output_labels
@@ -59,7 +60,7 @@ class KITTIIngestor(Ingestor):
             image_ext = self.find_image_ext(path, first_image_id)
         tmp = [self._get_image_detection(path, image_name, image_ext=image_ext, folder_names=folder_names) for
                image_name in image_ids]
-        print(f"size: {len(tmp)}")
+        message(f"size: {len(tmp)}")
         return tmp
 
     @staticmethod
@@ -95,7 +96,7 @@ class KITTIIngestor(Ingestor):
                 "detections": detections
             }
         except Exception as e:
-            print(e)
+            message(e)
 
     def _get_detections(self, detections_fpath, image_id):
         detections = []
@@ -122,7 +123,7 @@ class KITTIIngestor(Ingestor):
                         "keypoints": []
                     })
                 except ValueError as ve:
-                    print(f"{ve} - {row}")
+                    message(f"{ve} - {row}")
         return detections
 
 
@@ -154,7 +155,7 @@ class KITTIEgestor(Egestor):
             try:
                 shutil.copyfile(image["path"], os.path.join(images_dir, f"{image_id}.{src_extension}"))
             except FileNotFoundError as e:
-                print(e)
+                message(e)
                 continue
 
             with open(id_file, "a") as out_image_index_file:

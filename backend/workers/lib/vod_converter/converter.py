@@ -13,6 +13,7 @@ See `main.py` for the supported types, and `voc.py` and `kitti.py` for reference
 
 from jsonschema import validate as raw_validate
 from jsonschema.exceptions import ValidationError as SchemaError
+from workers.lib.messenger import message
 
 from .caltech import *
 from .citycam import *
@@ -95,15 +96,15 @@ def convert(*, from_path, ingestor_key, to_path, egestor_key, select_only_known_
 
 
 def validate_image_detections(image_detections):
-    print("Validating...")
+    message("Validating...")
     deleted_img_detections = 0
     for i, image_detection in enumerate(image_detections):
         if i % 100 == 0:
-            print(f"Validated {i} image detections")
+            message(f"Validated {i} image detections")
         try:
             validate_schema(image_detection, IMAGE_DETECTION_SCHEMA)
         except SchemaError as se:
-            print(se)
+            message(se)
             image_detections.remove(image_detection)
             continue
         image = image_detection["image"]
@@ -117,16 +118,16 @@ def validate_image_detections(image_detections):
                     if detection["right"] <= detection["left"] or detection["bottom"] <= detection["top"]:
                         raise ValueError(f"Image {image} has zero dimension bbox {detection}")
                 except Exception as ve:
-                    print(ve)
+                    message(ve)
                     image_detections.remove(image_detection)
                     deleted_img_detections += 1
                     break
-    print(f"Deleted labels for {deleted_img_detections} images")
+    message(f"Deleted labels for {deleted_img_detections} images")
 
 
 def convert_labels(*, image_detections, expected_labels,
                    select_only_known_labels, filter_images_without_labels):
-    print("Converting labels...")
+    message("Converting labels...")
     convert_dict = {}
     for label, aliases in expected_labels.items():
         convert_dict[label.lower()] = label
@@ -136,7 +137,7 @@ def convert_labels(*, image_detections, expected_labels,
     final_image_detections = []
     for i, image_detection in enumerate(image_detections):
         if i % 100 == 0:
-            print(f"Converted {i} labels")
+            message(f"Converted {i} labels")
 
         detections = []
         try:
@@ -154,5 +155,5 @@ def convert_labels(*, image_detections, expected_labels,
             elif not filter_images_without_labels:
                 final_image_detections.append(image_detection)
         except Exception as e:
-            print(e)
+            message(e)
     return final_image_detections

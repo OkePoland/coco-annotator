@@ -13,6 +13,7 @@ import numpy as np
 from PIL import Image
 from pycocotools import mask
 from skimage import measure
+from workers.lib.messenger import message
 
 from .abstract import Ingestor, Egestor
 from .labels_and_aliases import output_labels
@@ -56,7 +57,7 @@ class VOCIngestor(Ingestor):
 
     def _get_image_detection(self, root, image_id, folder_names):
         if self.iii % 100 == 0:
-            print(f"Processed {self.iii} xmls")
+            message(f"Processed {self.iii} xmls")
         self.iii += 1
 
         image_path = os.path.join(os.path.join(root, os.path.join(folder_names["images"], f"{image_id}.jpg")))
@@ -120,7 +121,7 @@ class VOCIngestor(Ingestor):
                         else:
                             continue
                     except Exception as e:
-                        print(f"Cannot calculate area of polygon: {e}")
+                        message(f"Cannot calculate area of polygon: {e}")
                         continue
                 if curr_detection["segmentation"]:
                     curr_detection["area"] = int(sum(mask.area(mask.frPyObjects(curr_detection["segmentation"],
@@ -185,7 +186,7 @@ class VOCIngestor(Ingestor):
         for x, y in zip(*object_pixels):
             labels.append(class_segmentation_mask[x][y])
         if len(set(labels)) != 1:
-            print(f"Error with finding class from class segmentation mask, not all pixels has the same label, found "
+            message(f"Error with finding class from class segmentation mask, not all pixels has the same label, found "
                   f"labels: {set(labels)}")
             return None
         return self.segmentation_labels[str(labels[0])]

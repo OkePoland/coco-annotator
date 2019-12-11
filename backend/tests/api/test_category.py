@@ -1,5 +1,4 @@
 import json
-
 import pytest
 from database import CategoryModel
 

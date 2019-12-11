@@ -10,6 +10,7 @@ import os
 import traceback
 
 from PIL import Image
+from workers.lib.messenger import message
 
 from .abstract import Ingestor
 
@@ -35,11 +36,11 @@ class MOT_AICITYIngestor(Ingestor):
     def ingest(self, path, folder_names):
         try:
             ret = self._get_image_detection(path, folder_names=folder_names)
-            print(type(ret))
+            message(type(ret))
             return ret
         except Exception as e:
-            print(traceback.format_exc())
-            print(f"Ingesting failed - {e}")
+            message(traceback.format_exc())
+            message(f"Ingesting failed - {e}")
             exit()
 
     def _get_image_detection(self, root, folder_names):
@@ -85,7 +86,7 @@ class MOT_AICITYIngestor(Ingestor):
                                 detections[frame_id].append(det)
                             det_id += 1
                         else:
-                            print(f"Parsing failed, row: {row}, detection: {det}")
+                            message(f"Parsing failed, row: {row}, detection: {det}")
                             continue
         for k, v in images.items():
             image_detections.append({
@@ -123,5 +124,5 @@ class MOT_AICITYIngestor(Ingestor):
             with Image.open(path) as image:
                 return True, image.width, image.height
         except FileNotFoundError as e:
-            print(e)
+            message(e)
             return False, -1, -1

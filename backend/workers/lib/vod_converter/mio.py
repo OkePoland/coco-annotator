@@ -4,8 +4,10 @@ csv file
 photo_id|label|x1|y1|x2|y2
 titles above should be added to csv as column names
 """
-import pandas as pd
 import os
+import pandas as pd
+from workers.lib.messenger import message
+
 from .abstract import Ingestor
 
 labels = {
@@ -37,7 +39,7 @@ class MIOIngestor(Ingestor):
         df = pd.read_csv(file[0], dtype=str)
         for index, row in df.iterrows():
             if len(image_detection_schema) % 50 == 1000:
-                print(f"Processed {len(image_detection_schema)} images")
+                message(f"Processed {len(image_detection_schema)} images")
             if int(image_detection_schema[-1]["image"]["id"]) < int(row["id"]) \
                     and image_detection_schema[-1]["image"]["file_name"] != file_name:
                 image_detection_schema.append({
@@ -86,7 +88,7 @@ class MIOIngestor(Ingestor):
 
                 })
             except ValueError as ve:
-                print(f"{ve} - {row}")
+                message(f"{ve} - {row}")
         return detections
 
     @staticmethod

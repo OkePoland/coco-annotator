@@ -3,6 +3,8 @@ import json
 import math
 import sys
 
+from workers.lib.messenger import message
+
 
 def split_coco_labels(json_string, max_byte_size):
     """
@@ -20,22 +22,22 @@ def split_coco_labels(json_string, max_byte_size):
     images = json_dict["images"]
     img_chunk_size = int(len(images) / number_of_chunks)
 
-    print(f"Splitting {len(images)} images to substrings with {img_chunk_size} images per string")
+    message(f"Splitting {len(images)} images to substrings with {img_chunk_size} images per string")
     image_chunks = [images[i * img_chunk_size: (i + 1) * img_chunk_size] for i in range(number_of_chunks)]
     image_chunks.append(images[number_of_chunks * img_chunk_size:])
 
-    print("Splitting annotations")
+    message("Splitting annotations")
     annotations_base = collections.defaultdict(list)
     for annotation in json_dict["annotations"]:
         annotations_base[annotation["image_id"]].append(annotation)
 
-    print(f"Creating {number_of_chunks + 1} json substrings")
+    message(f"Creating {number_of_chunks + 1} json substrings")
     splitted_labels = []
     for i in range(number_of_chunks + 1):
         splitted_labels.append(json.dumps(
             {"images": image_chunks[i],
              "categories": json_dict["categories"],
              "annotations": [annotation for img in image_chunks[i] for annotation in annotations_base[img["id"]]]}))
-        print(f"Created JSON substring nr {i}")
+        message(f"Created JSON substring nr {i}")
 
     return splitted_labels

@@ -2,7 +2,7 @@ import json
 import os
 import sys
 from contextlib import redirect_stdout
-
+from .messenger import messenger
 from .vod_converter import converter
 
 INGESTORS = [
@@ -51,9 +51,10 @@ def check_coco(ann_file):
 def convert_to_coco(ann_file, current_task):
     to_key = "coco"
     success = False
+    messenger.connect_task(current_task)
     with redirect_stdout(RedirectStream(current_task)):
         for from_key in INGESTORS:
-            print(f"\nConverting from {from_key} to {to_key}.")
+            messenger.message(f"\nConverting from {from_key} to {to_key}.")
             try:
                 success, encoded_labels = converter.convert(from_path=ann_file, to_path=None, ingestor_key=from_key,
                                                             egestor_key=to_key,
@@ -62,10 +63,10 @@ def convert_to_coco(ann_file, current_task):
             except:
                 success = False
             if success:
-                print(f"Successfully converted from {from_key} to {to_key}.")
+                messenger.message(f"Successfully converted from {from_key} to {to_key}.")
                 coco = encoded_labels
                 return coco, True
             else:
-                print(f"Failed to convert from {from_key} to {to_key}")
+                messenger.message(f"Failed to convert from {from_key} to {to_key}")
 
         return None, False

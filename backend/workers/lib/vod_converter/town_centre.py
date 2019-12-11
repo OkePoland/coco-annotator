@@ -4,6 +4,7 @@ import glob
 import os
 
 from PIL import Image
+from workers.lib.messenger import message
 
 from .abstract import Ingestor
 from .validation_schemas import get_blank_detection_schema, get_blank_image_detection_schema
@@ -34,7 +35,7 @@ class TownCentreIngestor(Ingestor):
 
         for i, image_path in enumerate(glob.glob(os.path.join(root, "images", "*.png"))):
             if i % 100 == 0:
-                print(f"Ingested {i} images")
+                message(f"Ingested {i} images")
             single_img_detection = get_blank_image_detection_schema()
             img_file_name = image_path.split("/")[-1]
             img_name = image_path.split("/")[-1].split(".")[0]
@@ -66,9 +67,9 @@ class TownCentreIngestor(Ingestor):
                         {"left": float(label[8]), "top": float(label[9]), "right": float(label[10]),
                          "bottom": float(label[11])})
                 else:
-                    print(f"Label {i} invalid - no body region")
+                    message(f"Label {i} invalid - no body region")
                 if i % 1000 == 0:
-                    print(f"Processed {i} on {labels_len} labels")
+                    message(f"Processed {i} on {labels_len} labels")
         return annotations_dict
 
     def _get_detections(self, annotations_base, img_name, img_width, img_height):

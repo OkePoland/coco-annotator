@@ -28,6 +28,7 @@ import json
 import os
 
 from PIL import Image
+from workers.lib.messenger import message
 
 from .abstract import Ingestor
 
@@ -74,9 +75,9 @@ class DAIMLERIngestor(Ingestor):
                     try:
                         image_width, image_height = _image_dimensions(image_path)
                     except FileNotFoundError as e:
-                        print(e)
+                        message(e)
                         continue
-                    print(f"id: {image_id}")
+                    message(f"id: {image_id}")
                     image_detection_schema.append({
                         "image": {
                             "id": image_id,
@@ -88,7 +89,7 @@ class DAIMLERIngestor(Ingestor):
                         "detections": detections
                     })
             except FileNotFoundError as e:
-                print(e)
+                message(e)
                 continue
         return image_detection_schema
 
@@ -112,13 +113,27 @@ class DAIMLERIngestor(Ingestor):
                     "bottom": y2
                 })
             except ValueError as ve:
-                print(f"{ve} - {element}")
+                message(f"{ve} - {element}")
         return detections
 
 
 def _image_dimensions(path):
     with Image.open(path) as image:
         return image.width, image.height
+
+
+def file_base_name(file_name):
+    if '.' in file_name:
+        separator_index = file_name.index('.')
+        base_name = file_name[:separator_index]
+        return base_name
+    else:
+        return file_name
+
+
+def path_base_name(path):
+    file_name = os.path.basename(path)
+    return file_base_name(file_name)
 
 
 DEFAULT_TRUNCATED = 0.0  # 0% truncated

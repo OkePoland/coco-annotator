@@ -41,6 +41,7 @@ import contextlib2
 import numpy as np
 import tensorflow as tf
 from pycocotools import mask
+from workers.lib.messenger import message
 from workers.lib.tf_models import dataset_util
 from workers.lib.tf_models import label_map_util
 from workers.lib.tf_models import tf_record_creation_util
@@ -223,13 +224,13 @@ def _split_dataset(annotations_file, val_size, test_size):
     images = groundtruth_data["images"]
     annotations = groundtruth_data["annotations"]
 
-    print("Preparing images")
+    message("Preparing images")
     all_images_annotations = {img["id"]: {"image": img, "annotations": []} for img in images}
-    print("Preparing annotations")
+    message("Preparing annotations")
     for annotation in annotations:
         all_images_annotations[annotation["image_id"]]["annotations"].append(annotation)
 
-    print("Preparing keys")
+    message("Preparing keys")
     train_images_keys = list(all_images_annotations.keys())
     random.shuffle(train_images_keys)
 
@@ -238,25 +239,25 @@ def _split_dataset(annotations_file, val_size, test_size):
     divided_keys = [list(islice(keys_iterator, elem)) for elem in chunks_lengths]
     # divided keys struct: [[train_keys], [val_keys], [test_keys]]
 
-    print("Creating train set")
+    message("Creating train set")
     train_data = {'images': [all_images_annotations[train_key]['image'] for train_key in divided_keys[0]],
                   'categories': groundtruth_data['categories'],
                   'annotations': [annot for train_key in divided_keys[0] for annot in
                                   all_images_annotations[train_key]['annotations']]}
 
-    print("Creating val set")
+    message("Creating val set")
     val_data = {'images': [all_images_annotations[val_key]['image'] for val_key in divided_keys[1]],
                 'categories': groundtruth_data['categories'],
                 'annotations': [annot for val_key in divided_keys[1] for annot in
                                 all_images_annotations[val_key]['annotations']]}
 
-    print("Creating test set")
+    message("Creating test set")
     test_data = {'images': [all_images_annotations[test_key]['image'] for test_key in divided_keys[2]],
                  'categories': groundtruth_data['categories'],
                  'annotations': [annot for test_key in divided_keys[2] for annot in
                                  all_images_annotations[test_key]['annotations']]}
 
-    print("Finished splitting dataset")
+    message("Finished splitting dataset")
     return train_data, val_data, test_data
 
 
@@ -277,7 +278,7 @@ def convert_coco_to_tfrecord(dataset_dir, annotations_file, output_dir, val_size
     if not tf.gfile.IsDirectory(output_dir):
         tf.gfile.MakeDirs(output_dir)
 
-    tfrecords_name = dataset_dir.split("/")[-1]
+    tfrecords_name = os.path.split(dataset_dir)[1]
     train_output_path = os.path.join(output_dir, f"coco_train_{tfrecords_name}.record")
     val_output_path = os.path.join(output_dir, f"coco_val_{tfrecords_name}.record")
     test_output_path = os.path.join(output_dir, f"coco_test_{tfrecords_name}.record")
