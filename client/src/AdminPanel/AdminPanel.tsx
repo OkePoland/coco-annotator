@@ -11,7 +11,11 @@ import MenuItem from '@material-ui/core/MenuItem';
 
 import { useStyles } from './adminPanel.styles';
 import CustomDialog from '../common/components/CustomDialog';
-import { useAdminPanel, useFormikCreate } from './adminPanel.hooks';
+import {
+    useAdminPanel,
+    useFormikCreate,
+    LimitOptions,
+} from './adminPanel.hooks';
 import TextField from '../common/components/Formik/TextField';
 import Checkbox from '../common/components/Formik/Checkbox';
 import AdminTable from './AdminTable';
@@ -69,10 +73,18 @@ const AdminPanel = () => {
                         }
                         classes={{ select: classes.select }}
                     >
-                        <MenuItem value={50}>50</MenuItem>
-                        <MenuItem value={100}>100</MenuItem>
-                        <MenuItem value={500}>500</MenuItem>
-                        <MenuItem value={1000}>1000</MenuItem>
+                        <MenuItem value={LimitOptions.OPTION_ONE}>
+                            {LimitOptions.OPTION_ONE}
+                        </MenuItem>
+                        <MenuItem value={LimitOptions.OPTION_TWO}>
+                            {LimitOptions.OPTION_TWO}
+                        </MenuItem>
+                        <MenuItem value={LimitOptions.OPTION_THREE}>
+                            {LimitOptions.OPTION_THREE}
+                        </MenuItem>
+                        <MenuItem value={LimitOptions.OPTION_FOUR}>
+                            {LimitOptions.OPTION_FOUR}
+                        </MenuItem>
                     </Select>
                 </Grid>
             </Grid>

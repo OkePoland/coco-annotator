@@ -35,9 +35,16 @@ export interface TableData {
     deleteUsers: boolean;
 }
 
+export enum LimitOptions {
+    OPTION_ONE = 50,
+    OPTION_TWO = 100,
+    OPTION_THREE = 500,
+    OPTION_FOUR = 1000,
+}
+
 export const useAdminPanel = (): AdminPanelState => {
     const create = useState(false);
-    const usersLimit = useState<number>(50);
+    const usersLimit = useState<LimitOptions>(LimitOptions.OPTION_ONE);
     const list = useList(usersLimit[0]);
     const table = useTable(list.users, list.refreshPage);
 

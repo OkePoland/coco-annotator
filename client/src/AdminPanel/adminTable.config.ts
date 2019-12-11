@@ -1,4 +1,4 @@
-interface Column {
+export interface Column {
     id: 'username' | 'name' | 'isAdmin' | 'deleteUsers';
     label: string;
 }

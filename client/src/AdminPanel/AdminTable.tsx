@@ -2,16 +2,14 @@ import React from 'react';
 
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
-import TableCell from '@material-ui/core/TableCell';
+import MuiTableCell from '@material-ui/core/TableCell';
 import TableHead from '@material-ui/core/TableHead';
-import Radio from '@material-ui/core/Radio';
-import IconButton from '@material-ui/core/IconButton';
-import HighlightOff from '@material-ui/icons/HighlightOff';
 import TableRow from '@material-ui/core/TableRow';
 
 import { useStyles } from './adminPanel.styles';
 import { columns } from './adminTable.config';
 import { TableData } from './adminPanel.hooks';
+import TableCell from './TableCell';
 
 interface AdminTableProps {
     rows: TableData[];
@@ -26,13 +24,13 @@ const AdminTable: React.FC<AdminTableProps> = ({ rows, deleteUser }) => {
             <TableHead>
                 <TableRow>
                     {columns.map(column => (
-                        <TableCell
+                        <MuiTableCell
                             className={classes.tableHead}
                             key={column.id}
                             align="center"
                         >
                             {column.label}
-                        </TableCell>
+                        </MuiTableCell>
                     ))}
                 </TableRow>
             </TableHead>
@@ -41,42 +39,12 @@ const AdminTable: React.FC<AdminTableProps> = ({ rows, deleteUser }) => {
                     <TableRow hover key={row.username}>
                         {columns.map(column => (
                             <TableCell
-                                align="center"
                                 key={`${row.username}${column.id}`}
-                            >
-                                {(() => {
-                                    const value = row[column.id];
-                                    switch (column.id) {
-                                        case 'isAdmin':
-                                            return (
-                                                <Radio
-                                                    size="small"
-                                                    className={
-                                                        classes.iconButton
-                                                    }
-                                                    disabled
-                                                    checked={row.isAdmin}
-                                                />
-                                            );
-                                        case 'deleteUsers':
-                                            return (
-                                                <IconButton
-                                                    size="small"
-                                                    className={
-                                                        classes.iconButton
-                                                    }
-                                                    onClick={() =>
-                                                        deleteUser(row)
-                                                    }
-                                                >
-                                                    <HighlightOff />
-                                                </IconButton>
-                                            );
-                                        default:
-                                            return value;
-                                    }
-                                })()}
-                            </TableCell>
+                                column={column}
+                                row={row}
+                                classes={classes.iconButton}
+                                deleteUser={deleteUser}
+                            />
                         ))}
                     </TableRow>
                 ))}
