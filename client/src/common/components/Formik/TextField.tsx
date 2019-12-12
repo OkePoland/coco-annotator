@@ -1,29 +1,29 @@
 import React from 'react';
+import { useField } from 'formik';
 import MuiTextField from '@material-ui/core/TextField';
-import { FormikProps } from 'formik';
 
-interface Props<T> {
+interface Props {
     name: string;
     label: string;
-    formik: FormikProps<T>;
-    touched?: boolean;
-    error?: string;
+    type?: string;
 }
 
-function TextField<T>(props: Props<T>) {
-    const { name, label, formik, touched, error } = props;
+const TextField: React.FC<Props> = ({ name, label, type }) => {
+    const [field, { touched, error }] = useField(name);
 
     return (
         <MuiTextField
             required
+            type={type}
             fullWidth
             variant="outlined"
             margin="normal"
             label={label}
             error={Boolean(touched && error)}
             helperText={touched && error}
-            {...formik.getFieldProps(name)} // onChange, onBlur methods
+            {...field}
         />
     );
-}
+};
+
 export default TextField;

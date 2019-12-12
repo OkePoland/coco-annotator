@@ -1,4 +1,6 @@
 import React from 'react';
+import { Formik, Form } from 'formik';
+
 import Container from '@material-ui/core/Container';
 import Box from '@material-ui/core/Box';
 import Grid from '@material-ui/core/Grid';
@@ -172,42 +174,44 @@ const List: React.FC = () => {
                     </Box>
                 )}
             />
-            <CustomDialog
-                title="Creating a Dataset"
-                open={createOn}
-                setClose={() => {
-                    setCreateOn(false);
-                    formikCreate.resetForm();
-                }}
-                renderContent={() => (
-                    <form onSubmit={formikCreate.handleSubmit}>
-                        <TextField
-                            name="name"
-                            label="Dataset name"
-                            formik={formikCreate}
-                            touched={formikCreate.touched['name']}
-                            error={formikCreate.errors['name']}
-                        />
-                        <MuiTextField
-                            disabled
-                            fullWidth
-                            variant="outlined"
-                            margin="normal"
-                            label="Folder Directory"
-                            value={`/datasets/${formikCreate.values.name}`}
-                        />
-                    </form>
+            <Formik
+                initialValues={formikCreate.initialValues}
+                validationSchema={formikCreate.validationSchema}
+                onSubmit={formikCreate.onSubmit}
+            >
+                {formik => (
+                    <CustomDialog
+                        title="Creating a Dataset"
+                        open={createOn}
+                        setClose={() => {
+                            setCreateOn(false);
+                            formik.resetForm();
+                        }}
+                        renderContent={() => (
+                            <Form>
+                                <TextField name="name" label="Dataset name" />
+                                <MuiTextField
+                                    disabled
+                                    fullWidth
+                                    variant="outlined"
+                                    margin="normal"
+                                    label="Folder Directory"
+                                    value={`/datasets/${formik.values.name}`}
+                                />
+                            </Form>
+                        )}
+                        renderActions={() => (
+                            <Button
+                                variant="contained"
+                                color="primary"
+                                onClick={formik.submitForm}
+                            >
+                                Create Dataset
+                            </Button>
+                        )}
+                    />
                 )}
-                renderActions={() => (
-                    <Button
-                        variant="contained"
-                        color="primary"
-                        onClick={formikCreate.submitForm}
-                    >
-                        Create Dataset
-                    </Button>
-                )}
-            />
+            </Formik>
             <CustomDialog
                 title="Edit Dataset"
                 open={editOn}
