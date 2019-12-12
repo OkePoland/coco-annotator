@@ -64,7 +64,6 @@ class DETRACIngestor(Ingestor):
                         img = get_blank_image_detection_schema()
                         img["detections"] = detections
                         img["image"]["id"] = os.path.join(mov_name, img_name)
-                        img["image"]["id"] = os.path.join(mov_name, img_name)
                         img["image"]["dataset_id"] = None
                         img["image"]["path"] = os.path.join(directory, mov_name, f"{img_name}.jpg")
                         img["image"]["width"] = im_width

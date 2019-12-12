@@ -62,7 +62,11 @@ class VOCIngestor(Ingestor):
 
         image_path = os.path.join(os.path.join(root, os.path.join(folder_names["images"], f"{image_id}.jpg")))
         if not os.path.isfile(image_path):
-            raise Exception(f"Expected {image_path} to exist.")
+            number = int(image_id) + 1
+            image_path = os.path.join(
+                os.path.join(root, os.path.join(folder_names['images'], 'image' + '{:06d}'.format(number) + ".jpg")))
+            if not os.path.isfile(image_path):
+                raise Exception(f"Expected {image_path} to exist.")
 
         annotation_path = os.path.join(os.path.join(root, os.path.join(folder_names["annotations"], f"{image_id}.xml")))
         if not os.path.isfile(annotation_path):
@@ -71,7 +75,10 @@ class VOCIngestor(Ingestor):
         tree = ElementTree.parse(annotation_path)
         xml_root = tree.getroot()
         size = xml_root.find("size")
-        segmented = xml_root.find("segmented").text == "1"
+        if xml_root.find('segmented') is None:
+            segmented = False
+        else:
+            segmented = (xml_root.find('segmented').text == "1")
         segmented_path = None
         segmented_objects = None
         if segmented:
@@ -155,7 +162,10 @@ class VOCIngestor(Ingestor):
         curr_detection["id"] = self.detection_counter
         self.detection_counter += 1
         curr_detection["image_id"] = img_id
-        curr_detection["label"] = node.find("name").text
+        if node.find('name') is not None:
+            curr_detection["label"] = node.find('name').text
+        else:
+            curr_detection["label"] = node.find('class').text
         curr_detection["segmentation"] = None
         curr_detection["top"] = float(bndbox.find("ymin").text)
         curr_detection["left"] = float(bndbox.find("xmin").text)
@@ -187,7 +197,7 @@ class VOCIngestor(Ingestor):
             labels.append(class_segmentation_mask[x][y])
         if len(set(labels)) != 1:
             message(f"Error with finding class from class segmentation mask, not all pixels has the same label, found "
-                  f"labels: {set(labels)}")
+                    f"labels: {set(labels)}")
             return None
         return self.segmentation_labels[str(labels[0])]
 

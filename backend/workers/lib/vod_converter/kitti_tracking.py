@@ -30,9 +30,9 @@ corresponds to one object. The 17 columns represent:
                      "Misc" or "DontCare"
    1    truncated    Float from 0 (non-truncated) to 1 (truncated), where
                      truncated refers to the object leaving image boundaries.
-		     Truncation 2 indicates an ignored object (in particular
-		     in the beginning or end of a track) introduced by manual
-		     labeling.
+                     Truncation 2 indicates an ignored object (in particular
+                     in the beginning or end of a track) introduced by manual
+                     labeling.
    1    occluded     Integer (0,1,2,3) indicating occlusion state:
                      0 = fully visible, 1 = partly occluded
                      2 = largely occluded, 3 = unknown
