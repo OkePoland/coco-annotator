@@ -20,7 +20,7 @@ export const useUserSettings = () => {
     }
 
     const { name, username } = currentUser;
-    const displayName = name ? name : username;
+    const displayName = name || username;
 
     return displayName;
 };
