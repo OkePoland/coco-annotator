@@ -35,18 +35,14 @@ export const Settings: React.FC<Props> = ({
             icon={<SaveAltIcon />}
             enabled={true}
             active={false}
-            onClick={() => {
-                downloadImageAction();
-            }}
+            onClick={downloadImageAction}
         />
         <ToolButton
             name="Save"
             icon={<SaveIcon />}
             enabled={true}
             active={false}
-            onClick={() => {
-                saveImageAction();
-            }}
+            onClick={saveImageAction}
         />
         <ToolButton
             name={`Mode: ${segmentOn ? 'segment' : 'label'}`}
@@ -62,9 +58,7 @@ export const Settings: React.FC<Props> = ({
             icon={<SettingsIcon />}
             enabled={true}
             active={false}
-            onClick={() => {
-                openImageAction();
-            }}
+            onClick={openImageAction}
         />
 
         <Box mt={2} mb={2}>
@@ -76,9 +70,7 @@ export const Settings: React.FC<Props> = ({
             icon={<DeleteIcon />}
             enabled={true}
             active={false}
-            onClick={() => {
-                deleteImageAction();
-            }}
+            onClick={deleteImageAction}
         />
     </Fragment>
 );

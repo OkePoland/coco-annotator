@@ -24,18 +24,14 @@ export const Annotation: React.FC<Props> = ({
             icon={<CloudDownloadIcon />}
             enabled={true}
             active={false}
-            onClick={() => {
-                annotationAction();
-            }}
+            onClick={annotationAction}
         />
         <ToolButton
             name="Copy Annotations"
             icon={<FileCopyIcon />}
             enabled={true}
             active={false}
-            onClick={() => {
-                annotationCopyAction();
-            }}
+            onClick={annotationCopyAction}
         />
         <ToolButton
             name="Show All"

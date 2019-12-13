@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { RefObject, Dispatch, SetStateAction, WheelEvent } from 'react';
 import paper from './paperExtended';
-import { TOOL } from './annotator.config';
+import * as CONFIG from './annotator.config';
 
 import { Dataset } from '../common/types';
 import * as AnnotatorApi from './annotator.api';
@@ -14,7 +14,7 @@ type Maybe<T> = T | null;
 interface UserChoicesState {
     annotateMode: [boolean, Dispatch<SetStateAction<boolean>>];
     segmentMode: [boolean, Dispatch<SetStateAction<boolean>>];
-    toolState: [TOOL | null, (name: TOOL) => void];
+    toolState: [Maybe<CONFIG.TOOL>, (name: CONFIG.TOOL) => void];
 }
 interface CanvasState {
     canvasRef: RefObject<HTMLCanvasElement>;
@@ -38,8 +38,8 @@ export const useUserChoices = (): UserChoicesState => {
     const annotateMode = useState<boolean>(true);
     const segmentMode = useState<boolean>(true);
 
-    const [tool, setTool] = useState<TOOL | null>(null);
-    const toggleTool = (name: TOOL) => {
+    const [tool, setTool] = useState<Maybe<CONFIG.TOOL>>(null);
+    const toggleTool = (name: CONFIG.TOOL) => {
         setTool(oldState => (oldState === name ? null : name));
     };
 
@@ -149,12 +149,12 @@ export const useCanvas = (imageUrl: string): CanvasState => {
 
         if (e.altKey) {
             // pan up and down
-            const delta = new paper.Point(0, 0.5 * e.deltaY);
+            const delta = new paper.Point(0, CONFIG.PAN_FACTOR * e.deltaY);
             const newCenterP = centerPt.add(delta);
             paperRef.current.view.setCenter(newCenterP); // TODO
         } else if (e.shiftKey) {
             // pan left and right
-            const delta = new paper.Point(0.5 * e.deltaY, 0);
+            const delta = new paper.Point(CONFIG.PAN_FACTOR * e.deltaY, 0);
             const newCenterP = centerPt.add(delta);
             paperRef.current.view.setCenter(newCenterP);
         } else {
@@ -163,16 +163,18 @@ export const useCanvas = (imageUrl: string): CanvasState => {
                 new paper.Point(e.nativeEvent.offsetX, e.nativeEvent.offsetY),
             );
 
-            const factor = 1.2;
             const oldZoom = view.zoom || 0;
-            const newZoom = e.deltaY < 0 ? oldZoom * factor : oldZoom / factor;
+            const newZoom =
+                e.deltaY < 0
+                    ? oldZoom * CONFIG.ZOOM_FACTOR
+                    : oldZoom / CONFIG.ZOOM_FACTOR;
             const beta = oldZoom / newZoom;
             const pc = viewPosition.subtract(centerPt);
             const newOffset = viewPosition
                 .subtract(pc.multiply(beta))
                 .subtract(centerPt);
 
-            if (newZoom < 10 && newZoom > 0.01) {
+            if (newZoom < CONFIG.ZOOM_MAX && newZoom > CONFIG.ZOOM_MIN) {
                 setImgScale(1 / newZoom);
                 paperRef.current.view.zoom = newZoom;
                 paperRef.current.view.center = view.center.add(newOffset);
@@ -248,22 +250,22 @@ export const usePainter = (
     rasterSize: Maybe<RasterSize>,
     leftTitle: string,
 ) => {
-    const leftTitleRef = useRef<paper.PointText | null>(null);
-    const rightTitleRef = useRef<paper.PointText | null>(null);
+    const leftTitleRef = useRef<Maybe<paper.PointText>>(null);
+    const rightTitleRef = useRef<Maybe<paper.PointText>>(null);
 
     // init left and right title
     useEffect(() => {
         if (rasterSize != null) {
             const { width, height } = rasterSize;
 
-            const fontSize = width * 0.025;
+            const fontSize = width * CONFIG.TITLE_FONT_SCALE;
             const positionTopLeft = new paper.Point(
                 -width / 2,
-                -height / 2 - fontSize * 0.5,
+                -height / 2 - fontSize * CONFIG.TITLE_HEIGHT_SCALE,
             );
             const positionTopRight = new paper.Point(
                 width / 2,
-                -height / 2 - fontSize * 0.4,
+                -height / 2 - fontSize * CONFIG.TITLE_HEIGHT_SCALE,
             );
 
             leftTitleRef.current = new paper.PointText(positionTopLeft);

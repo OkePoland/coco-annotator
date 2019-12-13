@@ -19,18 +19,14 @@ export const Settings: React.FC<Props> = ({
             icon={<FormatAlignCenterIcon />}
             enabled={true}
             active={false}
-            onClick={() => {
-                centerImageAction();
-            }}
+            onClick={centerImageAction}
         />
         <ToolButton
             name="Undo"
             icon={<UndoIcon />}
             enabled={true}
             active={false}
-            onClick={() => {
-                undoAction();
-            }}
+            onClick={undoAction}
         />
     </Fragment>
 );
