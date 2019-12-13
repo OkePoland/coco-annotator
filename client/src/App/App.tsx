@@ -1,6 +1,7 @@
 import React, { Suspense, useState, useEffect } from 'react';
 import { ThemeProvider } from '@material-ui/core/styles';
 import { Router, View } from 'react-navi';
+import { SnackbarProvider } from 'notistack';
 
 import { UserInfo } from '../common/types';
 import { theme } from '../common/theme';
@@ -18,17 +19,19 @@ const App: React.FC = () => {
 
     return (
         <ThemeProvider theme={theme}>
-            <AuthProvider>
-                <Router routes={routes} context={{ currentUser }}>
-                    <SocketProvider>
-                        <GlobalProvider>
-                            <Suspense fallback={null}>
-                                <View />
-                            </Suspense>
-                        </GlobalProvider>
-                    </SocketProvider>
-                </Router>
-            </AuthProvider>
+            <SnackbarProvider maxSnack={3}>
+                <AuthProvider>
+                    <Router routes={routes} context={{ currentUser }}>
+                        <SocketProvider>
+                            <GlobalProvider>
+                                <Suspense fallback={null}>
+                                    <View />
+                                </Suspense>
+                            </GlobalProvider>
+                        </SocketProvider>
+                    </Router>
+                </AuthProvider>
+            </SnackbarProvider>
         </ThemeProvider>
     );
 };

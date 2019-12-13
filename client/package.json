@@ -16,6 +16,7 @@
     "formik": "^2.0.6",
     "material-ui-flat-pagination": "^4.0.0",
     "navi": "^0.13.6",
+    "notistack": "^0.9.7",
     "paper": "^0.12.3",
     "react": "^16.10.2",
     "react-dom": "^16.10.2",

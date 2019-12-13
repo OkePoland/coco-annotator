@@ -15,6 +15,7 @@ import {
 } from '../Auth/authenticatedRoute';
 import ErrorBoundary from './ErrorBoundary';
 import AdminPanel from '../AdminPanel/AdminPanel';
+import UserSettings from '../UserSettings/UserSettings';
 
 const AppView = () => {
     const route = useCurrentRoute();
@@ -85,7 +86,7 @@ export default compose(
         ),
         '/user': withAuthentication(
             route({
-                view: <div />,
+                view: <UserSettings />,
             }),
         ),
         '/admin': withAdminContentProtection(
