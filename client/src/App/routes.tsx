@@ -6,6 +6,7 @@ import Layout from './Layout';
 import Auth from '../Auth/Auth';
 import DatasetsList from '../Dataset/List/List';
 import DatasetDetails from '../Dataset/Details/Details';
+import Annotator from '../Annotator/Annotator';
 
 import {
     withAuthentication,
@@ -70,8 +71,10 @@ export default compose(
             }),
         ),
         '/annotate/:id': withAuthentication(
-            route({
-                view: <div />,
+            route(async req => {
+                return {
+                    view: <Annotator imageId={parseInt(req.params.id)} />,
+                };
             }),
         ),
         '/dataset/:id': withAuthentication(
