@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { RefObject, Dispatch, SetStateAction, WheelEvent } from 'react';
-import paper from './paperExtended';
+import paper from 'paper';
+
 import * as CONFIG from './annotator.config';
 
 import { Dataset } from '../common/types';
@@ -134,8 +135,8 @@ export const useCanvas = (imageUrl: string): CanvasState => {
             (canvasRef.current.height / parentY) * 0.8,
         );
 
-        setImgScale(1 / paperRef.current.view.getZoom());
-        paperRef.current.view.setCenter(0, 0);
+        setImgScale(1 / paperRef.current.view.zoom);
+        paperRef.current.view.center = new paper.Point(0, 0);
     }, [canvasRef, rasterRef]);
 
     const onWheelAction = useCallback((e: WheelEvent<HTMLDivElement>) => {
@@ -151,12 +152,12 @@ export const useCanvas = (imageUrl: string): CanvasState => {
             // pan up and down
             const delta = new paper.Point(0, CONFIG.PAN_FACTOR * e.deltaY);
             const newCenterP = centerPt.add(delta);
-            paperRef.current.view.setCenter(newCenterP); // TODO
+            paperRef.current.view.center = newCenterP;
         } else if (e.shiftKey) {
             // pan left and right
             const delta = new paper.Point(CONFIG.PAN_FACTOR * e.deltaY, 0);
             const newCenterP = centerPt.add(delta);
-            paperRef.current.view.setCenter(newCenterP);
+            paperRef.current.view.center = newCenterP;
         } else {
             // changeZoom
             const viewPosition = view.viewToProject(
@@ -271,7 +272,6 @@ export const usePainter = (
             leftTitleRef.current = new paper.PointText(positionTopLeft);
             leftTitleRef.current.fontSize = fontSize;
             leftTitleRef.current.fillColor = new paper.Color('white');
-            leftTitleRef.current.content = '';
 
             rightTitleRef.current = new paper.PointText(positionTopRight);
             rightTitleRef.current.justification = 'right';
