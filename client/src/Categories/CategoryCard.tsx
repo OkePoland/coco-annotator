@@ -27,39 +27,40 @@ const CategoryCard: React.FC<Props> = ({ item, renderMenuItems }) => {
 
     return (
         <Card>
-            <Box pt={1} pb={1} pl={2} pr={2}>
-                <Grid container justify="space-between" alignItems="center">
-                    <Grid item>
-                        <Typography component="div" className={classes.title}>
-                            <Brightness1Icon className={classes.colorIcon} />
-                            {item.name}
-                        </Typography>
-                    </Grid>
-                    <Grid item>
-                        <IconButton
-                            size="small"
-                            onClick={event => {
-                                setAnchor(event.currentTarget);
-                            }}
-                        >
-                            <MoreVertIcon />
-                        </IconButton>
-                    </Grid>
+            <Grid
+                container
+                justify="space-between"
+                alignItems="center"
+                className={classes.container}
+            >
+                <Grid item>
+                    <Typography component="div" className={classes.title}>
+                        <Brightness1Icon className={classes.colorIcon} />
+                        {item.name}
+                    </Typography>
                 </Grid>
-                <Box mb={1}>
-                    {item.numberAnnotations > 0 ? (
-                        <Box textAlign="center">
-                            <Typography>
-                                {`${item.numberAnnotations} objects have been made with this
-                                category.`}
-                            </Typography>
-                        </Box>
-                    ) : (
-                        <Box>No annotations use this category</Box>
-                    )}
-                </Box>
-            </Box>
-            <Box textAlign="center" boxShadow={3}>
+                <Grid item>
+                    <IconButton
+                        size="small"
+                        onClick={event => {
+                            setAnchor(event.currentTarget);
+                        }}
+                    >
+                        <MoreVertIcon />
+                    </IconButton>
+                </Grid>
+            </Grid>
+            {item.numberAnnotations > 0 ? (
+                <Typography align="center">
+                    {`${item.numberAnnotations} objects have been made with this
+                    category.`}
+                </Typography>
+            ) : (
+                <Typography align="center">
+                    No annotations use this category
+                </Typography>
+            )}
+            <Box textAlign="center" boxShadow={3} mt={2}>
                 Created by {item.creator}
             </Box>
             <Menu

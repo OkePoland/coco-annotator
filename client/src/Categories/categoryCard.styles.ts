@@ -5,6 +5,9 @@ interface Props {
 }
 
 export const useStyles = makeStyles((theme: AugmentedTheme) => ({
+    container: {
+        padding: theme.spacing(1),
+    },
     colorIcon: {
         color: (props: Props) => props.color,
         fontSize: 16,
