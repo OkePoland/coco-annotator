@@ -16,6 +16,7 @@ import {
 import ErrorBoundary from './ErrorBoundary';
 import AdminPanel from '../AdminPanel/AdminPanel';
 import UserSettings from '../UserSettings/UserSettings';
+import Categories from '../Categories/Categories';
 
 const AppView = () => {
     const route = useCurrentRoute();
@@ -52,7 +53,7 @@ export default compose(
         ),
         '/categories': withAuthentication(
             route({
-                view: <div>Categories</div>,
+                view: <Categories />,
             }),
         ),
         '/about': withAuthentication(
