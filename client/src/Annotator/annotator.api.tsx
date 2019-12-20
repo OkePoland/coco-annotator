@@ -1,9 +1,11 @@
 import Api from '../common/api';
-import { Dataset } from '../common/types';
+import { Dataset, Category } from '../common/types';
+
+const annotationBaseUrl = `/annotation/`;
 
 // TODO adjust types
 interface IGetDataResponse {
-    categories: [string];
+    categories: Category[];
     dataset: Dataset;
     preferences?: {};
     permissions?: {};
@@ -33,4 +35,25 @@ export const getData = async (imageId: number): Promise<IGetDataResponse> => {
     const url = `/annotator/data/${imageId}`;
     const { data } = await Api.get<IGetDataResponse>(url);
     return data;
+};
+
+export const createAnnotation = async (imageId: number, categoryId: number) => {
+    const { data: response } = await Api.post(annotationBaseUrl, {
+        image_id: imageId,
+        category_id: categoryId,
+    });
+    return response;
+};
+
+export const deleteAnnotation = async (id: number) => {
+    const url = `${annotationBaseUrl}${id}`;
+    const response = await Api.delete(url);
+    return response;
+};
+
+export const updateAnnotation = async (id: number, params: any) => {
+    //const url = `${annotationBaseUrl}${id}`;
+    //const response = await Api.put(url, params);
+    //return response;
+    return null;
 };

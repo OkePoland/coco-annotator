@@ -3,6 +3,7 @@ import { makeStyles, Theme as AugmentedTheme } from '@material-ui/core/styles';
 export const useStyles = makeStyles((theme: AugmentedTheme) => ({
     root: {
         display: 'block',
+        color: theme.palette.common.white,
     },
     leftPanel: {
         float: 'left',
@@ -11,7 +12,6 @@ export const useStyles = makeStyles((theme: AugmentedTheme) => ({
         paddingTop: theme.spacing(2),
         textAlign: 'center',
         backgroundColor: '#4b5162',
-        color: theme.palette.common.white,
     },
     divider: {
         marginTop: theme.spacing(2),
@@ -21,6 +21,7 @@ export const useStyles = makeStyles((theme: AugmentedTheme) => ({
         width: 250,
         height: '100vh',
         float: 'right',
+        padding: theme.spacing(1),
         backgroundColor: '#4b5162',
     },
     middlePanel: {
