@@ -50,6 +50,42 @@ export interface Image {
     num_annotations: number;
 }
 
+export interface Category {
+    id: number;
+    name: string;
+    supercategory: string;
+    color: string;
+    metadata: {};
+    creator: string;
+    deleted: boolean;
+    keypoint_edges: [];
+    keypoint_labels: [];
+    numberAnnotations: number;
+    annotations?: Annotation[];
+}
+
+export interface Annotation {
+    id: number;
+    name?: string;
+    image_id: number;
+    category_id: number;
+    dataset_id: number;
+    segmentation: [];
+    area: number;
+    bbox: number[];
+    iscrowd: boolean;
+    isbbox: boolean;
+    creator: string;
+    width: number;
+    height: number;
+    color: string;
+    keypoints: [];
+    metadata: IDict;
+    paper_object: [];
+    deleted: boolean;
+    milliseconds: number;
+}
+
 interface IDict {
     [key: string]: any;
 }

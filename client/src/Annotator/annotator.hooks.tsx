@@ -1,10 +1,10 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { RefObject, Dispatch, SetStateAction, WheelEvent } from 'react';
 import paper from 'paper';
 
 import * as CONFIG from './annotator.config';
 
-import { Dataset } from '../common/types';
+import { Dataset, Category } from '../common/types';
 import * as AnnotatorApi from './annotator.api';
 import useGlobalContext from '../common/hooks/useGlobalContext';
 import { addProcess, removeProcess } from '../common/utils/globalActions';
@@ -39,7 +39,7 @@ export const useUserChoices = (): UserChoicesState => {
     const annotateMode = useState<boolean>(true);
     const segmentMode = useState<boolean>(true);
 
-    const [tool, setTool] = useState<Maybe<CONFIG.TOOL>>(null);
+    const [tool, setTool] = useState<Maybe<CONFIG.TOOL>>(CONFIG.TOOL.SELECT);
     const toggleTool = (name: CONFIG.TOOL) => {
         setTool(oldState => (oldState === name ? null : name));
     };
@@ -57,7 +57,7 @@ export const useData = (imageId: number) => {
 
     // datasetdata
     const [dataset, setDataset] = useState<Maybe<Dataset>>(null);
-    const [categories, setCategories] = useState<Array<string>>([]); // TODO adjust type
+    const [categories, setCategories] = useState<Array<Category>>([]);
 
     // image data
     const [metadata, setMetadata] = useState<Maybe<{}>>(null);
@@ -109,6 +109,85 @@ export const useData = (imageId: number) => {
         categoriesIds,
         annotating,
         preferences,
+    };
+};
+
+// Further operations over Image Categories
+export const useCategoryData = (categories: Category[]) => {
+    const [activeId, _setActiveId] = useState<Maybe<number>>(null);
+    const [enableIds, _setEnableIds] = useState<number[]>([]);
+    const [expandIds, _setExpandIds] = useState<number[]>([]);
+
+    const [searchText, setSearchText] = useState<string>('');
+
+    const filteredList: Array<Category> = useMemo(() => {
+        // Rendered items in right Panel (after applying search filter)
+        const search = searchText.toLowerCase();
+        if (searchText.length === 0) {
+            return categories;
+        }
+        return categories.filter(category =>
+            category.name.toLowerCase().includes(search),
+        );
+    }, [categories, searchText]);
+
+    const setActiveId = (id: number) => {
+        _setActiveId(prev => (id === prev ? null : id));
+    };
+
+    const setEnableId = (id: number) => {
+        _setEnableIds(prevArr => {
+            const arr = [...prevArr];
+            const idx = prevArr.indexOf(id);
+            if (idx > -1) arr.splice(idx, 1);
+            else arr.push(id);
+            return arr;
+        });
+        // collapse expanded row in case category is disabled
+        const idx = expandIds.indexOf(id);
+        if (idx > -1) setExpandId(id);
+    };
+
+    const setExpandId = (id: number) => {
+        if (enableIds.indexOf(id) === -1) return;
+
+        _setExpandIds(prevArr => {
+            const arr = [...prevArr];
+            const idx = prevArr.indexOf(id);
+            if (idx > -1) arr.splice(idx, 1);
+            else arr.push(id);
+            return arr;
+        });
+    };
+
+    return {
+        searchText,
+        activeId,
+        enableIds,
+        expandIds,
+        filteredList,
+        setSearchText,
+        setActiveId,
+        setEnableId,
+        setExpandId,
+    };
+};
+
+export const useAnnotationData = () => {
+    const add = async (imageId: number, id: number) => {
+        await AnnotatorApi.createAnnotation(imageId, id);
+    };
+    const edit = async (id: number) => {
+        // TODO
+    };
+    const remove = async (annotationId: number) => {
+        await AnnotatorApi.deleteAnnotation(annotationId);
+    };
+
+    return {
+        add,
+        edit,
+        remove,
     };
 };
 
