@@ -375,7 +375,7 @@ def load_annotation_files(task_id, dataset_id, coco_json_strings, dataset_name):
             task.info("Json string to large")
             task.info("===== Splitting json string =====")
             list_of_json_strings = split_coco_labels(single_json_string,
-                                                     max_byte_size=max_json_string_size)
+                                                     max_byte_size=max_json_string_size, current_task=task)
         else:
             task.info("Correct size of json string")
             list_of_json_strings = [single_json_string]
@@ -423,7 +423,7 @@ def convert_dataset(task_id, dataset_id, coco_json, dataset_name):
     if json_string_size > max_json_string_size:
         task.info("Json string to large")
         task.info("===== Splitting json string =====")
-        list_of_json_strings = split_coco_labels(coco_json, max_byte_size=max_json_string_size)
+        list_of_json_strings = split_coco_labels(coco_json, max_byte_size=max_json_string_size, current_task=task)
     else:
         task.info("Correct size of json string")
         list_of_json_strings = [coco_json]
