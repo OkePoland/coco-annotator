@@ -48,5 +48,11 @@ export default class Api {
         return this.axiosInstance.delete(url, config);
     }
 
+    static put<T>(url: string, data?: any, config?: AxiosRequestConfig) {
+        return this.axiosInstance.put<T>(url, data, config).catch(err => {
+            return err;
+        });
+    }
+
     private constructor() {}
 }
