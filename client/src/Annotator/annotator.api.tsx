@@ -1,34 +1,24 @@
 import Api from '../common/api';
-import { Dataset, Category } from '../common/types';
+import {
+    Dataset,
+    Category,
+    DatasetPermissions,
+    ImagePermissions,
+    Preferences,
+    Image,
+} from '../common/types';
 
 const annotationBaseUrl = `/annotation/`;
 
-// TODO adjust types
 interface IGetDataResponse {
     categories: Category[];
     dataset: Dataset;
-    preferences?: {};
-    permissions?: {};
-    image: {
-        annotated: boolean;
-        annotating: [];
-        category_ids: [number];
-        dataset_id: number;
-        deleted: boolean;
-        events: [];
-        file_name: string;
-        height: number;
-        id: number;
-        is_modified: boolean;
-        metadata: {} | null;
-        milliseconds: number;
-        next: number;
-        num_annotations: number;
-        path: string;
-        previous: number | null;
-        regenerate_thumbnail: boolean;
-        width: number;
+    preferences?: Preferences | {};
+    permissions?: {
+        dataset: DatasetPermissions;
+        image: ImagePermissions;
     };
+    image: Image;
 }
 
 export const getData = async (imageId: number): Promise<IGetDataResponse> => {

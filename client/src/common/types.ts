@@ -18,10 +18,13 @@ export interface UserInfo {
     username: string;
     name: string;
     online: boolean;
-    last_seen: {
+    last_seen?: {
         $date: number;
     };
     is_admin: boolean;
+    permissions?: [];
+    preferences?: Preferences | {};
+    new?: boolean;
 }
 
 export interface Dataset {
@@ -40,6 +43,7 @@ export interface Dataset {
     deleted_date?: {
         $data: number;
     };
+    permissions?: DatasetPermissions | {};
 }
 
 export interface Image {
@@ -48,6 +52,19 @@ export interface Image {
     annotated: boolean;
     annotating: [];
     num_annotations: number;
+    category_ids?: [number];
+    dataset_id?: number;
+    deleted?: boolean;
+    events?: [];
+    height?: number;
+    is_modified?: boolean;
+    metadata?: {} | null;
+    milliseconds?: number;
+    next?: number;
+    path?: string;
+    previous?: number | null;
+    regenerate_thumbnail?: boolean;
+    width?: number;
 }
 
 export interface Category {
@@ -56,10 +73,15 @@ export interface Category {
     supercategory: string;
     color: string;
     metadata: {};
-    creator: string;
-    deleted: boolean;
-    keypoint_edges: [];
-    keypoint_labels: [];
+    creator?: string;
+    deleted?: boolean;
+    deleted_date?: {
+        $date: number;
+    };
+    keypoint_edges?: [];
+    keypoint_labels?: [];
+    show?: boolean;
+    visualize?: boolean;
     numberAnnotations: number;
     annotations?: Annotation[];
 }
@@ -83,9 +105,84 @@ export interface Annotation {
     metadata: IDict;
     paper_object: [];
     deleted: boolean;
+    deleted_date?: {
+        $date: number;
+    };
     milliseconds: number;
+    events?: [];
 }
 
 interface IDict {
     [key: string]: any;
 }
+
+export interface Task {
+    id: number;
+    group: string;
+    name: string;
+    completed: boolean;
+    progress: number;
+    errors: number;
+    warnings: number;
+}
+
+export interface Undo {
+    id: number;
+    name: string;
+    instance: string;
+    ago: string;
+    date: string;
+}
+
+export interface DatasetPermissions {
+    owner: boolean;
+    edit: boolean;
+    share: boolean;
+    generate: boolean;
+    delete: boolean;
+    download: boolean;
+}
+
+export interface ImagePermissions {
+    delete: boolean;
+    download: boolean;
+}
+
+export interface Preferences {
+    bbox: {
+        blackOrWhite: boolean;
+        auto: boolean;
+        radius: number;
+    };
+    polygon: {
+        guidance: boolean;
+        completeDistance: number;
+        minDistance: number;
+        blackOrWhite: boolean;
+        auto: boolean;
+        radius: number;
+    };
+    eraser: {
+        strokeColor: string;
+        radius: number;
+    };
+    brush: {
+        strokeColor: string;
+        radius: number;
+    };
+    magicwand: {
+        threshold: number;
+        blur: number;
+    };
+    select: {
+        showText: boolean;
+    };
+    settings: {
+        shortcuts: Array<Shortcuts>;
+    };
+}
+
+type Shortcuts = {
+    name: string;
+    keys: string[];
+};

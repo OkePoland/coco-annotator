@@ -3,7 +3,7 @@ import { FormikConfig, FormikHelpers } from 'formik';
 import * as Yup from 'yup';
 import { useSnackbar } from 'notistack';
 
-import { Category } from './categories.api';
+import { Category } from '../common/types';
 import * as CategoriesApi from './categories.api';
 import useGlobalContext from '../common/hooks/useGlobalContext';
 import { addProcess, removeProcess } from '../common/utils/globalActions';
@@ -12,7 +12,7 @@ interface ListState {
     page: number;
     pages: number;
     categoryCount: number;
-    categories: CategoriesApi.Category[];
+    categories: Category[];
     setPage: Dispatch<SetStateAction<number>>;
     refreshPage(): void;
 }
