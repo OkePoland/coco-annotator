@@ -79,8 +79,8 @@ export const useData = (imageId: number) => {
             setCategories(data.categories);
             setMetadata(data.image.metadata || {});
             setFilename(data.image.file_name);
-            setNext(data.image.next);
-            setPrevious(data.image.previous);
+            setNext(data.image.next !== undefined ? data.image.next : null);
+            setPrevious(data.image.previous || null);
             setCategoriesIds(data.image.category_ids || []);
             setAnnotating(data.image.annotating || []);
 

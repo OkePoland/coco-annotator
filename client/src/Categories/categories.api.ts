@@ -1,21 +1,10 @@
 import { AxiosRequestConfig } from 'axios';
 
 import Api from '../common/api';
+import { Category } from '../common/types';
 
 const baseURL = '/category';
 
-export interface Category {
-    id: number;
-    name: string;
-    supercategory: string;
-    color: string;
-    metadata: {};
-    creator: string;
-    deleted: boolean;
-    keypoint_edges: [];
-    keypoint_labels: [];
-    numberAnnotations: number;
-}
 interface IGetAllResponse {
     pagination: {
         start: number;

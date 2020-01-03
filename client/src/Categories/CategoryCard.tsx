@@ -10,7 +10,7 @@ import Menu from '@material-ui/core/Menu';
 import Brightness1Icon from '@material-ui/icons/Brightness1';
 
 import { useStyles } from './categoryCard.styles';
-import { Category } from './categories.api';
+import { Category } from '../common/types';
 
 interface Props {
     item: Category;
