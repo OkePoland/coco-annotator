@@ -1,3 +1,5 @@
+import { InstanceType } from '../Undo/undo.config';
+
 export interface AppInfo {
     name: string;
     author: string;
@@ -129,7 +131,7 @@ export interface Task {
 export interface Undo {
     id: number;
     name: string;
-    instance: string;
+    instance: InstanceType;
     ago: string;
     date: string;
 }

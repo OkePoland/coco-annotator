@@ -17,6 +17,7 @@ import ErrorBoundary from './ErrorBoundary';
 import AdminPanel from '../AdminPanel/AdminPanel';
 import UserSettings from '../UserSettings/UserSettings';
 import Categories from '../Categories/Categories';
+import Undo from '../Undo/Undo';
 
 const AppView = () => {
     const route = useCurrentRoute();
@@ -63,7 +64,7 @@ export default compose(
         ),
         '/undo': withAuthentication(
             route({
-                view: <div />,
+                view: <Undo />,
             }),
         ),
         '/tasks': withAuthentication(
