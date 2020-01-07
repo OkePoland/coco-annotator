@@ -1,23 +1,21 @@
 import { useState, useEffect, SetStateAction, Dispatch } from 'react';
 
-import { Undo } from '../common/types';
-import { InstanceType, LimitOptions } from './undo.config';
+import { Undo, UndoType } from '../common/types';
+import { LimitOptions } from './undo.config';
 import * as UndoApi from './undo.api';
 import useGlobalContext from '../common/hooks/useGlobalContext';
 import { addProcess, removeProcess } from '../common/utils/globalActions';
 
-export interface TableData {
+export interface RowData {
     date: string;
-    instanceType: InstanceType;
+    instanceType: UndoType;
     id: number;
     name: string;
-    rollback: boolean;
-    delete: boolean;
 }
 interface TableState {
-    rows: TableData[];
-    deleteItem: (id: number, instance: InstanceType) => Promise<void>;
-    undoItem: (id: number, instance: InstanceType) => Promise<void>;
+    rows: RowData[];
+    deleteItem: (id: number, instance: UndoType) => Promise<void>;
+    undoItem: (id: number, instance: UndoType) => Promise<void>;
 }
 interface ListState {
     undos: Undo[];
@@ -26,14 +24,14 @@ interface ListState {
 
 interface UndoState {
     undosLimit: [number, Dispatch<SetStateAction<number>>];
-    undosType: [InstanceType, Dispatch<SetStateAction<InstanceType>>];
+    undosType: [UndoType, Dispatch<SetStateAction<UndoType>>];
     list: ListState;
     table: TableState;
 }
 
 export const useUndoPage = (): UndoState => {
     const undosLimit = useState<LimitOptions>(LimitOptions.OPTION_ONE);
-    const undosType = useState<InstanceType>(InstanceType.ALL);
+    const undosType = useState<UndoType>(UndoType.ALL);
     const list = useList(undosLimit[0], undosType[0]);
     const table = useTable(list.undos, list.refreshPage);
 
@@ -45,7 +43,7 @@ export const useUndoPage = (): UndoState => {
     };
 };
 
-const useList = (undosPerPage: number, type: InstanceType): ListState => {
+const useList = (undosPerPage: number, type: UndoType): ListState => {
     const [, dispatch] = useGlobalContext();
 
     const [generation, moveGeneration] = useState(0);
@@ -79,7 +77,7 @@ export const useTable = (
     undos: Undo[],
     refreshPage: () => void,
 ): TableState => {
-    const [rows, setRows] = useState<TableData[]>([]);
+    const [rows, setRows] = useState<RowData[]>([]);
 
     useEffect(() => {
         setRows(
@@ -88,18 +86,16 @@ export const useTable = (
                 instanceType: undo.instance,
                 id: undo.id,
                 name: undo.name,
-                rollback: false,
-                delete: false,
             })),
         );
     }, [undos]);
 
-    const deleteItem = async (id: number, instance: InstanceType) => {
+    const deleteItem = async (id: number, instance: UndoType) => {
         await UndoApi.deleteItem(id, instance);
         refreshPage();
     };
 
-    const undoItem = async (id: number, instance: InstanceType) => {
+    const undoItem = async (id: number, instance: UndoType) => {
         await UndoApi.undo(id, instance);
         refreshPage();
     };

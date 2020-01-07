@@ -10,7 +10,8 @@ import MenuItem from '@material-ui/core/MenuItem';
 import Box from '@material-ui/core/Box';
 
 import { useStyles } from './undo.styles';
-import { LimitOptions, InstanceType } from './undo.config';
+import { UndoType } from './../common/types';
+import { LimitOptions } from './undo.config';
 import { useUndoPage } from './undo.hooks';
 import UndoTable from './UndoTable';
 
@@ -71,20 +72,18 @@ const Undo: React.FC = () => {
                         variant="outlined"
                         value={type}
                         onChange={event =>
-                            setType(event.target.value as InstanceType)
+                            setType(event.target.value as UndoType)
                         }
                         classes={{ select: classes.select }}
                     >
-                        <MenuItem value={InstanceType.ALL}>All</MenuItem>
-                        <MenuItem value={InstanceType.ANNOTATION}>
+                        <MenuItem value={UndoType.ALL}>All</MenuItem>
+                        <MenuItem value={UndoType.ANNOTATION}>
                             Annotations
                         </MenuItem>
-                        <MenuItem value={InstanceType.CATEGORY}>
+                        <MenuItem value={UndoType.CATEGORY}>
                             Categories
                         </MenuItem>
-                        <MenuItem value={InstanceType.DATASET}>
-                            Datasets
-                        </MenuItem>
+                        <MenuItem value={UndoType.DATASET}>Datasets</MenuItem>
                     </Select>
                 </Grid>
                 <Grid item>

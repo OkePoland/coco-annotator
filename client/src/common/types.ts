@@ -1,5 +1,3 @@
-import { InstanceType } from '../Undo/undo.config';
-
 export interface AppInfo {
     name: string;
     author: string;
@@ -118,6 +116,13 @@ interface IDict {
     [key: string]: any;
 }
 
+export enum UndoType {
+    ALL = 'all',
+    ANNOTATION = 'annotation',
+    CATEGORY = 'category',
+    DATASET = 'dataset',
+}
+
 export interface Task {
     id: number;
     group: string;
@@ -131,7 +136,7 @@ export interface Task {
 export interface Undo {
     id: number;
     name: string;
-    instance: InstanceType;
+    instance: UndoType;
     ago: string;
     date: string;
 }

@@ -2,62 +2,49 @@ import React from 'react';
 
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
-import MuiTableCell from '@material-ui/core/TableCell';
+import TableCell from '@material-ui/core/TableCell';
 import TableHead from '@material-ui/core/TableHead';
-import TableRow from '@material-ui/core/TableRow';
+import MuiTableRow from '@material-ui/core/TableRow';
 
 import { useStyles } from './undo.styles';
+import { UndoType } from './../common/types';
 import { columns } from './undoTable.config';
-import { InstanceType } from './undo.config';
-import { TableData } from './undo.hooks';
-import TableCell from './TableCell';
+import { RowData } from './undo.hooks';
+import TableRow from './TableRow';
 
-interface UndoTableProps {
-    rows: TableData[];
-    deleteItem: (id: number, instance: InstanceType) => Promise<void>;
-    undoItem: (id: number, instance: InstanceType) => Promise<void>;
+interface Props {
+    rows: RowData[];
+    deleteItem: (id: number, instance: UndoType) => Promise<void>;
+    undoItem: (id: number, instance: UndoType) => Promise<void>;
 }
 
-const UndoTable: React.FC<UndoTableProps> = ({
-    rows,
-    deleteItem,
-    undoItem,
-}) => {
+const UndoTable: React.FC<Props> = ({ rows, deleteItem, undoItem }) => {
     const classes = useStyles();
 
     return (
         <Table stickyHeader padding="none">
             <TableHead>
-                <TableRow>
+                <MuiTableRow>
                     {columns.map(column => (
-                        <MuiTableCell
+                        <TableCell
                             key={column.id}
                             className={classes.tableHead}
                             align="center"
                         >
                             {column.label}
-                        </MuiTableCell>
+                        </TableCell>
                     ))}
-                </TableRow>
+                </MuiTableRow>
             </TableHead>
             <TableBody>
                 {rows.map(row => (
-                    <TableRow hover key={row.id}>
-                        {columns.map(column => (
-                            <TableCell
-                                key={`${row.name}${column.id}`}
-                                column={column}
-                                row={row}
-                                classes={
-                                    column.id === 'delete'
-                                        ? classes.deleteIcon
-                                        : classes.undoIcon
-                                }
-                                deleteItem={deleteItem}
-                                undoItem={undoItem}
-                            />
-                        ))}
-                    </TableRow>
+                    <TableRow
+                        key={row.id}
+                        row={row}
+                        columns={columns}
+                        deleteItem={deleteItem}
+                        undoItem={undoItem}
+                    />
                 ))}
             </TableBody>
         </Table>
