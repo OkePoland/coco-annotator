@@ -116,6 +116,13 @@ interface IDict {
     [key: string]: any;
 }
 
+export enum UndoType {
+    ALL = 'all',
+    ANNOTATION = 'annotation',
+    CATEGORY = 'category',
+    DATASET = 'dataset',
+}
+
 export interface Task {
     id: number;
     group: string;
@@ -129,7 +136,7 @@ export interface Task {
 export interface Undo {
     id: number;
     name: string;
-    instance: string;
+    instance: UndoType;
     ago: string;
     date: string;
 }
