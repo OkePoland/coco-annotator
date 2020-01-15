@@ -11,8 +11,8 @@ import PanelDetails from '@material-ui/core/ExpansionPanelDetails';
 
 import { useStyles } from './task.styles';
 import { Task } from '../common/types';
-import { FILTER, dictionary } from './tasks.config';
-import { Logs, useTaskRow } from './taskRow.hooks';
+import { FILTER, LOG_COLOR } from './tasks.config';
+import { Log, useTaskRow } from './taskRow.hooks';
 
 interface Props {
     task: Task;
@@ -21,6 +21,7 @@ interface Props {
 }
 
 const TaskRow: React.FC<Props> = ({ task, routeId, deleteTask }) => {
+    const { name, id, progress, warnings, errors } = task;
     const {
         isVisible,
         filteredLogs,
@@ -52,11 +53,11 @@ const TaskRow: React.FC<Props> = ({ task, routeId, deleteTask }) => {
                             }}
                         >
                             <Typography noWrap align="left">
-                                {task.id}. {task.name}
+                                {id}. {name}
                             </Typography>
                         </Grid>
                         <Grid item>
-                            {task.errors > 0 && (
+                            {errors > 0 && (
                                 <Chip
                                     component="button"
                                     onClick={() => {
@@ -69,13 +70,13 @@ const TaskRow: React.FC<Props> = ({ task, routeId, deleteTask }) => {
                                         }
                                     }}
                                     className={classes.error}
-                                    label={`${task.errors} ${
-                                        task.errors > 1 ? 'errors' : 'error'
+                                    label={`${errors} ${
+                                        errors > 1 ? 'errors' : 'error'
                                     }`}
                                     size="small"
                                 />
                             )}
-                            {task.warnings > 0 && (
+                            {warnings > 0 && (
                                 <Chip
                                     component="button"
                                     onClick={() => {
@@ -88,10 +89,8 @@ const TaskRow: React.FC<Props> = ({ task, routeId, deleteTask }) => {
                                         }
                                     }}
                                     className={classes.warning}
-                                    label={`${task.warnings} ${
-                                        task.warnings > 1
-                                            ? 'warnings'
-                                            : 'warning'
+                                    label={`${warnings} ${
+                                        warnings > 1 ? 'warnings' : 'warning'
                                     }`}
                                     size="small"
                                 />
@@ -106,10 +105,16 @@ const TaskRow: React.FC<Props> = ({ task, routeId, deleteTask }) => {
                         className={classes.panelDetails}
                     >
                         <Grid className={classes.logs}>
-                            {filteredLogs.map((l: Logs) => (
+                            {filteredLogs.map((l: Log) => (
                                 <Typography
                                     variant="body2"
-                                    color={dictionary[l.type]}
+                                    color={
+                                        {
+                                            error: LOG_COLOR.ERROR,
+                                            warning: LOG_COLOR.WARNING,
+                                            default: LOG_COLOR.DEFAULT,
+                                        }[l.type]
+                                    }
                                     classes={{
                                         colorSecondary: classes.warningColor,
                                     }}
@@ -124,7 +129,7 @@ const TaskRow: React.FC<Props> = ({ task, routeId, deleteTask }) => {
                             <Button
                                 fullWidth
                                 className={classes.deleteButton}
-                                onClick={() => deleteTask(task.id)}
+                                onClick={() => deleteTask(id)}
                             >
                                 Delete
                             </Button>
@@ -134,7 +139,7 @@ const TaskRow: React.FC<Props> = ({ task, routeId, deleteTask }) => {
             </Panel>
             <LinearProgress
                 variant="determinate"
-                value={task.progress}
+                value={progress}
                 classes={{
                     colorPrimary: classes.colorPrimary,
                     barColorPrimary: classes.barColorPrimary,

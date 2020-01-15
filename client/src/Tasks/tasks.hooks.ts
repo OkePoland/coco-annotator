@@ -3,7 +3,7 @@ import { useCurrentRoute } from 'react-navi';
 
 import { Task } from '../common/types';
 import * as TasksApi from './tasks.api';
-import { TASK_COMPLETED } from './tasks.config';
+import { TASK_COMPLETED_THRESHOLD_VALUE } from './tasks.config';
 import useGlobalContext from '../common/hooks/useGlobalContext';
 import { addProcess, removeProcess } from '../common/utils/globalActions';
 import useSocketEvent from '../common/hooks/useSocketEvent';
@@ -56,7 +56,7 @@ const useList = (): ListState => {
 
     const [tasks, setTasks] = useState<Task[]>([]);
     const [total, setTotal] = useState<number>(0);
-    const [scheduler, setScheduler] = useState<any>([]);
+    const [scheduler, setScheduler] = useState<TaskProgress[]>([]);
 
     const refreshPage = () => {
         moveGeneration(c => c + 1);
@@ -69,7 +69,11 @@ const useList = (): ListState => {
 
         const { data } = await TasksApi.getAll();
         setTasks(data);
-        setTotal(data.filter((t: Task) => t.progress < TASK_COMPLETED).length);
+        setTotal(
+            data.filter(
+                (t: Task) => t.progress < TASK_COMPLETED_THRESHOLD_VALUE,
+            ).length,
+        );
 
         removeProcess(dispatch, process);
     }, [dispatch]);
@@ -79,11 +83,10 @@ const useList = (): ListState => {
             const idx = tasks.findIndex((t: Task) => t.id === data.id);
             if (idx === -1) return;
 
-            let newArr = [...tasks];
-            newArr = newArr.map(o =>
-                o.id === data.id ? { ...o, ...data } : o,
+            const updatedTasks = tasks.map(task =>
+                task.id === data.id ? { ...task, ...data } : task,
             );
-            setTasks(newArr);
+            setTasks(updatedTasks);
         },
         [tasks],
     );
@@ -95,14 +98,16 @@ const useList = (): ListState => {
     useEffect(() => {
         if (tasks.length && scheduler.length) {
             const temp = [...scheduler];
-            updateTasks(temp.shift());
-            setScheduler(temp);
-        }
-        if (!scheduler.length) {
+            const item = temp.shift();
+
+            if (item) {
+                updateTasks(item);
+                setScheduler(temp);
+            }
         }
     }, [tasks, scheduler, updateTasks]);
 
-    useSocketEvent(SocketEvent.TASKPROGRESS, data => {
+    useSocketEvent(SocketEvent.TASKPROGRESS, (data: TaskProgress) => {
         setScheduler([...scheduler, data]);
     });
 

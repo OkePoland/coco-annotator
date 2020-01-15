@@ -9,7 +9,7 @@ import PanelSummary from '@material-ui/core/ExpansionPanelSummary';
 import PanelDetails from '@material-ui/core/ExpansionPanelDetails';
 
 import { useStyles } from './tasks.styles';
-import { TASK_COMPLETED } from './tasks.config';
+import { TASK_COMPLETED_THRESHOLD_VALUE } from './tasks.config';
 import TaskRow from './TaskRow';
 import { useTasks } from './tasks.hooks';
 
@@ -33,7 +33,7 @@ const Tasks: React.FC = () => {
             <Divider className={classes.divider} />
             {tasksList.map(({ title, tasks }) => {
                 const runningTasks = tasks.filter(
-                    task => task.progress < TASK_COMPLETED,
+                    task => task.progress < TASK_COMPLETED_THRESHOLD_VALUE,
                 );
                 return (
                     <Panel key={title} defaultExpanded>

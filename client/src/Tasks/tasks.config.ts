@@ -1,4 +1,4 @@
-export const TASK_COMPLETED = 100;
+export const TASK_COMPLETED_THRESHOLD_VALUE = 100;
 
 export enum FILTER {
     ALL = 'ALL',
@@ -6,12 +6,8 @@ export enum FILTER {
     WARNINGS = 'WARNING',
 }
 
-interface Dictionary {
-    [key: string]: 'error' | 'secondary' | 'initial';
+export enum LOG_COLOR {
+    ERROR = 'error',
+    WARNING = 'secondary',
+    DEFAULT = 'initial',
 }
-
-export const dictionary: Dictionary = {
-    error: 'error',
-    warning: 'secondary',
-    default: 'initial',
-};
