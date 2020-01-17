@@ -6,6 +6,7 @@ declare module '@material-ui/core/styles/createMuiTheme' {
         linkActive?: string;
         success?: string;
         error?: string;
+        warning?: string;
         header?: string;
         indicator?: string;
     }
@@ -16,6 +17,7 @@ declare module '@material-ui/core/styles/createMuiTheme' {
         linkActive?: string;
         success?: string;
         error?: string;
+        warning?: string;
         header?: string;
         indicator?: string;
     }
@@ -25,6 +27,7 @@ export const theme = createMuiTheme({
     linkActive: '#FFF',
     success: '#28a745',
     error: '#FF0000',
+    warning: '#ffc107',
     header: '#383c4a',
     indicator: '#FFF',
     palette: {

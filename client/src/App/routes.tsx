@@ -18,6 +18,7 @@ import AdminPanel from '../AdminPanel/AdminPanel';
 import UserSettings from '../UserSettings/UserSettings';
 import Categories from '../Categories/Categories';
 import Undo from '../Undo/Undo';
+import Tasks from '../Tasks/Tasks';
 
 const AppView = () => {
     const route = useCurrentRoute();
@@ -69,7 +70,7 @@ export default compose(
         ),
         '/tasks': withAuthentication(
             route({
-                view: <div />,
+                view: <Tasks />,
             }),
         ),
         '/annotate/:id': withAuthentication(
