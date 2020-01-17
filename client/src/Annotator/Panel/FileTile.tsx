@@ -6,6 +6,7 @@ import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import ArrowForwardIcon from '@material-ui/icons/ArrowForward';
 
 interface Props {
+    className: string;
     filename: string;
     prevImgId: number | null;
     nextImgId: number | null;
@@ -13,12 +14,13 @@ interface Props {
 }
 
 const FileTile: React.FC<Props> = ({
+    className,
     filename,
     prevImgId,
     nextImgId,
     changeImage,
 }) => (
-    <Grid container alignItems="center" wrap="nowrap">
+    <Grid container alignItems="center" wrap="nowrap" className={className}>
         <Grid item>
             {prevImgId != null && (
                 <IconButton

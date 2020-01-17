@@ -1,9 +1,9 @@
 import FileTile from './FileTile';
-import SearchInput from './Category/SearchInput';
+import SearchInput from './SearchInput';
 import CategoryCard from './Category/CategoryCard';
 import AnnotationCard from './Category/AnnotationCard';
 import CLabel from './CLabel';
-import Bbox from './Tool/Bbox';
+import BBox from './Tool/BBox';
 import Brush from './Tool/Brush';
 import Dextr from './Tool/Dextr';
 import Eraser from './Tool/Eraser';
@@ -18,7 +18,7 @@ export {
     CategoryCard,
     AnnotationCard,
     CLabel,
-    Bbox,
+    BBox,
     Brush,
     Dextr,
     Eraser,

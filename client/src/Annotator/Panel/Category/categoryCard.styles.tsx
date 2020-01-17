@@ -6,13 +6,14 @@ interface Props {
 
 export const useStyles = makeStyles((theme: AugmentedTheme) => ({
     root: {
-        backgroundColor: 'inherit',
         color: 'inherit',
+        backgroundColor: 'rgba(0,0,0,.03)',
+        borderBottom: '1px solid rgba(0,0,0,.125)',
+        marginBottom: 2,
     },
-    active: {
+    selected: {
         borderColor: theme.palette.primary.main,
-        borderWidth: '1px',
-        borderStyle: 'solid',
+        border: '1px solid',
     },
     expanededEye: {
         color: theme.palette.common.white,
