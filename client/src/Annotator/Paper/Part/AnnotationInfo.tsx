@@ -3,7 +3,7 @@
  * and react for them in a form of changes in paper.js scope object
  */
 import React from 'react';
-import { useEffect } from 'react';
+import { useEffect, useCallback } from 'react';
 import { MutableRefObject } from 'react';
 import paper from 'paper';
 
@@ -26,59 +26,58 @@ const AnnotationInfo: React.FC<Props> = ({
     isSelected,
     groupsRef,
 }) => {
-    useEffect(() => {
-        const group = groupsRef.current.find(
-            o => o.data.categoryId === categoryId,
-        );
+    const findPath = useCallback(
+        (
+            groupsRef: MutableRefObject<paper.Group[]>,
+            categoryId: number,
+            annotationId: number,
+        ) => {
+            const group = groupsRef.current.find(
+                o => o.data.categoryId === categoryId,
+            );
+            if (!group) return null;
 
-        if (group != null) {
-            const path = group.children.find(o => o.data.annotationId === id);
+            const path = group.children.find(
+                o => o.data.annotationId === annotationId,
+            );
 
-            if (path != null) {
-                if (enabled) {
-                    console.log(`Annotation display (id: ${id})`);
-                    path.visible = true;
-                } else {
-                    console.log(`Annotation hide (id: ${id})`);
-                    path.visible = false;
-                }
-            }
-        }
-    }, [id, categoryId, enabled, groupsRef]);
+            if (!path) return null;
 
-    useEffect(() => {
-        const group = groupsRef.current.find(
-            o => o.data.categoryId === categoryId,
-        );
-
-        if (group != null) {
-            const path = group.children.find(o => o.data.annotationId === id);
-
-            if (path != null) {
-                if (color) {
-                    console.log(`Annotation set color (id: ${id})`);
-                    group.fillColor = new paper.Color(color);
-                }
-            }
-        }
-    }, [id, categoryId, color, groupsRef]);
+            return path;
+        },
+        [],
+    );
 
     useEffect(() => {
-        const group = groupsRef.current.find(
-            o => o.data.categoryId === categoryId,
-        );
-
-        if (group != null) {
-            const path = group.children.find(o => o.data.annotationId === id);
-
-            if (path != null) {
-                if (isSelected) {
-                    console.log(`Annotation set selected (id: ${id})`);
-                }
-                path.selected = isSelected;
+        const path = findPath(groupsRef, categoryId, id);
+        if (path) {
+            if (enabled) {
+                console.log(`Annotation display (id: ${id})`);
+                path.visible = true;
+            } else {
+                console.log(`Annotation hide (id: ${id})`);
+                path.visible = false;
             }
         }
-    }, [id, categoryId, isSelected, groupsRef]);
+    }, [id, categoryId, enabled, groupsRef, findPath]);
+
+    useEffect(() => {
+        const path = findPath(groupsRef, categoryId, id);
+        if (path != null && color) {
+            console.log(`Annotation set color (id: ${id})`);
+            path.fillColor = new paper.Color(color);
+        }
+    }, [id, categoryId, color, groupsRef, findPath]);
+
+    useEffect(() => {
+        const path = findPath(groupsRef, categoryId, id);
+        if (path != null) {
+            if (isSelected) {
+                console.log(`Annotation set selected (id: ${id})`);
+            }
+            path.selected = isSelected;
+        }
+    }, [id, categoryId, isSelected, groupsRef, findPath]);
 
     return null;
 };

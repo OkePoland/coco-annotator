@@ -19,10 +19,9 @@ const useFilter: IUseFilter = categories => {
             return categories.map(o => o.id);
         }
         const search = searchText.toLowerCase();
-        const cats = categories.filter(category =>
-            category.name.toLowerCase().includes(search),
-        );
-        return cats.map(o => o.id);
+        return categories
+            .filter(category => category.name.toLowerCase().includes(search))
+            .map(o => o.id);
     }, [categories, searchText]);
 
     const setSearchText = useCallback((value: string) => {

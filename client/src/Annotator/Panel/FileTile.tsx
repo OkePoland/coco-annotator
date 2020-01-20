@@ -5,11 +5,13 @@ import IconButton from '@material-ui/core/IconButton';
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import ArrowForwardIcon from '@material-ui/icons/ArrowForward';
 
+import { Maybe } from '../annotator.types';
+
 interface Props {
     className: string;
     filename: string;
-    prevImgId: number | null;
-    nextImgId: number | null;
+    prevImgId: Maybe<number>;
+    nextImgId: Maybe<number>;
     changeImage: (imgId: number) => void;
 }
 

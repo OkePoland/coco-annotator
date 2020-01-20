@@ -111,7 +111,7 @@ const useCanvas = (imageUrl: string): CanvasState => {
             rasterRef.current = new paper.Raster(imageUrl);
             rasterRef.current.locked = false; // disable interactions with the mouse
             rasterRef.current.onLoad = () => {
-                if (rasterRef.current === null) return;
+                if (!rasterRef.current) return;
 
                 rasterRef.current.sendToBack();
                 centerImageAction();

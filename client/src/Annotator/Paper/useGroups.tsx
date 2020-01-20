@@ -3,7 +3,7 @@ import { MutableRefObject } from 'react';
 import paper from 'paper';
 
 import { Category } from '../../common/types';
-import { Maybe } from '../annotator.types';
+import { SelectedState } from '../annotator.types';
 
 import * as CONFIG from '../annotator.config';
 
@@ -11,13 +11,7 @@ import * as pathUtils from '../Paper/Utils/pathUtils';
 
 // interfaces
 interface IUseGroups {
-    (
-        categories: Category[],
-        selected: {
-            category: Maybe<number>;
-            annotation: Maybe<number>;
-        },
-    ): UsGroupResponse;
+    (categories: Category[], selected: SelectedState): UsGroupResponse;
 }
 export interface UsGroupResponse {
     groupsRef: MutableRefObject<paper.Group[]>;
@@ -31,12 +25,12 @@ const useGroups: IUseGroups = (categories, selected) => {
     const unite = useCallback(
         (toAdd: paper.Path) => {
             const idx = groups.current.findIndex(
-                o => o.data.categoryId === selected.category,
+                o => o.data.categoryId === selected.categoryId,
             );
             if (idx === -1) return;
 
             const aIdx = groups.current[idx].children.findIndex(
-                o => o.data.annotationId === selected.annotation,
+                o => o.data.annotationId === selected.annotationId,
             );
             if (aIdx === -1) return;
 
@@ -52,12 +46,12 @@ const useGroups: IUseGroups = (categories, selected) => {
     const subtract = useCallback(
         (toRemove: paper.Path) => {
             const idx = groups.current.findIndex(
-                o => o.data.categoryId === selected.category,
+                o => o.data.categoryId === selected.categoryId,
             );
             if (idx === -1) return;
 
             const aIdx = groups.current[idx].children.findIndex(
-                o => o.data.annotationId === selected.annotation,
+                o => o.data.annotationId === selected.annotationId,
             );
             if (aIdx === -1) return;
 

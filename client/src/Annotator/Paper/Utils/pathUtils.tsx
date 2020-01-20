@@ -5,15 +5,15 @@ import paper from 'paper';
 
 import { Annotation } from '../../../common/types';
 
-export const create = (a: Annotation, color?: string) => {
+export const create = (annotation: Annotation, color?: string) => {
     const item = new paper.CompoundPath({});
-    item.name = 'Annotation_' + a.id;
+    item.name = 'Annotation_' + annotation.id;
     item.remove(); // newly created item is removed from project
     item.visible = false; // and not visible
 
-    let center = new paper.Point(a.width / 2, a.height / 2);
+    let center = new paper.Point(annotation.width / 2, annotation.height / 2);
     let children: Array<paper.Path> = [];
-    a.segmentation.forEach(polygon => {
+    annotation.segmentation.forEach(polygon => {
         let path = new paper.Path();
         for (let j = 0; j < polygon.length; j += 2) {
             let point = new paper.Point(polygon[j], polygon[j + 1]);

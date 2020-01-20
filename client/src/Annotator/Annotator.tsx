@@ -7,12 +7,11 @@ import Divider from '@material-ui/core/Divider';
 import { Tool } from './annotator.types';
 
 import { useStyles } from './annotator.styles';
-import { useChoices, useFetch, useInfo, useFilter, useCursor } from './Info';
-import { useCanvas, useGroups, useTools, useTitle } from './Paper';
+import { useChoices, useDataset, useInfo, useFilter, useCursor } from './Info';
+import { useCanvas, useGroups, useTools, useTitle, Part } from './Paper';
 
 import * as Menu from './Menu';
 import * as Panel from './Panel';
-import { Part } from './Paper';
 
 const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
     const classes = useStyles();
@@ -28,7 +27,7 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
         setSelected,
     } = useChoices();
 
-    const { categories, filename, previous, next } = useFetch(imageId);
+    const { categories, filename, previous, next } = useDataset(imageId);
     const info = useInfo(categories);
     const filter = useFilter(categories);
     const cursor = useCursor(activeTool);
@@ -45,7 +44,7 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
 
     const tools = useTools(
         activeTool,
-        selected.annotation,
+        selected.annotationId,
         groups.unite,
         groups.subtract,
     );
@@ -109,16 +108,20 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
                     )}
                     {categories.length > 0 ? (
                         segmentOn ? (
-                            info.data.map(g => (
+                            info.data.map(categoryInfo => (
                                 <Panel.CategoryCard
-                                    key={g.id}
-                                    data={g.data}
+                                    key={categoryInfo.id}
+                                    data={categoryInfo.data}
                                     isVisible={
-                                        filter.filteredIds.indexOf(g.id) > -1
+                                        filter.filteredIds.indexOf(
+                                            categoryInfo.id,
+                                        ) > -1
                                     }
-                                    isSelected={g.id === selected.category}
-                                    isEnabled={g.enabled}
-                                    isExpanded={g.expanded}
+                                    isSelected={
+                                        categoryInfo.id === selected.categoryId
+                                    }
+                                    isEnabled={categoryInfo.enabled}
+                                    isExpanded={categoryInfo.expanded}
                                     setSelected={setSelected}
                                     setEnabled={info.setCategoryEnabled}
                                     setExpanded={info.setCategoryExpanded}
@@ -129,13 +132,13 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
                                         // TODO
                                     }}
                                     renderExpandedList={() =>
-                                        g.annotations.map(item => (
+                                        categoryInfo.annotations.map(item => (
                                             <Panel.AnnotationCard
                                                 key={item.id}
                                                 data={item.data}
                                                 isSelected={
                                                     item.id ===
-                                                    selected.annotation
+                                                    selected.annotationId
                                                 }
                                                 isEnabled={item.enabled}
                                                 edit={() => {}}
@@ -143,11 +146,14 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
                                                     // TODO
                                                 }}
                                                 setSelected={() => {
-                                                    setSelected(g.id, item.id);
+                                                    setSelected(
+                                                        categoryInfo.id,
+                                                        item.id,
+                                                    );
                                                 }}
                                                 setEnabled={() => {
                                                     info.setAnnotationEnabled(
-                                                        g.id,
+                                                        categoryInfo.id,
                                                         item.id,
                                                     );
                                                 }}
@@ -263,7 +269,7 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
                                     }
                                     isSelected={
                                         annotationInfo.id ===
-                                        selected.annotation
+                                        selected.annotationId
                                     }
                                     groupsRef={groups.groupsRef}
                                 />

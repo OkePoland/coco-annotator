@@ -12,9 +12,9 @@ interface IUseCategories {
 }
 interface UseCategoriesResponse {
     data: CategoryInfo[];
-    setCategoryEnabled: (catId: number) => void;
-    setCategoryExpanded: (catId: number) => void;
-    setAnnotationEnabled: (catId: number, annotationId: number) => void;
+    setCategoryEnabled: (categoryId: number) => void;
+    setCategoryExpanded: (categoryId: number) => void;
+    setAnnotationEnabled: (categoryId: number, annotationId: number) => void;
 }
 
 interface CategoryInfo {
@@ -34,12 +34,12 @@ const useInfo: IUseCategories = categories => {
     const [data, _setData] = useState<CategoryInfo[]>([]);
 
     const setCategoryEnabled = useCallback(
-        (catId: number) => {
-            const idx = data.findIndex(o => o.id === catId);
+        (categoryId: number) => {
+            const idx = data.findIndex(o => o.id === categoryId);
             if (idx === -1) return;
 
             const newArr = data.map(item =>
-                item.id === catId
+                item.id === categoryId
                     ? {
                           ...item,
                           enabled: !item.enabled,
@@ -53,13 +53,13 @@ const useInfo: IUseCategories = categories => {
     );
 
     const setCategoryExpanded = useCallback(
-        (catId: number) => {
-            const idx = data.findIndex(o => o.id === catId);
+        (categoryId: number) => {
+            const idx = data.findIndex(o => o.id === categoryId);
             if (idx === -1) return;
             if (!data[idx].enabled) return;
 
             const newArr = data.map(item =>
-                item.id === catId
+                item.id === categoryId
                     ? {
                           ...item,
                           expanded: !item.expanded,
@@ -72,8 +72,8 @@ const useInfo: IUseCategories = categories => {
     );
 
     const setAnnotationEnabled = useCallback(
-        (catId: number, annotationId: number) => {
-            const idx = data.findIndex(o => o.id === catId);
+        (categoryId: number, annotationId: number) => {
+            const idx = data.findIndex(o => o.id === categoryId);
             if (idx === -1) return;
 
             const aIdx = data[idx].annotations.findIndex(

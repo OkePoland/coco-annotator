@@ -1,6 +1,6 @@
 import paper from 'paper';
 
-export type Maybe<T> = T | null;
+export type Maybe<T> = T | null | undefined;
 
 export enum Tool {
     SELECT = 'SELECT',
@@ -13,9 +13,23 @@ export enum Tool {
     DEXTR = 'DEXTR',
 }
 
+export enum Cursor {
+    POINTER = 'pointer',
+    COPY = 'copy',
+    CROSSHAIR = 'crosshair',
+    CELL = 'cell',
+    NONE = 'none',
+    DEFAULT = 'default',
+}
+
 export interface RasterSize {
     width: number;
     height: number;
+}
+
+export interface SelectedState {
+    categoryId: Maybe<number>;
+    annotationId: Maybe<number>;
 }
 
 export interface MouseEvent {

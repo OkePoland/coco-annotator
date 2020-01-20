@@ -33,10 +33,10 @@ export const useEraser: IToolEraser = (isActive, scale, update) => {
     const brushRef = useRef<Maybe<paper.Path.Circle>>(null);
     const optionsRef = useRef<PathOptions>({
         strokeColor: 'white',
-        strokeWidth: 1,
-        radius: 30,
+        strokeWidth: CONFIG.TOOLS_INITIAL_STROKE_WIDTH,
+        radius: CONFIG.TOOLS_INITIAL_RADIUS,
     });
-    const [radius, _setRadius] = useState(30);
+    const [radius, _setRadius] = useState(CONFIG.TOOLS_INITIAL_RADIUS);
     const [color, _setColor] = useState('white');
 
     // private actions
@@ -127,7 +127,7 @@ export const useEraser: IToolEraser = (isActive, scale, update) => {
 
     // tool effects
     useEffect(() => {
-        if (toolRef.current === null) {
+        if (!toolRef.current) {
             toolRef.current = new paper.Tool();
         }
         toolRef.current.onMouseMove = onMouseMove;

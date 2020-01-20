@@ -1,5 +1,5 @@
 /*
- * Fetching dataset data
+ * Manage dataset data
  */
 import { useState, useEffect } from 'react';
 
@@ -10,7 +10,7 @@ import * as AnnotatorApi from '../annotator.api';
 import useGlobalContext from '../../common/hooks/useGlobalContext';
 import { addProcess, removeProcess } from '../../common/utils/globalActions';
 
-const useFetch = (imageId: number) => {
+const useDataset = (imageId: number) => {
     const [, dispatch] = useGlobalContext();
 
     // datasetdata
@@ -69,4 +69,4 @@ const useFetch = (imageId: number) => {
         preferences,
     };
 };
-export default useFetch;
+export default useDataset;

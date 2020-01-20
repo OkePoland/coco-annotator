@@ -4,7 +4,7 @@
 import { useState, useCallback } from 'react';
 import { Dispatch, SetStateAction } from 'react';
 
-import { Maybe, Tool } from '../annotator.types';
+import { Maybe, Tool, SelectedState } from '../annotator.types';
 
 // interfaces
 interface IUseChoices {
@@ -17,18 +17,14 @@ interface UseChoicesResponse {
     selected: SelectedState;
     setSelected: (catId: number, annotationId?: number) => void;
 }
-interface SelectedState {
-    category: Maybe<number>;
-    annotation: Maybe<number>;
-}
 
 const useChoices: IUseChoices = () => {
     const annotateMode = useState<boolean>(true);
     const segmentMode = useState<boolean>(true);
     const [tool, _setTool] = useState<Maybe<Tool>>(Tool.BBOX);
     const [selected, _setSelected] = useState<SelectedState>({
-        category: null,
-        annotation: null,
+        categoryId: null,
+        annotationId: null,
     });
 
     const toggleTool = useCallback((name: Tool) => {
@@ -37,8 +33,8 @@ const useChoices: IUseChoices = () => {
 
     const setSelected = useCallback((catId: number, annotationId?: number) => {
         _setSelected({
-            category: catId,
-            annotation: annotationId ? annotationId : null,
+            categoryId: catId,
+            annotationId: annotationId ? annotationId : null,
         });
     }, []);
 

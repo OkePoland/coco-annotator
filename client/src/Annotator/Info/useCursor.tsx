@@ -4,7 +4,7 @@
 import { makeStyles } from '@material-ui/core/styles';
 import { useMemo } from 'react';
 
-import { Maybe, Tool } from '../annotator.types';
+import { Maybe, Tool, Cursor } from '../annotator.types';
 
 interface IUseCursor {
     (activeTool: Maybe<Tool>): string;
@@ -12,28 +12,28 @@ interface IUseCursor {
 
 const useCursor: IUseCursor = activeTool => {
     const cursorObj = useMemo(() => {
-        let cursor: string = 'default';
+        let cursor: Cursor = Cursor.DEFAULT;
         switch (activeTool) {
             case Tool.SELECT:
-                cursor = 'pointer';
+                cursor = Cursor.POINTER;
                 break;
             case Tool.BBOX:
             case Tool.POLYGON:
-                cursor = 'copy';
+                cursor = Cursor.COPY;
                 break;
             case Tool.WAND:
             case Tool.DEXTR:
-                cursor = 'crosshair';
+                cursor = Cursor.CROSSHAIR;
                 break;
             case Tool.KEYPOINTS:
-                cursor = 'cell';
+                cursor = Cursor.CELL;
                 break;
             case Tool.BRUSH:
             case Tool.ERASER:
-                cursor = 'none';
+                cursor = Cursor.NONE;
                 break;
             default:
-                cursor = 'default';
+                cursor = Cursor.DEFAULT;
                 break;
         }
         return { cursor };

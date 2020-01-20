@@ -6,6 +6,8 @@ import paper from 'paper';
 
 import { Maybe, MouseEvent } from '../../annotator.types';
 
+import * as CONFIG from '../../annotator.config';
+
 // interfaces
 interface IToolBBox {
     (
@@ -42,7 +44,7 @@ export const useBBox: IToolBBox = (isActive, scale, updateAnnotation) => {
 
     // private actions
     const updatePolygon = useCallback(() => {
-        if (polygonRef.current === null) return;
+        if (!polygonRef.current) return;
         const { p1, p2 } = pointRef.current;
 
         let arr: Array<paper.Point> = [];
@@ -81,7 +83,7 @@ export const useBBox: IToolBBox = (isActive, scale, updateAnnotation) => {
     );
 
     const completeBBox = useCallback(() => {
-        if (polygonRef.current === null) return;
+        if (!polygonRef.current) return;
 
         polygonRef.current.fillColor = new paper.Color('black');
         polygonRef.current.closePath();
@@ -134,7 +136,7 @@ export const useBBox: IToolBBox = (isActive, scale, updateAnnotation) => {
 
     const onMouseMove = useCallback(
         (event: MouseEvent) => {
-            if (polygonRef.current === null) return;
+            if (!polygonRef.current) return;
             if (polygonRef.current.segments.length === 0) return;
             //this.autoStrokeColor(event.point);    // TODO implement
 
@@ -146,7 +148,7 @@ export const useBBox: IToolBBox = (isActive, scale, updateAnnotation) => {
 
     // tool effects
     useEffect(() => {
-        if (toolRef.current === null) {
+        if (!toolRef.current) {
             toolRef.current = new paper.Tool();
         }
         toolRef.current.onMouseMove = onMouseMove;
@@ -160,7 +162,7 @@ export const useBBox: IToolBBox = (isActive, scale, updateAnnotation) => {
     }, [isActive]);
 
     useEffect(() => {
-        const newScale = scale * 3;
+        const newScale = scale * CONFIG.TOOL_SCALE_FACTOR;
 
         optionsRef.current.strokeWidth = newScale;
         if (polygonRef.current != null) {
