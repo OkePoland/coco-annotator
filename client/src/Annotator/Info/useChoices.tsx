@@ -34,7 +34,7 @@ const useChoices: IUseChoices = () => {
     const setSelected = useCallback((catId: number, annotationId?: number) => {
         _setSelected({
             categoryId: catId,
-            annotationId: annotationId ? annotationId : null,
+            annotationId: annotationId || null,
         });
     }, []);
 

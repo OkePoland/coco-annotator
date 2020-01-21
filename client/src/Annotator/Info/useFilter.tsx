@@ -25,7 +25,7 @@ const useFilter: IUseFilter = categories => {
     }, [categories, searchText]);
 
     const setSearchText = useCallback((value: string) => {
-        _setSearchText(value ? value : '');
+        _setSearchText(value || '');
     }, []);
 
     return {
