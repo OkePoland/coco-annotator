@@ -11,65 +11,73 @@ import VisibilityOffIcon from '@material-ui/icons/VisibilityOff';
 import AddIcon from '@material-ui/icons/Add';
 import SettingsIcon from '@material-ui/icons/Settings';
 
-import { Category, Annotation } from '../../../common/types';
+import { Category } from '../../../common/types';
 import { useStyles } from './categoryCard.styles';
 
 interface Props {
     data: Category;
-    isActive: boolean;
-    isEnable: boolean;
-    isExpand: boolean;
+    isVisible: boolean;
+    isSelected: boolean;
+    isEnabled: boolean;
+    isExpanded: boolean;
 
-    setActiveId: (id: number) => void;
-    setEnableId: (id: number) => void;
-    setExpandId: (id: number) => void;
+    setSelected: (id: number) => void;
+    setEnabled: (id: number) => void;
+    setExpanded: (id: number) => void;
     editCategory: (id: number) => void;
     addAnnotation: (id: number) => void;
 
-    renderAnnotations: (annotations: Annotation[]) => JSX.Element[];
+    renderExpandedList: () => JSX.Element[];
 }
 
 const CategoryCard: React.FC<Props> = ({
     data: { id, name, annotations, color },
-    isActive,
-    isEnable,
-    isExpand,
+    isVisible,
+    isSelected,
+    isEnabled,
+    isExpanded,
 
-    setActiveId,
-    setEnableId,
-    setExpandId,
+    setSelected,
+    setEnabled,
+    setExpanded,
     editCategory,
     addAnnotation,
-    renderAnnotations,
+    renderExpandedList,
 }) => {
     const classes = useStyles({ color });
 
+    if (!isVisible) {
+        return null;
+    }
+
     return (
-        <Card className={clsx(classes.root, isActive && classes.active)}>
+        <Card className={clsx(classes.root, isSelected && classes.selected)}>
             <Grid container justify="center" alignItems="center">
                 <Grid item xs>
                     <IconButton
                         size="small"
                         className={clsx(
-                            isEnable
-                                ? isExpand
+                            isEnabled
+                                ? isExpanded
                                     ? classes.expanededEye
                                     : classes.colorEye
                                 : classes.disabledEye,
                         )}
                         onClick={() => {
-                            setEnableId(id);
+                            setEnabled(id);
                         }}
                     >
-                        {isEnable ? <VisibilityIcon /> : <VisibilityOffIcon />}
+                        {isEnabled ? <VisibilityIcon /> : <VisibilityOffIcon />}
                     </IconButton>
                 </Grid>
                 <Grid item xs={7}>
                     <Typography
                         align="center"
                         onClick={() => {
-                            setActiveId(id);
-                            setExpandId(id);
+                            if (!isSelected) {
+                                setSelected(id);
+                            }
+                            setExpanded(id);
                         }}
                     >
                         {`${name} (${annotations && annotations.length})`}
@@ -99,9 +107,9 @@ const CategoryCard: React.FC<Props> = ({
                 </Grid>
             </Grid>
 
-            <Collapse in={isExpand}>
+            <Collapse in={isExpanded}>
                 <Divider />
-                {isExpand && annotations && renderAnnotations(annotations)}
+                {isExpanded && annotations && renderExpandedList()}
             </Collapse>
         </Card>
     );

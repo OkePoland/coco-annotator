@@ -24,6 +24,15 @@ export const useStyles = makeStyles((theme: AugmentedTheme) => ({
         padding: theme.spacing(1),
         backgroundColor: '#4b5162',
     },
+    fileTitle: {
+        marginTop: theme.spacing(1),
+    },
+    searchInput: {
+        width: '100%',
+        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+        marginTop: theme.spacing(1),
+        marginBottom: theme.spacing(1),
+    },
     middlePanel: {
         display: 'block',
         width: 'inherit',
@@ -45,5 +54,13 @@ export const useStyles = makeStyles((theme: AugmentedTheme) => ({
         '& image': {
             position: 'absolute',
         },
+    },
+
+    bboxPanel: {
+        margin: '5px',
+        borderRadius: '5px',
+        backgroundColor: '#383c4a',
+        padding: '0 5px 5px 5px',
+        overflow: 'auto',
     },
 }));

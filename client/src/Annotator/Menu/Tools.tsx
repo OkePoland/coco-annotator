@@ -10,13 +10,13 @@ import BrushOutlinedIcon from '@material-ui/icons/BrushOutlined';
 import RoomOutlinedIcon from '@material-ui/icons/RoomOutlined';
 import LocationSearchingOutlinedIcon from '@material-ui/icons/LocationSearchingOutlined';
 
-import { TOOL } from '../annotator.config';
+import { Maybe, Tool } from '../annotator.types';
 import ToolButton from './ToolButton';
 
 interface Props {
     enabled: boolean;
-    activeTool: TOOL | null;
-    toggleTool: (name: TOOL) => void;
+    activeTool: Maybe<Tool>;
+    toggleTool: (name: Tool) => void;
 }
 
 const ToolBar: React.FC<Props> = ({ enabled, activeTool, toggleTool }) => (
@@ -24,9 +24,9 @@ const ToolBar: React.FC<Props> = ({ enabled, activeTool, toggleTool }) => (
         <ToolButton
             name="Select"
             icon={<TouchAppOutlinedIcon />}
-            active={activeTool === TOOL.SELECT}
+            active={activeTool === Tool.SELECT}
             enabled={enabled}
-            onClick={() => toggleTool(TOOL.SELECT)}
+            onClick={() => toggleTool(Tool.SELECT)}
         />
 
         <Box mt={2} mb={2}>
@@ -36,51 +36,51 @@ const ToolBar: React.FC<Props> = ({ enabled, activeTool, toggleTool }) => (
         <ToolButton
             name="BBox"
             icon={<WallpaperOutlinedIcon />}
-            active={activeTool === TOOL.BBOX}
+            active={activeTool === Tool.BBOX}
             enabled={enabled}
-            onClick={() => toggleTool(TOOL.BBOX)}
+            onClick={() => toggleTool(Tool.BBOX)}
         />
         <ToolButton
             name="Polygon"
             icon={<CreateOutlinedIcon />}
-            active={activeTool === TOOL.POLYGON}
+            active={activeTool === Tool.POLYGON}
             enabled={enabled}
-            onClick={() => toggleTool(TOOL.POLYGON)}
+            onClick={() => toggleTool(Tool.POLYGON)}
         />
         <ToolButton
             name="Magic Wand"
             icon={<BorderColorIcon />}
-            active={activeTool === TOOL.WAND}
+            active={activeTool === Tool.WAND}
             enabled={enabled}
-            onClick={() => toggleTool(TOOL.WAND)}
+            onClick={() => toggleTool(Tool.WAND)}
         />
         <ToolButton
             name="Brush"
             icon={<BrushOutlinedIcon />}
-            active={activeTool === TOOL.BRUSH}
+            active={activeTool === Tool.BRUSH}
             enabled={enabled}
-            onClick={() => toggleTool(TOOL.BRUSH)}
+            onClick={() => toggleTool(Tool.BRUSH)}
         />
         <ToolButton
             name="Eraser"
             icon={<TouchAppOutlinedIcon />}
-            active={activeTool === TOOL.ERASER}
+            active={activeTool === Tool.ERASER}
             enabled={enabled}
-            onClick={() => toggleTool(TOOL.ERASER)}
+            onClick={() => toggleTool(Tool.ERASER)}
         />
         <ToolButton
             name="Keypoints"
             icon={<RoomOutlinedIcon />}
-            active={activeTool === TOOL.KEYPOINTS}
+            active={activeTool === Tool.KEYPOINTS}
             enabled={enabled}
-            onClick={() => toggleTool(TOOL.KEYPOINTS)}
+            onClick={() => toggleTool(Tool.KEYPOINTS)}
         />
         <ToolButton
             name="DEXTR"
             icon={<LocationSearchingOutlinedIcon />}
-            active={activeTool === TOOL.DEXTR}
+            active={activeTool === Tool.DEXTR}
             enabled={enabled}
-            onClick={() => toggleTool(TOOL.DEXTR)}
+            onClick={() => toggleTool(Tool.DEXTR)}
         />
     </Fragment>
 );

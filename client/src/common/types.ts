@@ -92,7 +92,7 @@ export interface Annotation {
     image_id: number;
     category_id: number;
     dataset_id: number;
-    segmentation: [];
+    segmentation: Array<Array<number>>;
     area: number;
     bbox: number[];
     iscrowd: boolean;

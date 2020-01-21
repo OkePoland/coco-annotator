@@ -9,4 +9,13 @@ export const useStyles = makeStyles((theme: AugmentedTheme) => ({
         paddingLeft: theme.spacing(1),
         fontSize: '10px',
     },
+    selected: {
+        backgroundColor: 'rgb(75, 98, 76)',
+    },
+    disabledEye: {
+        color: 'grey',
+    },
+    colorEye: {
+        color: (props: Props) => props.color,
+    },
 }));
