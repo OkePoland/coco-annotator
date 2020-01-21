@@ -6,12 +6,13 @@ import { Dispatch, SetStateAction } from 'react';
 
 import { Maybe, Tool, SelectedState } from '../annotator.types';
 
+import * as CONFIG from '../annotator.config';
+
 // interfaces
 interface IUseChoices {
     (): UseChoicesResponse;
 }
 interface UseChoicesResponse {
-    annotateMode: [boolean, Dispatch<SetStateAction<boolean>>];
     segmentMode: [boolean, Dispatch<SetStateAction<boolean>>];
     toolState: [Maybe<Tool>, (name: Tool) => void];
     selected: SelectedState;
@@ -19,12 +20,11 @@ interface UseChoicesResponse {
 }
 
 const useChoices: IUseChoices = () => {
-    const annotateMode = useState<boolean>(true);
     const segmentMode = useState<boolean>(true);
-    const [tool, _setTool] = useState<Maybe<Tool>>(Tool.BBOX);
+    const [tool, _setTool] = useState<Maybe<Tool>>(null);
     const [selected, _setSelected] = useState<SelectedState>({
-        categoryId: null,
-        annotationId: null,
+        categoryId: CONFIG.INITIAL_CATEGORY_ID,
+        annotationId: CONFIG.INITIAL_ANNOTATION_ID,
     });
 
     const toggleTool = useCallback((name: Tool) => {
@@ -39,7 +39,6 @@ const useChoices: IUseChoices = () => {
     }, []);
 
     return {
-        annotateMode,
         segmentMode,
         toolState: [tool, toggleTool],
         selected,

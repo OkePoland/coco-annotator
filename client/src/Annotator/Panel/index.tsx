@@ -6,7 +6,6 @@ import CLabel from './CLabel';
 import BBox from './Tool/BBox';
 import Brush from './Tool/Brush';
 import Dextr from './Tool/Dextr';
-import Eraser from './Tool/Eraser';
 import Keypoints from './Tool/Keypoints';
 import MagicWand from './Tool/MagicWand';
 import Polygon from './Tool/Polygon';
@@ -21,7 +20,6 @@ export {
     BBox,
     Brush,
     Dextr,
-    Eraser,
     Keypoints,
     MagicWand,
     Polygon,

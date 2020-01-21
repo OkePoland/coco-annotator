@@ -104,7 +104,7 @@ const useInfo: IUseCategories = categories => {
                 id: cat.id,
                 data: cat,
                 enabled: cat.annotations != null && cat.annotations.length > 0,
-                expanded: false,
+                expanded: true,
                 annotations: annotations,
             };
         });

@@ -35,4 +35,36 @@ export interface SelectedState {
 export interface MouseEvent {
     point: paper.Point;
     item: paper.Item;
+    modifiers?: {
+        shift?: boolean;
+    };
+}
+
+export enum DataType {
+    INDICATOR = 'INDICATOR',
+    GROUP = 'GROUP',
+    ANNOTATION = 'ANNOTATION',
+    KEYPOINT = 'KEYPOINT',
+}
+export type DataGroup = {
+    type: DataType.GROUP;
+    categoryId: number;
+};
+export interface DataAnnotation {
+    type: DataType.ANNOTATION;
+    categoryId: number;
+    annotationId: number;
+    isBBox?: boolean;
+}
+export interface DataIndicator {
+    type: DataType.INDICATOR;
+}
+export interface DataKeypoint {
+    type: DataType.KEYPOINT;
+    indexLabel: number;
+    visibility: boolean;
+    keypoints: {
+        labels: string[];
+    };
+    labels: string[];
 }

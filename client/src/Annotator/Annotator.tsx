@@ -6,6 +6,8 @@ import Divider from '@material-ui/core/Divider';
 
 import { Tool } from './annotator.types';
 
+import * as CONFIG from './annotator.config';
+
 import { useStyles } from './annotator.styles';
 import { useChoices, useDataset, useInfo, useFilter, useCursor } from './Info';
 import { useCanvas, useGroups, useTools, useTitle, Part } from './Paper';
@@ -20,7 +22,6 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
 
     // all data & callbacks WITHOUT! Paper.js references
     const {
-        annotateMode: [annotateOn],
         segmentMode: [segmentOn, setSegmentOn],
         toolState: [activeTool, toggleTool],
         selected,
@@ -30,10 +31,11 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
     const { categories, filename, previous, next } = useDataset(imageId);
     const info = useInfo(categories);
     const filter = useFilter(categories);
-    const cursor = useCursor(activeTool);
+    const cursor = useCursor(activeTool, selected.annotationId);
 
     // all Paper.js data & callbacks
     const {
+        paperRef,
         canvasRef,
         imageData,
         centerImageAction,
@@ -43,10 +45,12 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
     const groups = useGroups(categories, selected);
 
     const tools = useTools(
+        paperRef,
         activeTool,
         selected.annotationId,
         groups.unite,
         groups.subtract,
+        groups.simplify,
     );
 
     useTitle(imageData.rasterSize, filename);
@@ -57,7 +61,7 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
                 {segmentOn && (
                     <Box>
                         <Menu.Tools
-                            enabled={annotateOn}
+                            enabled={selected.annotationId != null}
                             activeTool={activeTool}
                             toggleTool={toggleTool}
                         />
@@ -174,58 +178,106 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
 
                 <Divider className={classes.divider} />
 
-                <Box textAlign="center">
-                    <Box>{activeTool}</Box>
-                    {(() => {
-                        switch (activeTool) {
-                            case Tool.SELECT:
-                                return <Panel.Select />;
-                            case Tool.BBOX:
-                                return (
-                                    <Panel.BBox
-                                        className={classes.bboxPanel}
-                                        color={tools.bbox.color}
-                                        setColor={tools.bbox.setColor}
-                                    />
-                                );
-                            case Tool.POLYGON:
-                                return <Panel.Polygon />;
-                            case Tool.WAND:
-                                return <Panel.MagicWand />;
-                            case Tool.BRUSH:
-                                return <Panel.Brush />;
-                            case Tool.ERASER:
-                                return (
-                                    <Panel.Eraser
-                                        className={classes.bboxPanel}
-                                        radius={tools.eraser.radius}
-                                        color={tools.eraser.color}
-                                        setColor={tools.eraser.setColor}
-                                        setRadius={tools.eraser.setRadius}
-                                    />
-                                );
-                            case Tool.KEYPOINTS:
-                                return <Panel.Keypoints />;
-                            case Tool.DEXTR:
-                                return <Panel.Dextr />;
-                            default:
-                                return null;
-                        }
-                    })()}
-                </Box>
+                {selected.annotationId != null && (
+                    <Box textAlign="center">
+                        <Box>{activeTool}</Box>
+                        {(() => {
+                            switch (activeTool) {
+                                case Tool.SELECT:
+                                    return (
+                                        <Panel.Select
+                                            className={classes.bboxPanel}
+                                            tooltipOn={tools.select.tooltipOn}
+                                            setTooltipOn={
+                                                tools.select.setTooltipOn
+                                            }
+                                        />
+                                    );
+                                case Tool.BBOX:
+                                    return (
+                                        <Panel.BBox
+                                            className={classes.bboxPanel}
+                                            color={tools.bbox.color}
+                                            setColor={tools.bbox.setColor}
+                                        />
+                                    );
+                                case Tool.POLYGON:
+                                    return (
+                                        <Panel.Polygon
+                                            className={classes.bboxPanel}
+                                            guidanceOn={
+                                                tools.polygon.guidanceOn
+                                            }
+                                            strokeColor={
+                                                tools.polygon.strokeColor
+                                            }
+                                            minDistance={
+                                                tools.polygon.minDistance
+                                            }
+                                            completeDistance={
+                                                tools.polygon.completeDistance
+                                            }
+                                            setGuidanceOn={
+                                                tools.polygon.setGuidanceOn
+                                            }
+                                            setStrokeColor={
+                                                tools.polygon.setStrokeColor
+                                            }
+                                            setMinDistance={
+                                                tools.polygon.setMinDistance
+                                            }
+                                            setCompleteDistance={
+                                                tools.polygon
+                                                    .setCompleteDistance
+                                            }
+                                        />
+                                    );
+                                case Tool.WAND:
+                                    return <Panel.MagicWand />;
+                                case Tool.BRUSH:
+                                    return (
+                                        <Panel.Brush
+                                            className={classes.bboxPanel}
+                                            radius={tools.brush.radius}
+                                            color={tools.brush.color}
+                                            setColor={tools.brush.setColor}
+                                            setRadius={tools.brush.setRadius}
+                                        />
+                                    );
+                                case Tool.ERASER:
+                                    return (
+                                        <Panel.Brush
+                                            className={classes.bboxPanel}
+                                            radius={tools.eraser.radius}
+                                            color={tools.eraser.color}
+                                            setColor={tools.eraser.setColor}
+                                            setRadius={tools.eraser.setRadius}
+                                        />
+                                    );
+                                case Tool.KEYPOINTS:
+                                    return <Panel.Keypoints />;
+                                case Tool.DEXTR:
+                                    return <Panel.Dextr />;
+                                default:
+                                    return null;
+                            }
+                        })()}
+                    </Box>
+                )}
 
-                {/* For debugging purpose // TODO remove in final version */}
-                {/* {paperRef.current != null && (
+                {CONFIG.DEBUGGING_ON && paperRef.current != null && (
                     <div style={{ height: 700, overflow: 'auto' }}>
                         <pre>
                             {JSON.stringify(
-                                paperRef.current.project.layers[0].children,
+                                paperRef.current.project.layers[0].children.filter(
+                                    o => o.data.hasOwnProperty('categoryId'),
+                                ),
                                 null,
                                 2,
                             )}
                         </pre>
                     </div>
-                )} */}
+                )}
             </Box>
 
             <div className={clsx(classes.middlePanel, cursor)}>
