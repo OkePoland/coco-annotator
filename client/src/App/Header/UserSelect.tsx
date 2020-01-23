@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigation } from 'react-navi';
 
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
@@ -8,6 +8,7 @@ import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 
 import { useStyles } from './header.components';
+import { UserInfo } from '../../common/types';
 import useAuthContext from '../../common/hooks/useAuthContext';
 
 const UserSelect: React.FC = () => {
@@ -17,7 +18,9 @@ const UserSelect: React.FC = () => {
     const open = Boolean(anchorEl);
 
     const { getCurrentUser, logout } = useAuthContext();
-    const currentUser = getCurrentUser();
+    const currentUser: UserInfo | null = useMemo(() => {
+        return getCurrentUser();
+    }, [getCurrentUser]);
     const userName =
         currentUser && currentUser.username ? currentUser.username : '';
     const isAdmin =

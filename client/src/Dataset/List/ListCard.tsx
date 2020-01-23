@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+
 import Box from '@material-ui/core/Box';
 import Grid from '@material-ui/core/Grid';
 import Card from '@material-ui/core/Card';
@@ -9,21 +10,24 @@ import IconButton from '@material-ui/core/IconButton';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
 import Menu from '@material-ui/core/Menu';
 import LinearProgress from '@material-ui/core/LinearProgress';
+import Chip from '@material-ui/core/Chip';
 
-import { Dataset } from '../../common/types';
 import { useStyles } from './listCard.styles';
+import { DatasetWithCategories } from './list.hooks';
 
 interface Props {
-    item: Dataset;
+    item: DatasetWithCategories;
     onClick(): void;
-    renderMenuItems(): JSX.Element;
+    renderMenuItems(closeMenu: () => void): JSX.Element;
 }
 
 const DatasetCard: React.FC<Props> = ({ item, onClick, renderMenuItems }) => {
     const classes = useStyles();
     const [anchorEl, setAnchor] = useState<null | HTMLElement>(null);
 
-    const categories: Array<string> = ['category']; // TODO
+    const closeMenu = () => {
+        setAnchor(null);
+    };
 
     return (
         <Card>
@@ -32,7 +36,7 @@ const DatasetCard: React.FC<Props> = ({ item, onClick, renderMenuItems }) => {
                     className={classes.image}
                     image={
                         item.first_image_id != null
-                            ? `/api/image/${item.first_image_id}/"?width=250"`
+                            ? `/api/image/${item.first_image_id}?width=250`
                             : 'img/no-image.png'
                     }
                 />
@@ -77,19 +81,18 @@ const DatasetCard: React.FC<Props> = ({ item, onClick, renderMenuItems }) => {
                     )}
                 </Box>
 
-                <Box>
-                    {categories.map(o => (
-                        <Box
-                            key={o}
-                            component="span"
-                            borderRadius={16}
-                            boxShadow={3}
-                            pl={1}
-                            pr={1}
-                        >
-                            {o}
-                        </Box>
-                    ))}
+                <Box textAlign="left">
+                    {item.categories.map(o => {
+                        return (
+                            <Chip
+                                size="small"
+                                key={o.id}
+                                label={o.name}
+                                style={{ backgroundColor: o.color }}
+                                className={classes.categoryChip}
+                            />
+                        );
+                    })}
                 </Box>
             </Box>
 
@@ -106,7 +109,7 @@ const DatasetCard: React.FC<Props> = ({ item, onClick, renderMenuItems }) => {
                     setAnchor(null);
                 }}
             >
-                {renderMenuItems()}
+                {renderMenuItems(closeMenu)}
             </Menu>
         </Card>
     );

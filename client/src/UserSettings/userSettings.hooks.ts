@@ -1,7 +1,9 @@
+import { useMemo } from 'react';
 import * as Yup from 'yup';
 import { FormikConfig, FormikHelpers } from 'formik';
 import { useSnackbar } from 'notistack';
 
+import { UserInfo } from '../common/types';
 import * as UserSettingsApi from './userSettings.api';
 import useAuthContext from '../common/hooks/useAuthContext';
 
@@ -13,7 +15,9 @@ interface FormCreateState {
 
 export const useUserSettings = () => {
     const { getCurrentUser } = useAuthContext();
-    const currentUser = getCurrentUser();
+    const currentUser: UserInfo | null = useMemo(() => {
+        return getCurrentUser();
+    }, [getCurrentUser]);
 
     if (!currentUser) {
         throw new Error('Expected current user to not be null');
