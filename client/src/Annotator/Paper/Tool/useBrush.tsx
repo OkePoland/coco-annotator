@@ -9,14 +9,15 @@ import { Maybe, MouseEvent } from '../../annotator.types';
 import * as CONFIG from '../../annotator.config';
 
 // interfaces
-interface IToolEraser {
+interface IToolBrush {
     (
         isActive: boolean,
         scale: number,
-        update: (o: paper.Path.Circle) => void,
-    ): ToolEraserResponse;
+        updatePath: (o: paper.Path.Circle) => void,
+        simplifyPath: () => void,
+    ): ToolBrushResponse;
 }
-export interface ToolEraserResponse {
+export interface ToolBrushResponse {
     color: string;
     radius: number;
     setColor: (color: string) => void;
@@ -28,7 +29,12 @@ interface PathOptions {
     radius: number;
 }
 
-export const useEraser: IToolEraser = (isActive, scale, update) => {
+export const useBrush: IToolBrush = (
+    isActive,
+    scale,
+    updatePath,
+    simplifyPath,
+) => {
     const toolRef = useRef<Maybe<paper.Tool>>(null);
     const brushRef = useRef<Maybe<paper.Path.Circle>>(null);
     const optionsRef = useRef<PathOptions>({
@@ -40,7 +46,7 @@ export const useEraser: IToolEraser = (isActive, scale, update) => {
     const [color, _setColor] = useState('white');
 
     // private actions
-    const createBrush = useCallback((center?: paper.Point) => {
+    const _createBrush = useCallback((center?: paper.Point) => {
         const newCenter = center || new paper.Point(0, 0);
 
         const brush = new paper.Path.Circle({
@@ -52,27 +58,27 @@ export const useEraser: IToolEraser = (isActive, scale, update) => {
         return brush;
     }, []);
 
-    const moveBrush = useCallback(
+    const _moveBrush = useCallback(
         (point: paper.Point) => {
             if (brushRef.current == null) {
                 console.log('---create brush');
-                brushRef.current = createBrush(point);
+                brushRef.current = _createBrush(point);
             }
             console.log('---move brush');
             brushRef.current.bringToFront();
             brushRef.current.position = point;
         },
-        [createBrush],
+        [_createBrush],
     );
 
-    const erase = useCallback(() => {
+    const _update = useCallback(() => {
         // Undo action, will be handled on mouse down
         // Simplify, will be handled on mouse up
         //this.$parent.currentAnnotation.subtract(this.eraser.brush, false, false);
         if (brushRef.current != null) {
-            update(brushRef.current);
+            updatePath(brushRef.current);
         }
-    }, [update]);
+    }, [updatePath]);
 
     // pathOptions methods
     const setColor = useCallback((color: string) => {
@@ -91,39 +97,41 @@ export const useEraser: IToolEraser = (isActive, scale, update) => {
 
                 const position = brushRef.current.position;
                 brushRef.current.remove();
-                brushRef.current = createBrush(position);
+                brushRef.current = _createBrush(position);
             }
         },
-        [createBrush],
+        [_createBrush],
     );
 
     // mouse Events
     const onMouseMove = useCallback(
         (ev: MouseEvent) => {
-            moveBrush(ev.point);
+            _moveBrush(ev.point);
         },
-        [moveBrush],
+        [_moveBrush],
     );
 
     const onMouseDrag = useCallback(
         (ev: MouseEvent) => {
-            moveBrush(ev.point);
-            erase();
+            _moveBrush(ev.point);
+            _update();
         },
-        [erase, moveBrush],
+        [_update, _moveBrush],
     );
 
     const onMouseDown = useCallback(
         (ev: MouseEvent) => {
-            // this.$parent.currentAnnotation.createUndoAction("Subtract"); // TODO
-            erase();
+            _update();
         },
-        [erase],
+        [_update],
     );
 
-    const onMouseUp = useCallback((ev: MouseEvent) => {
-        // this.$parent.currentAnnotation.simplifyPath(); // TODO
-    }, []);
+    const onMouseUp = useCallback(
+        (ev: MouseEvent) => {
+            simplifyPath();
+        },
+        [simplifyPath],
+    );
 
     // tool effects
     useEffect(() => {

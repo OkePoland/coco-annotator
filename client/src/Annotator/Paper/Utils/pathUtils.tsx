@@ -5,6 +5,8 @@ import paper from 'paper';
 
 import { Annotation } from '../../../common/types';
 
+import * as CONFIG from '../../annotator.config';
+
 export const create = (annotation: Annotation, color?: string) => {
     const item = new paper.CompoundPath({});
     item.name = 'Annotation_' + annotation.id;
@@ -25,6 +27,7 @@ export const create = (annotation: Annotation, color?: string) => {
     });
     item.children = children;
     item.fillColor = new paper.Color(color ? color : 'black');
+    item.opacity = CONFIG.ANNOTATION_OPACITY;
 
     return item;
 };
@@ -45,8 +48,9 @@ export const unite = (item: paper.CompoundPath, toAdd: paper.Path) => {
         newItem.name = item.name;
         newItem.data = { ...item.data };
         newItem.fillColor = item.fillColor;
+        newItem.opacity = CONFIG.ANNOTATION_OPACITY;
 
-        simplifyPath(newItem);
+        simplify(newItem);
         return newItem;
     }
     return item;
@@ -68,13 +72,14 @@ export const subtract = (item: paper.CompoundPath, toRemove: paper.Path) => {
         newItem.name = item.name;
         newItem.data = { ...item.data };
         newItem.fillColor = item.fillColor;
+        newItem.opacity = CONFIG.ANNOTATION_OPACITY;
 
         return newItem;
     }
     return item;
 };
 
-export const simplifyPath = (item: paper.CompoundPath) => {
+export const simplify = (item: paper.CompoundPath) => {
     item.flatten(1);
 
     const newChildren: paper.Path[] = [];

@@ -1,3 +1,5 @@
+export const DEBUGGING_ON = false;
+
 export const ZOOM_FACTOR = 1.2;
 export const ZOOM_MIN = 0.01;
 export const ZOOM_MAX = 10;
@@ -9,9 +11,29 @@ export const TITLE_HEIGHT_SCALE = 0.5;
 
 export const ANNOTATION_OPACITY = 0.6;
 
+export const INITIAL_CATEGORY_ID = null;
+export const INITIAL_ANNOTATION_ID = null;
+
 export const CATEGORY_NAME_PREFIX = 'CATEGORY_';
 export const ANNOTATION_NAME_PREFIX = 'ANNOTATION_';
 
 export const TOOL_SCALE_FACTOR = 3;
-export const TOOLS_INITIAL_STROKE_WIDTH: number = 1;
-export const TOOLS_INITIAL_RADIUS: number = 30;
+export const TOOLS_INITIAL_STROKE_WIDTH = 1;
+export const TOOLS_INITIAL_RADIUS = 30;
+
+export const TOOLS_SELECT_INITIAL_TOOLTIP_ON = false;
+export const TOOLS_SELECT_INITIAL_HIT_TOLERANCE = 10;
+export const TOOLS_SELECT_SCALE_ROUNDED = 5;
+export const TOOLS_SELECT_SCALE_TEXT_SHIFT = 40;
+export const TOOLS_SELECT_SCALE_FONTSIZE = 15;
+export const TOOLS_SELECT_SCALE_INDICATOR_SIZE = 10;
+export const TOOLS_SELECT_SCALE_INDICATOR_WIDTH = 2;
+
+export const TOOLS_POLYGON_INITIAL_GUIDANCE = true;
+export const TOOLS_POLYGON_INITIAL_MIN_DISTANCE = 2;
+export const TOOLS_POLYGON_INITIAL_COMPLETE_DISTANCE = 5;
+export const TOOLS_POLYGON_INITIAL_COLOR_AUTO = true;
+export const TOOLS_POLYGON_INITIAL_COLOR_RADIUS = 10;
+export const TOOLS_POLYGON_INITIAL_STROKE_WIDTH = 1;
+export const TOOLS_POLYGON_INITIAL_STROKE_COLOR = 'black';
+export const TOOLS_POLYGON_SCALE = 3;

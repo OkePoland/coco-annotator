@@ -109,7 +109,7 @@ const useCanvas = (imageUrl: string): CanvasState => {
 
             // init Raster
             rasterRef.current = new paper.Raster(imageUrl);
-            rasterRef.current.locked = false; // disable interactions with the mouse
+            rasterRef.current.locked = true; // disable interactions with the mouse
             rasterRef.current.onLoad = () => {
                 if (!rasterRef.current) return;
 
