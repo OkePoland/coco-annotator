@@ -37,7 +37,7 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
     const {
         paperRef,
         canvasRef,
-        imageData,
+        imageInfo,
         centerImageAction,
         onWheelAction,
     } = useCanvas(`/api/image/${imageId}`);
@@ -48,12 +48,19 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
         paperRef,
         activeTool,
         selected.annotationId,
+        imageId,
+        imageInfo.scale,
+        imageInfo.size,
+        imageInfo.data,
         groups.unite,
         groups.subtract,
         groups.simplify,
+        () => {
+            // TODO addKeypoint
+        },
     );
 
-    useTitle(imageData.rasterSize, filename);
+    useTitle(imageInfo.size, filename);
 
     return (
         <div className={classes.root}>
@@ -233,7 +240,17 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
                                         />
                                     );
                                 case Tool.WAND:
-                                    return <Panel.MagicWand />;
+                                    return (
+                                        <Panel.Wand
+                                            className={classes.bboxPanel}
+                                            threshold={tools.wand.threshold}
+                                            blur={tools.wand.blur}
+                                            setThreshold={
+                                                tools.wand.setThreshold
+                                            }
+                                            setBlur={tools.wand.setBlur}
+                                        />
+                                    );
                                 case Tool.BRUSH:
                                     return (
                                         <Panel.Brush
@@ -254,10 +271,20 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
                                             setRadius={tools.eraser.setRadius}
                                         />
                                     );
-                                case Tool.KEYPOINTS:
+                                case Tool.KEYPOINT:
                                     return <Panel.Keypoints />;
                                 case Tool.DEXTR:
-                                    return <Panel.Dextr />;
+                                    return (
+                                        <Panel.Dextr
+                                            className={classes.bboxPanel}
+                                            padding={tools.dextr.padding}
+                                            threshold={tools.dextr.threshold}
+                                            setPadding={tools.dextr.setPadding}
+                                            setThreshold={
+                                                tools.dextr.setThreshold
+                                            }
+                                        />
+                                    );
                                 default:
                                     return null;
                             }

@@ -47,3 +47,13 @@ export const updateAnnotation = async (id: number, params: any) => {
     //return response;
     return null;
 };
+
+export const dextr = async (
+    imageId: number,
+    pointsList: Array<[number, number]>,
+    settings: Object,
+) => {
+    const url = `/model/dextr/${imageId}`;
+    const { data: response } = await Api.post(url, { ...settings });
+    return response;
+};

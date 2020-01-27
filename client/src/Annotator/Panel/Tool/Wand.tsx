@@ -5,30 +5,21 @@ import TextField from '@material-ui/core/TextField';
 
 interface Props {
     className: string;
-    padding: number;
     threshold: number;
-    setPadding: (value: number) => void;
+    blur: number;
     setThreshold: (value: number) => void;
+    setBlur: (value: number) => void;
 }
-const Dextr: React.FC<Props> = ({
+const Wand: React.FC<Props> = ({
     className,
-    padding,
     threshold,
-    setPadding,
+    blur,
     setThreshold,
+    setBlur,
 }) => (
     <Box className={className}>
         <TextField
             label="Threshold"
-            inputProps={{ style: { textAlign: 'center' } }}
-            value={padding}
-            onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                let val = parseInt(e.target.value);
-                setPadding(val ? val : 1);
-            }}
-        />
-        <TextField
-            label="Blur"
             inputProps={{ style: { textAlign: 'center' } }}
             value={threshold}
             onChange={(e: ChangeEvent<HTMLInputElement>) => {
@@ -36,6 +27,15 @@ const Dextr: React.FC<Props> = ({
                 setThreshold(val ? val : 1);
             }}
         />
+        <TextField
+            label="Blur"
+            inputProps={{ style: { textAlign: 'center' } }}
+            value={blur}
+            onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                let val = parseInt(e.target.value);
+                setBlur(val ? val : 1);
+            }}
+        />
     </Box>
 );
-export default Dextr;
+export default Wand;
