@@ -23,7 +23,7 @@ const Wand: React.FC<Props> = ({
             inputProps={{ style: { textAlign: 'center' } }}
             value={threshold}
             onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                let val = parseInt(e.target.value);
+                const val = parseInt(e.target.value);
                 setThreshold(val ? val : 1);
             }}
         />
@@ -32,7 +32,7 @@ const Wand: React.FC<Props> = ({
             inputProps={{ style: { textAlign: 'center' } }}
             value={blur}
             onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                let val = parseInt(e.target.value);
+                const val = parseInt(e.target.value);
                 setBlur(val ? val : 1);
             }}
         />

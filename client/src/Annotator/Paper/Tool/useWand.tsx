@@ -3,11 +3,12 @@
  */
 import { useState, useRef, useEffect, useCallback } from 'react';
 import paper from 'paper';
-import * as MagicWand from 'magic-wand-tool';
 
 import { Maybe, MouseEvent, ImageSize } from '../../annotator.types';
 
 import * as CONFIG from '../../annotator.config';
+
+import { getPath } from '../Utils/wandUtils';
 
 // interfaces
 interface IToolWand {
@@ -54,53 +55,11 @@ export const useWand: IToolWand = (
         _setSettings(oldState => ({ ...oldState, blur: value }));
     }, []);
 
-    const _flood = useCallback(
-        (
-            x: number,
-            y: number,
-            width: number,
-            height: number,
-            threshold: number,
-            rad: number,
-        ) => {
-            if (!imageData) return;
-
-            const image = {
-                data: imageData.data,
-                width: width,
-                height: height,
-                bytes: 4,
-            };
-
-            const newRadius = rad < 1 ? 1 : Math.abs(rad); // TODO check if we should save reference
-
-            let mask = MagicWand.floodFill(image, x, y, threshold);
-            mask = MagicWand.gaussBlurOnlyBorder(mask, newRadius);
-
-            const contours = MagicWand.traceContours(mask).filter(
-                x => !x.inner,
-            );
-            if (contours[0]) {
-                let centerX = width / 2;
-                let centerY = height / 2;
-                let points = contours[0].points;
-                points = points.map(pt => ({
-                    x: pt.x + 0.5 - centerX,
-                    y: pt.y + 0.5 - centerY,
-                }));
-                let polygon = new paper.Path(points);
-                polygon.closed = true;
-                return polygon;
-            }
-            return null;
-        },
-        [imageData],
-    );
-
     // mouse events
     const onMouseDownAndDrag = useCallback(
         (event: MouseEvent) => {
             if (!imageSize) return;
+            if (!imageData) return;
 
             const { width, height } = imageSize;
 
@@ -111,17 +70,18 @@ export const useWand: IToolWand = (
             if (x > width || y > height || x < 0 || y < 0) return;
 
             // Create shape
-            const path = _flood(
+            const path = getPath({
+                data: imageData.data,
                 x,
                 y,
                 width,
                 height,
-                settings.threshold,
-                settings.blur,
-            );
+                threshold: settings.threshold,
+                blurRadius: settings.blur,
+            });
 
             // apply to current annotation
-            if (!path) return; // TODO check
+            if (!path) return;
 
             if (event.modifiers && event.modifiers.shift) {
                 subtract(path);
@@ -130,7 +90,14 @@ export const useWand: IToolWand = (
             }
             path.remove();
         },
-        [_flood, imageSize, settings.threshold, settings.blur, subtract, unite],
+        [
+            imageData,
+            imageSize,
+            settings.threshold,
+            settings.blur,
+            subtract,
+            unite,
+        ],
     );
 
     // tool effects

@@ -69,8 +69,8 @@ export const useDextr: IToolDextr = (isActive, imageId, imageSize, unite) => {
 
             const cPath = new paper.Path({}); // TODO check if compoundPath
             for (let i = 0; i < data.segmentaiton.length; i++) {
-                let polygon = data.segmentaiton[i];
-                let path = new paper.Path();
+                const polygon = data.segmentaiton[i];
+                const path = new paper.Path();
 
                 for (let j = 0; j < polygon.length; j += 2) {
                     const point = new paper.Point(polygon[j], polygon[j + 1]);
@@ -132,7 +132,7 @@ export const useDextr: IToolDextr = (isActive, imageId, imageSize, unite) => {
     return {
         padding: settings.padding,
         threshold: settings.threshold,
-        setPadding: setPadding,
-        setThreshold: setThreshold,
+        setPadding,
+        setThreshold,
     };
 };

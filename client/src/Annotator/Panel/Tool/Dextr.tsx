@@ -23,7 +23,7 @@ const Dextr: React.FC<Props> = ({
             inputProps={{ style: { textAlign: 'center' } }}
             value={padding}
             onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                let val = parseInt(e.target.value);
+                const val = parseInt(e.target.value);
                 setPadding(val ? val : 1);
             }}
         />
@@ -32,7 +32,7 @@ const Dextr: React.FC<Props> = ({
             inputProps={{ style: { textAlign: 'center' } }}
             value={threshold}
             onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                let val = parseInt(e.target.value);
+                const val = parseInt(e.target.value);
                 setThreshold(val ? val : 1);
             }}
         />
