@@ -9,7 +9,7 @@ export enum Tool {
     WAND = 'WAND',
     BRUSH = 'BRUSH',
     ERASER = 'ERASER',
-    KEYPOINTS = 'KEYPOINTS',
+    KEYPOINT = 'KEYPOINT',
     DEXTR = 'DEXTR',
 }
 
@@ -22,7 +22,7 @@ export enum Cursor {
     DEFAULT = 'default',
 }
 
-export interface RasterSize {
+export interface ImageSize {
     width: number;
     height: number;
 }

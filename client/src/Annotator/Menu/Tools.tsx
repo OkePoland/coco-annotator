@@ -71,9 +71,9 @@ const ToolBar: React.FC<Props> = ({ enabled, activeTool, toggleTool }) => (
         <ToolButton
             name="Keypoints"
             icon={<RoomOutlinedIcon />}
-            active={activeTool === Tool.KEYPOINTS}
+            active={activeTool === Tool.KEYPOINT}
             enabled={enabled}
-            onClick={() => toggleTool(Tool.KEYPOINTS)}
+            onClick={() => toggleTool(Tool.KEYPOINT)}
         />
         <ToolButton
             name="DEXTR"

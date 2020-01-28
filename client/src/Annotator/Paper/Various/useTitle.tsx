@@ -1,18 +1,18 @@
 import { useRef, useEffect } from 'react';
 import paper from 'paper';
 
-import { Maybe, RasterSize } from '../../annotator.types';
+import { Maybe, ImageSize } from '../../annotator.types';
 import * as CONFIG from '../../annotator.config';
 
-const useTitle = (rasterSize: Maybe<RasterSize>, leftTitleMsg: string) => {
+const useTitle = (imageSize: Maybe<ImageSize>, leftTitleMsg: string) => {
     const groupRef = useRef<Maybe<paper.Group>>(null);
     const leftTitleRef = useRef<Maybe<paper.PointText>>(null);
     const rightTitleRef = useRef<Maybe<paper.PointText>>(null);
 
     // init left and right title
     useEffect(() => {
-        if (rasterSize != null) {
-            const { width, height } = rasterSize;
+        if (imageSize != null) {
+            const { width, height } = imageSize;
 
             const fontSize = width * CONFIG.TITLE_FONT_SCALE;
             const positionTopLeft = new paper.Point(
@@ -49,7 +49,7 @@ const useTitle = (rasterSize: Maybe<RasterSize>, leftTitleMsg: string) => {
                 groupRef.current = group;
             }
         }
-    }, [rasterSize]);
+    }, [imageSize]);
 
     // update right title on incoming data
     useEffect(() => {

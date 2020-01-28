@@ -7,7 +7,7 @@ import BBox from './Tool/BBox';
 import Brush from './Tool/Brush';
 import Dextr from './Tool/Dextr';
 import Keypoints from './Tool/Keypoints';
-import MagicWand from './Tool/MagicWand';
+import Wand from './Tool/Wand';
 import Polygon from './Tool/Polygon';
 import Select from './Tool/Select';
 
@@ -21,7 +21,7 @@ export {
     Brush,
     Dextr,
     Keypoints,
-    MagicWand,
+    Wand,
     Polygon,
     Select,
 };

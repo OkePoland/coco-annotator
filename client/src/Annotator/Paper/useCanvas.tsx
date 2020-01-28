@@ -2,17 +2,17 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { RefObject, WheelEvent } from 'react';
 import paper from 'paper';
 
-import { Maybe, RasterSize } from '../annotator.types';
+import { Maybe, ImageSize } from '../annotator.types';
 
 import * as CONFIG from '../annotator.config';
 
 interface CanvasState {
     paperRef: React.MutableRefObject<Maybe<paper.PaperScope>>;
     canvasRef: RefObject<HTMLCanvasElement>;
-    imageData: {
+    imageInfo: {
         scale: number;
         data: Maybe<ImageData>;
-        rasterSize: Maybe<RasterSize>;
+        size: Maybe<ImageSize>;
     };
     centerImageAction: () => void;
     onWheelAction: (e: WheelEvent<HTMLDivElement>) => void;
@@ -24,9 +24,9 @@ const useCanvas = (imageUrl: string): CanvasState => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const rasterRef = useRef<Maybe<paper.Raster>>(null);
 
-    const [imgScale, setImgScale] = useState<number>(0); // TODO
-    const [imgData, setImgData] = useState<Maybe<ImageData>>(null); // TODO
-    const [rasterSize, setRasterSize] = useState<Maybe<RasterSize>>(null);
+    const [imageScale, _setImgScale] = useState<number>(1);
+    const [imageData, _setImgData] = useState<Maybe<ImageData>>(null);
+    const [imageSize, _setImageSize] = useState<Maybe<ImageSize>>(null);
 
     const centerImageAction = useCallback(() => {
         if (!paperRef.current || !canvasRef.current || !rasterRef.current) {
@@ -41,7 +41,7 @@ const useCanvas = (imageUrl: string): CanvasState => {
             (canvasRef.current.height / parentY) * 0.8,
         );
 
-        setImgScale(1 / paperRef.current.view.zoom);
+        _setImgScale(1 / paperRef.current.view.zoom);
         paperRef.current.view.center = new paper.Point(0, 0);
     }, [canvasRef, rasterRef]);
 
@@ -82,7 +82,7 @@ const useCanvas = (imageUrl: string): CanvasState => {
                 .subtract(centerPt);
 
             if (newZoom < CONFIG.ZOOM_MAX && newZoom > CONFIG.ZOOM_MIN) {
-                setImgScale(1 / newZoom);
+                _setImgScale(1 / newZoom);
                 paperRef.current.view.zoom = newZoom;
                 paperRef.current.view.center = view.center.add(newOffset);
             }
@@ -128,11 +128,11 @@ const useCanvas = (imageUrl: string): CanvasState => {
                     tempCtx.canvas.height = height;
                     tempCtx.drawImage(rasterRef.current.image, 0, 0);
                     const data = tempCtx.getImageData(0, 0, width, height);
-                    setImgData(data); // pass imgData for magicWand tool
+                    _setImgData(data); // pass imgData for magicWand tool
                 }
 
                 // pass raster to update title
-                setRasterSize({ width, height });
+                _setImageSize({ width, height });
             };
         }
 
@@ -145,10 +145,10 @@ const useCanvas = (imageUrl: string): CanvasState => {
     return {
         paperRef,
         canvasRef,
-        imageData: {
-            scale: imgScale,
-            data: imgData,
-            rasterSize,
+        imageInfo: {
+            scale: imageScale,
+            data: imageData,
+            size: imageSize,
         },
         centerImageAction,
         onWheelAction,

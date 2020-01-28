@@ -27,7 +27,7 @@ const useCursor: IUseCursor = (activeTool, selectedAnnotationId) => {
             case Tool.DEXTR:
                 cursor = Cursor.CROSSHAIR;
                 break;
-            case Tool.KEYPOINTS:
+            case Tool.KEYPOINT:
                 cursor = Cursor.CELL;
                 break;
             case Tool.BRUSH:
