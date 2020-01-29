@@ -8,7 +8,7 @@ import * as DatasetApi from '../../datasets.api';
 
 interface FormEditState {
     updatedCategories: string[];
-    updatedMetadata: MetadataList[] | null;
+    updatedMetadata: MetadataList[];
 }
 type Metadata = string | number | boolean;
 
@@ -28,18 +28,16 @@ const validationSchema = Yup.object({
 
 const useFormikEdit = (
     refeshPage: () => void,
-    dataset: DatasetWithCategories | null,
+    { dataset, categories }: DatasetWithCategories,
 ): FormikConfig<FormEditState> => {
     const { enqueueSnackbar } = useSnackbar();
+    const selectedCategories: string[] = categories.map(
+        category => category.name,
+    );
+    const defaultMetadata = dataset.default_annotation_metadata;
 
-    const selectedCategories: string[] = dataset
-        ? dataset.categories.map(category => category.name)
-        : [];
-    const defaultMetadata = dataset && dataset.default_annotation_metadata;
-
-    const metadataList: MetadataList[] | null = useMemo(() => {
-        return (
-            defaultMetadata &&
+    const metadataList: MetadataList[] = useMemo(
+        () =>
             Object.entries(defaultMetadata).map(([key, value]) => {
                 if (value == null) {
                     value = '';
@@ -50,9 +48,9 @@ const useFormikEdit = (
                     key: key,
                     value: value,
                 };
-            })
-        );
-    }, [defaultMetadata]);
+            }),
+        [defaultMetadata],
+    );
 
     const initialValues = useMemo(
         () => ({
@@ -66,39 +64,36 @@ const useFormikEdit = (
         { updatedCategories, updatedMetadata }: FormEditState,
         { resetForm }: FormikHelpers<FormEditState>,
     ) => {
-        if (dataset && updatedMetadata && updatedCategories) {
-            const metadata: {
-                [key: string]: Metadata;
-            } = updatedMetadata.reduce(
-                (result: { [key: string]: Metadata }, item) => {
-                    if (item.key.length > 0) {
-                        if (!isNaN(Number(item.value))) {
-                            result[item.key] = parseInt(item.value);
-                        } else if (
-                            item.value.toLowerCase() === 'true' ||
-                            item.value.toLowerCase() === 'false'
-                        ) {
-                            result[item.key] =
-                                item.value.toLowerCase() === 'true';
-                        } else {
-                            result[item.key] = item.value;
-                        }
+        const metadata: {
+            [key: string]: Metadata;
+        } = updatedMetadata.reduce(
+            (result: { [key: string]: Metadata }, item) => {
+                if (item.key.length > 0) {
+                    if (!isNaN(Number(item.value))) {
+                        result[item.key] = parseInt(item.value);
+                    } else if (
+                        item.value.toLowerCase() === 'true' ||
+                        item.value.toLowerCase() === 'false'
+                    ) {
+                        result[item.key] = item.value.toLowerCase() === 'true';
+                    } else {
+                        result[item.key] = item.value;
                     }
-                    return result;
-                },
-                {},
-            );
-            const { data: response } = await DatasetApi.edit(
-                dataset.id,
-                updatedCategories,
-                metadata,
-            );
-            if (response.message) {
-                enqueueSnackbar(response.message, { variant: 'error' });
-            } else {
-                resetForm();
-                refeshPage();
-            }
+                }
+                return result;
+            },
+            {},
+        );
+        const { data: response } = await DatasetApi.edit(
+            dataset.id,
+            updatedCategories,
+            metadata,
+        );
+        if (response.message) {
+            enqueueSnackbar(response.message, { variant: 'error' });
+        } else {
+            resetForm();
+            refeshPage();
         }
     };
     return {

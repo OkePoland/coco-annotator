@@ -1,5 +1,4 @@
 import React from 'react';
-import { Formik, Form } from 'formik';
 
 import Container from '@material-ui/core/Container';
 import Box from '@material-ui/core/Box';
@@ -10,17 +9,15 @@ import Typography from '@material-ui/core/Typography';
 import Link from '@material-ui/core/Link';
 import HelpIcon from '@material-ui/icons/Help';
 import MenuItem from '@material-ui/core/MenuItem';
-import MuiTextField from '@material-ui/core/TextField';
 import Pagination from 'material-ui-flat-pagination';
 
 import { useStyles } from './list.styles';
 import { useDatasetsPage } from './list.hooks';
-import { useFormikCreate, useFormikEdit, useFormikShare } from './Formik';
 import DatasetCard from './ListCard';
 import CustomDialog from '../../common/components/CustomDialog';
-import TextField from '../../common/components/Formik/TextField';
-import TagsInput from '../../common/components/Formik/TagsInput';
-import TextFieldArray from '../../common/components/Formik/TextFieldArray';
+import ListCreate from './ListForm/ListCreate';
+import ListEdit from './ListForm/ListEdit';
+import ListShare from './ListForm/ListShare';
 
 const List: React.FC = () => {
     const classes = useStyles();
@@ -41,12 +38,10 @@ const List: React.FC = () => {
         share: [shared, setShared],
         navigation: { openDetails },
         datasetWithCategories,
+        getImageUrl,
         onDeleteClick,
         onCocoDownloadClick,
     } = useDatasetsPage();
-    const formikCreate = useFormikCreate(refreshPage);
-    const formikEdit = useFormikEdit(refreshPage, edited);
-    const formikShare = useFormikShare(refreshPage, shared);
 
     return (
         <Container className={classes.container}>
@@ -94,14 +89,24 @@ const List: React.FC = () => {
                             }}
                         />
                         <Grid container justify="flex-start" spacing={4}>
-                            {datasetWithCategories.map(dataset => {
-                                const { permissions, id, name } = dataset;
+                            {datasetWithCategories.map(item => {
+                                const {
+                                    dataset: {
+                                        permissions,
+                                        id,
+                                        name,
+                                        first_image_id,
+                                    },
+                                } = item;
                                 return (
                                     <Grid key={id} item xs={12} sm={4} md={3}>
                                         <DatasetCard
-                                            item={dataset}
+                                            item={item}
+                                            imageUrl={getImageUrl(
+                                                first_image_id,
+                                            )}
                                             onClick={() => {
-                                                openDetails(dataset);
+                                                openDetails(item);
                                             }}
                                             renderMenuItems={(
                                                 closeMenu: () => void,
@@ -109,7 +114,7 @@ const List: React.FC = () => {
                                                 <Box component="span">
                                                     <MenuItem
                                                         onClick={() => {
-                                                            setEdited(dataset);
+                                                            setEdited(item);
                                                             closeMenu();
                                                         }}
                                                     >
@@ -120,7 +125,7 @@ const List: React.FC = () => {
                                                             <MenuItem
                                                                 onClick={() => {
                                                                     setShared(
-                                                                        dataset,
+                                                                        item,
                                                                     );
                                                                     closeMenu();
                                                                 }}
@@ -222,149 +227,47 @@ const List: React.FC = () => {
                     </Box>
                 )}
             />
-            <Formik
-                initialValues={formikCreate.initialValues}
-                validationSchema={formikCreate.validationSchema}
-                onSubmit={formikCreate.onSubmit}
-            >
-                {formik => (
-                    <CustomDialog
-                        title="Creating a Dataset"
-                        open={createOn}
-                        setClose={() => {
-                            setCreateOn(false);
-                            formik.resetForm();
-                        }}
-                        renderContent={() => (
-                            <Form>
-                                <TextField name="name" label="Dataset name" />
-                                <TagsInput
-                                    options={tags}
-                                    name="categories"
-                                    placeholder="Add a category"
-                                    classes={{
-                                        tagsInput: classes.tagsInput,
-                                        tagsList: classes.tagsList,
-                                        tagsGrid: classes.tagsGrid,
-                                    }}
-                                />
-                                <MuiTextField
-                                    disabled
-                                    fullWidth
-                                    variant="outlined"
-                                    margin="normal"
-                                    label="Folder Directory"
-                                    value={`/datasets/${formik.values.name}`}
-                                />
-                            </Form>
-                        )}
-                        renderActions={() => (
-                            <Button
-                                variant="contained"
-                                color="primary"
-                                onClick={formik.submitForm}
-                            >
-                                Create Dataset
-                            </Button>
-                        )}
-                    />
-                )}
-            </Formik>
-            <Formik
-                enableReinitialize
-                initialValues={formikEdit.initialValues}
-                validationSchema={formikEdit.validationSchema}
-                onSubmit={formikEdit.onSubmit}
-            >
-                {formik => (
-                    <CustomDialog
-                        title={edited ? edited.name : ''}
-                        open={edited !== null}
-                        setClose={() => {
-                            setEdited(null);
-                            formik.resetForm();
-                        }}
-                        renderContent={() => (
-                            <Form>
-                                <TagsInput
-                                    options={tags}
-                                    name="updatedCategories"
-                                    placeholder="Add a category"
-                                    classes={{
-                                        tagsInput: classes.tagsInput,
-                                        tagsList: classes.tagsList,
-                                        tagsGrid: classes.tagsGrid,
-                                    }}
-                                />
-                                <TextFieldArray
-                                    title="Default Annotation Metadata"
-                                    name="updatedMetadata"
-                                    keyTitle="key"
-                                    valueTitle="value"
-                                    metadata={
-                                        formik.values.updatedMetadata &&
-                                        formik.values.updatedMetadata
-                                    }
-                                />
-                            </Form>
-                        )}
-                        renderActions={() => (
-                            <Button
-                                variant="contained"
-                                className={classes.submitButton}
-                                onClick={async () => {
-                                    await formik.submitForm();
-                                    setEdited(null);
-                                }}
-                            >
-                                Save
-                            </Button>
-                        )}
-                    />
-                )}
-            </Formik>
-            <Formik
-                enableReinitialize
-                initialValues={formikShare.initialValues}
-                onSubmit={formikShare.onSubmit}
-            >
-                {formik => (
-                    <CustomDialog
-                        title={shared ? shared.name : ''}
-                        open={shared !== null}
-                        setClose={() => {
-                            setShared(null);
-                            formik.resetForm();
-                        }}
-                        renderContent={() => (
-                            <Form>
-                                <TagsInput
-                                    options={usernames}
-                                    name="sharedUsers"
-                                    placeholder="Add usernames"
-                                    classes={{
-                                        tagsInput: classes.tagsInput,
-                                        tagsList: classes.tagsList,
-                                        tagsGrid: classes.tagsGrid,
-                                    }}
-                                />
-                            </Form>
-                        )}
-                        renderActions={() => (
-                            <Button
-                                variant="contained"
-                                className={classes.submitButton}
-                                onClick={async () => {
-                                    await formik.submitForm();
-                                    setShared(null);
-                                }}
-                            >
-                                Save
-                            </Button>
-                        )}
-                    />
-                )}
-            </Formik>
+            {createOn && (
+                <ListCreate
+                    createOn={createOn}
+                    setCreateOn={setCreateOn}
+                    tags={tags}
+                    classes={{
+                        tagsInput: classes.tagsInput,
+                        tagsList: classes.tagsList,
+                        tagsGrid: classes.tagsGrid,
+                    }}
+                    refreshPage={refreshPage}
+                />
+            )}
+            {edited && (
+                <ListEdit
+                    edited={edited}
+                    setEdited={setEdited}
+                    tags={tags}
+                    classes={{
+                        tagsInput: classes.tagsInput,
+                        tagsList: classes.tagsList,
+                        tagsGrid: classes.tagsGrid,
+                        submitButton: classes.submitButton,
+                    }}
+                    refreshPage={refreshPage}
+                />
+            )}
+            {shared && (
+                <ListShare
+                    shared={shared}
+                    setShared={setShared}
+                    usernames={usernames}
+                    classes={{
+                        tagsInput: classes.tagsInput,
+                        tagsList: classes.tagsList,
+                        tagsGrid: classes.tagsGrid,
+                        submitButton: classes.submitButton,
+                    }}
+                    refreshPage={refreshPage}
+                />
+            )}
         </Container>
     );
 };

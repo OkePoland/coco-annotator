@@ -18,9 +18,9 @@ const UserSelect: React.FC = () => {
     const open = Boolean(anchorEl);
 
     const { getCurrentUser, logout } = useAuthContext();
-    const currentUser: UserInfo | null = useMemo(() => {
-        return getCurrentUser();
-    }, [getCurrentUser]);
+    const currentUser: UserInfo | null = useMemo(getCurrentUser, [
+        getCurrentUser,
+    ]);
     const userName =
         currentUser && currentUser.username ? currentUser.username : '';
     const isAdmin =

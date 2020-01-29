@@ -93,9 +93,9 @@ const useConnectionState = (): boolean | null => {
 const useMenuItems = (dataset: Dataset | null): Array<NavItem> => {
     // Calculate extra page for menu
     const { getCurrentUser } = useAuthContext();
-    const currentUser: UserInfo | null = useMemo(() => {
-        return getCurrentUser();
-    }, [getCurrentUser]);
+    const currentUser: UserInfo | null = useMemo(getCurrentUser, [
+        getCurrentUser,
+    ]);
     const menuItems: Array<NavItem> = [];
 
     menuItems.push(Datasets);

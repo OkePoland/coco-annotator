@@ -1,18 +1,13 @@
 import { useState, useEffect, Dispatch, SetStateAction, useMemo } from 'react';
 import { useNavigation } from 'react-navi';
 
-import {
-    Dataset,
-    Category,
-    UserInfo,
-    DatasetPermissions,
-    IDict,
-} from '../../common/types';
+import { Dataset, Category, UserInfo } from '../../common/types';
 import * as DatasetApi from '../datasets.api';
 import * as AdminPanelApi from '../../AdminPanel/adminPanel.api';
 import useGlobalContext from '../../common/hooks/useGlobalContext';
 import useAuthContext from '../../common/hooks/useAuthContext';
 import { addProcess, removeProcess } from '../../common/utils/globalActions';
+import { downloadURI } from '../datasets.utils';
 
 // interfaces
 interface DatasetsState {
@@ -28,6 +23,7 @@ interface DatasetsState {
     ];
     navigation: NavigationState;
     datasetWithCategories: DatasetWithCategories[];
+    getImageUrl(imageId: number | undefined): string;
     onDeleteClick(id: number): Promise<void>;
     onCocoDownloadClick(name: string, id: number): Promise<void>;
 }
@@ -49,73 +45,61 @@ interface DialogsState {
     create: [boolean, Dispatch<SetStateAction<boolean>>];
 }
 export interface DatasetWithCategories {
-    id: number;
-    name: string;
-    directory: string;
-    first_image_id?: number;
-    numberAnnotated: number;
-    numberImages: number;
+    dataset: Dataset;
     categories: Category[];
-    owner: string;
-    users: Array<string>;
-    annotate_url: string;
-    default_annotation_metadata: IDict;
-    deleted: boolean;
-    deleted_date?: {
-        $data: number;
-    };
-    permissions?: DatasetPermissions;
 }
-
-const downloadURI = (uri: string, exportName: string) => {
-    let link = document.createElement('a');
-    link.href = uri;
-    link.download = exportName;
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-};
 
 // hooks
 export const useDatasetsPage = (): DatasetsState => {
+    const { getCurrentUser } = useAuthContext();
+    const currentUser: UserInfo | null = useMemo(getCurrentUser, [
+        getCurrentUser,
+    ]);
+
     const navigation = usePageNavigation();
-    const list = useList(52);
+    const list = useList(52, currentUser);
     const dialogs = useDialogs();
     const edit = useState<DatasetWithCategories | null>(null);
     const share = useState<DatasetWithCategories | null>(null);
 
     const [, dispatch] = useGlobalContext();
 
-    const categoriesDictionary = useMemo(() => {
-        return list.categories.reduce(
-            (result: { [key: string]: Category }, category: Category) => {
-                result[category.id] = category;
-                return result;
-            },
-            {},
-        );
-    }, [list.categories]);
+    const categoriesDictionary = useMemo(
+        () =>
+            list.categories.reduce(
+                (result: { [key: string]: Category }, category: Category) => {
+                    result[category.id] = category;
+                    return result;
+                },
+                {},
+            ),
+        [list.categories],
+    );
 
     const datasetWithCategories: DatasetWithCategories[] = list.datasets.map(
         dataset => {
             const categories = dataset.categories
-                .map(categoryId => {
-                    return {
-                        ...categoriesDictionary[categoryId],
-                    };
-                })
+                .map(categoryId => ({ ...categoriesDictionary[categoryId] }))
                 .filter(datasetCategory => Object.keys(datasetCategory).length);
 
-            return { ...dataset, categories };
+            return { dataset: dataset, categories: categories };
         },
     );
+
+    const getImageUrl = (imageId: number | undefined) => {
+        if (imageId != null) {
+            return `/api/image/${imageId}?width=250`;
+        } else {
+            return 'img/no-image.png';
+        }
+    };
 
     const onCocoDownloadClick = async (name: string, id: number) => {
         const process = 'Generating COCO for ' + name;
         addProcess(dispatch, process);
 
         const response = await DatasetApi.getCoco(id);
-        let dataStr =
+        const dataStr =
             'data:text/json;charset=utf-8,' +
             encodeURIComponent(JSON.stringify(response.data));
         downloadURI(dataStr, name + '.json');
@@ -129,34 +113,33 @@ export const useDatasetsPage = (): DatasetsState => {
     };
 
     return {
-        list: list,
-        dialogs: dialogs,
-        edit: edit,
-        share: share,
-        navigation: navigation,
-        datasetWithCategories: datasetWithCategories,
-        onDeleteClick: onDeleteClick,
-        onCocoDownloadClick: onCocoDownloadClick,
+        list,
+        dialogs,
+        edit,
+        share,
+        navigation,
+        datasetWithCategories,
+        getImageUrl,
+        onDeleteClick,
+        onCocoDownloadClick,
     };
 };
 
 const usePageNavigation = (): NavigationState => {
     const { navigate } = useNavigation();
-    const openDetails = (dataset: DatasetWithCategories) => {
+    const openDetails = ({ dataset }: DatasetWithCategories) => {
         navigate(`/dataset/${dataset.id}`);
     };
     return {
-        openDetails: openDetails,
+        openDetails,
     };
 };
 
-const useList = (itemsPerPage: number): ListState => {
+const useList = (
+    itemsPerPage: number,
+    currentUser: UserInfo | null,
+): ListState => {
     const [, dispatch] = useGlobalContext();
-    const { getCurrentUser } = useAuthContext();
-
-    const currentUser: UserInfo | null = useMemo(() => {
-        return getCurrentUser();
-    }, [getCurrentUser]);
 
     const [page, setPage] = useState(1);
     const offset = useState(0);
@@ -195,14 +178,14 @@ const useList = (itemsPerPage: number): ListState => {
     const usernames = users.map(user => user.username);
 
     return {
-        offset: offset,
-        pageCount: pageCount,
-        datasets: datasets,
-        categories: categories,
-        tags: tags,
-        usernames: usernames,
-        setPage: setPage,
-        refreshPage: refreshPage,
+        offset,
+        pageCount,
+        datasets,
+        categories,
+        tags,
+        usernames,
+        setPage,
+        refreshPage,
     };
 };
 
@@ -211,7 +194,7 @@ const useDialogs = () => {
     const create = useState(false);
 
     return {
-        help: help,
-        create: create,
+        help,
+        create,
     };
 };

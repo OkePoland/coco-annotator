@@ -9,20 +9,19 @@ interface FormShareState {
 
 const useFormikShare = (
     refeshPage: () => void,
-    dataset: DatasetWithCategories | null,
+    { dataset }: DatasetWithCategories,
 ): FormikConfig<FormShareState> => {
     const initialValues = {
-        sharedUsers: dataset ? dataset.users : [],
+        sharedUsers: dataset.users,
     };
+
     const onSubmit = async (
         { sharedUsers }: FormShareState,
         { resetForm }: FormikHelpers<FormShareState>,
     ) => {
-        if (dataset) {
-            await DatasetApi.share(dataset.id, sharedUsers);
-            resetForm();
-            refeshPage();
-        }
+        await DatasetApi.share(dataset.id, sharedUsers);
+        resetForm();
+        refeshPage();
     };
     return {
         initialValues,

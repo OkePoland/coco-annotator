@@ -18,7 +18,7 @@ export const create = async (name: string, categories?: Array<string>) => {
     const params = {
         name,
     };
-    const body = { categories: categories != null ? categories : [] };
+    const body = { categories: categories || [] };
     const response = await Api.post(url, body, { params });
     return response;
 };
@@ -30,11 +30,8 @@ export const edit = async (
 ) => {
     const url = `${baseURL}/${id}`;
     const body = {
-        categories: categories != null ? categories : [],
-        default_annotation_metadata:
-            default_annotation_metadata != null
-                ? default_annotation_metadata
-                : {},
+        categories: categories || [],
+        default_annotation_metadata: default_annotation_metadata || {},
     };
     const response = await Api.post(url, body);
     return response;
@@ -42,7 +39,7 @@ export const edit = async (
 
 export const share = async (id: number, users: Array<string>) => {
     const url = `${baseURL}/${id}/share`;
-    const body = { users: users != null ? users : [] };
+    const body = { users: users || [] };
     const response = await Api.post(url, body);
     return response;
 };

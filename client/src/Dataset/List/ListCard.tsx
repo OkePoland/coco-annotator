@@ -17,11 +17,20 @@ import { DatasetWithCategories } from './list.hooks';
 
 interface Props {
     item: DatasetWithCategories;
+    imageUrl: string;
     onClick(): void;
     renderMenuItems(closeMenu: () => void): JSX.Element;
 }
 
-const DatasetCard: React.FC<Props> = ({ item, onClick, renderMenuItems }) => {
+const DatasetCard: React.FC<Props> = ({
+    item: {
+        dataset: { name, numberImages, numberAnnotated, owner },
+        categories,
+    },
+    imageUrl,
+    onClick,
+    renderMenuItems,
+}) => {
     const classes = useStyles();
     const [anchorEl, setAnchor] = useState<null | HTMLElement>(null);
 
@@ -32,21 +41,14 @@ const DatasetCard: React.FC<Props> = ({ item, onClick, renderMenuItems }) => {
     return (
         <Card>
             <CardActionArea onClick={onClick}>
-                <CardMedia
-                    className={classes.image}
-                    image={
-                        item.first_image_id != null
-                            ? `/api/image/${item.first_image_id}?width=250`
-                            : 'img/no-image.png'
-                    }
-                />
+                <CardMedia className={classes.image} image={imageUrl} />
             </CardActionArea>
 
             <Box pt={1} pb={1} pl={2} pr={2}>
                 <Grid container justify="space-between" alignItems="center">
                     <Grid item>
                         <Typography component="div">
-                            <Box fontWeight="fontWeightBold">{item.name}</Box>
+                            <Box fontWeight="fontWeightBold">{name}</Box>
                         </Typography>
                     </Grid>
                     <Grid item>
@@ -62,18 +64,15 @@ const DatasetCard: React.FC<Props> = ({ item, onClick, renderMenuItems }) => {
                 </Grid>
 
                 <Box mb={1}>
-                    {item.numberImages > 0 ? (
+                    {numberImages > 0 ? (
                         <Box textAlign="center">
                             <Typography>
-                                {`${item.numberAnnotated} of ${item.numberImages} images annotated.`}
+                                {`${numberAnnotated} of ${numberImages} images annotated.`}
                             </Typography>
 
                             <LinearProgress
                                 variant="determinate"
-                                value={
-                                    (item.numberAnnotated / item.numberImages) *
-                                    100
-                                }
+                                value={(numberAnnotated / numberImages) * 100}
                             />
                         </Box>
                     ) : (
@@ -82,22 +81,20 @@ const DatasetCard: React.FC<Props> = ({ item, onClick, renderMenuItems }) => {
                 </Box>
 
                 <Box textAlign="left">
-                    {item.categories.map(o => {
-                        return (
-                            <Chip
-                                size="small"
-                                key={o.id}
-                                label={o.name}
-                                style={{ backgroundColor: o.color }}
-                                className={classes.categoryChip}
-                            />
-                        );
-                    })}
+                    {categories.map(category => (
+                        <Chip
+                            size="small"
+                            key={category.id}
+                            label={category.name}
+                            style={{ backgroundColor: category.color }}
+                            className={classes.categoryChip}
+                        />
+                    ))}
                 </Box>
             </Box>
 
             <Box textAlign="center" boxShadow={3}>
-                Created by {item.owner}
+                Created by {owner}
             </Box>
 
             <Menu

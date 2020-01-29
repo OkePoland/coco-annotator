@@ -15,9 +15,9 @@ interface FormCreateState {
 
 export const useUserSettings = () => {
     const { getCurrentUser } = useAuthContext();
-    const currentUser: UserInfo | null = useMemo(() => {
-        return getCurrentUser();
-    }, [getCurrentUser]);
+    const currentUser: UserInfo | null = useMemo(getCurrentUser, [
+        getCurrentUser,
+    ]);
 
     if (!currentUser) {
         throw new Error('Expected current user to not be null');
