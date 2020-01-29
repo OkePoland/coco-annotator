@@ -20,7 +20,7 @@ const ToolButton: React.FC<Props> = ({
     <Tooltip
         title={
             enabled
-                ? `${name} tool`
+                ? `${name}`
                 : `${name} (select an annotation to activate tool)`
         }
         placement="right"

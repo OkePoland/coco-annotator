@@ -20,6 +20,7 @@ interface Props {
     isSelected: boolean;
     isEnabled: boolean;
     isExpanded: boolean;
+    annotationCount: number;
 
     setSelected: (id: number) => void;
     setEnabled: (id: number) => void;
@@ -31,11 +32,12 @@ interface Props {
 }
 
 const CategoryCard: React.FC<Props> = ({
-    data: { id, name, annotations, color },
+    data: { id, name, color },
     isVisible,
     isSelected,
     isEnabled,
     isExpanded,
+    annotationCount,
 
     setSelected,
     setEnabled,
@@ -72,7 +74,6 @@ const CategoryCard: React.FC<Props> = ({
                 </Grid>
                 <Grid item xs={7}>
                     <Typography
-                        align="center"
                         onClick={() => {
                             if (!isSelected) {
                                 setSelected(id);
@@ -80,7 +81,7 @@ const CategoryCard: React.FC<Props> = ({
                             setExpanded(id);
                         }}
                     >
-                        {`${name} (${annotations && annotations.length})`}
+                        {`${name} (${annotationCount})`}
                     </Typography>
                 </Grid>
                 <Grid item xs>
@@ -109,7 +110,7 @@ const CategoryCard: React.FC<Props> = ({
 
             <Collapse in={isExpanded}>
                 <Divider />
-                {isExpanded && annotations && renderExpandedList()}
+                {isExpanded && annotationCount > 0 && renderExpandedList()}
             </Collapse>
         </Card>
     );

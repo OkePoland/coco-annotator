@@ -4,17 +4,22 @@
 import { useRef, useState, useEffect, useCallback } from 'react';
 import paper from 'paper';
 
-import {
-    Maybe,
-    MouseEvent,
-    DataType,
-    DataIndicator,
-    DataKeypoint,
-} from '../../annotator.types';
+import { Maybe, MouseEvent } from '../../annotator.types';
 
 import * as CONFIG from '../../annotator.config';
 
-import { isIndicator, isAnnotation, isKeypoint } from '../Utils/typeGuards';
+import { AnnotationShape, Keypoint } from '../Group';
+import {
+    isAnnotationShape,
+    isKeypointGroup,
+    isKeypoint,
+} from '../Utils/typeGuards';
+import {
+    hitOptions,
+    hitOptionsFill,
+    createCircle,
+    createTooltip,
+} from '../Utils/selectUtils';
 
 // interfaces
 interface IToolSelect {
@@ -29,78 +34,83 @@ export interface ToolSelectResponse {
     setTooltipOn: (isOn: boolean) => void;
 }
 interface Cache {
-    point: Maybe<paper.Path.Circle>; // circle shape around selected point
-    segment: Maybe<paper.Segment>; // reference to point in some shape
-    keypoint: Maybe<DataKeypoint>; // reference for hovered keypoint
-
+    shape: {
+        segment: Maybe<paper.Segment>; // reference to SELECTED segment (point) in some AnnotationShape
+        obj: Maybe<AnnotationShape>; // reference for SELECTED AnnotationShape
+        isBBOX: boolean; // whether SELECTED segment belongs to AnnotationShape-BBOX
+        initPoint: Maybe<paper.Point>; // point in middle of AnnotationShape-BBOX fill which we use as 'move center'
+    };
+    keypoint: {
+        obj: Maybe<Keypoint>; // reference to SELECTED keypoint
+        isMoving: boolean; // whether SELECTED keypoint if moving
+    };
     hover: {
-        text: Maybe<paper.PointText>; // tooltip text shape
-        box: Maybe<paper.Path.Rectangle>; // tooltip background shape
-        position: paper.Point; // tooltip position
-        textId: number; // id of annotation TEXT has been generated for
-        fontSize: number; // fontsize of tooltip
-        textShift: number; // shift of tooltip text (based on scale)
-        shift: number; // shift of whole tooltip (based on scale)
-        rounded: number; // radius of tooltip background ( based on scale)
-        categoryId: Maybe<number>; // hovered annotation CategoryId
-        annotationId: Maybe<number>; // hovered annotation Id
+        position: paper.Point; // hovered position
+        keypoint: Maybe<Keypoint>; // reference for HOVERED keypoint
+        shape: {
+            obj: Maybe<paper.Path>; // reference for HOVERED AnnotationShape
+            categoryId: Maybe<number>; // hovered annotation CategoryId
+            annotationId: Maybe<number>; // hovered annotation Id
+        };
     };
-
-    edit: {
-        center: Maybe<paper.Point>;
-        indicatorWidth: number;
-        indicatorSize: number;
-        canMove: boolean;
+    circle: {
+        obj: Maybe<paper.Path.Circle>; // reference for circle shape around hovered point
+        center: Maybe<paper.Point>; // center point of circle
+        radius: number; // radius of circle
+        strokeWidth: number; // stroke of circle
+        canMove: boolean; // whether we can move circle
     };
-
-    bbox: {
-        isBbox: boolean;
-        moveObject: Maybe<paper.Item>;
-        initPoint: Maybe<paper.Point>;
+    tooltip: {
+        box: Maybe<paper.Path.Rectangle>; // reference for tooltip background
+        text: Maybe<paper.PointText>; // reference for tooltip text shape
+        textId: number; // id of annotation for which Tooltip was generated
+        totalShift: number; // shift of whole tooltip (based on scale)
+        textShift: number; // shift of tooltip TEXT (based on scale)
+        fontSize: number; // fontsize of tooltip (based on scale)
+        rounded: number; // radius of tooltip box (based on scale)
     };
 }
 interface Settings {
     tooltipOn: boolean;
 }
 
-const hitOptions = {
-    segments: true,
-    stroke: true,
-    fill: false,
-    tolerance: CONFIG.TOOLS_SELECT_INITIAL_HIT_TOLERANCE,
-    match: (hit: { item: { data: Object } }) => {
-        return !isIndicator(hit.item.data);
-    },
-};
-
 export const useSelect: IToolSelect = (paperRef, isActive, scale) => {
     const toolRef = useRef<Maybe<paper.Tool>>(null);
     const cache = useRef<Cache>({
-        point: null,
-        segment: null,
-        keypoint: null,
-        hover: {
-            text: null,
-            box: null,
-            position: new paper.Point(0, 0),
-            textId: -1,
-            textShift: 0,
-            fontSize: 3,
-            shift: 0,
-            rounded: 0,
-            categoryId: null,
-            annotationId: null,
+        shape: {
+            segment: null,
+            obj: null,
+            isBBOX: false,
+            initPoint: null,
         },
-        edit: {
+        keypoint: {
+            obj: null,
+            isMoving: false,
+        },
+        hover: {
+            position: new paper.Point(0, 0),
+            keypoint: null,
+            shape: {
+                obj: null,
+                categoryId: null,
+                annotationId: null,
+            },
+        },
+        circle: {
+            obj: null,
             center: null,
-            indicatorWidth: 0,
-            indicatorSize: 0,
+            radius: 0,
+            strokeWidth: 0,
             canMove: false,
         },
-        bbox: {
-            isBbox: false,
-            moveObject: null,
-            initPoint: null,
+        tooltip: {
+            box: null,
+            text: null,
+            textId: -1,
+            totalShift: 0,
+            textShift: 0,
+            fontSize: 3,
+            rounded: 0,
         },
     });
     const [settings, _setSettings] = useState<Settings>({
@@ -108,170 +118,100 @@ export const useSelect: IToolSelect = (paperRef, isActive, scale) => {
     });
 
     // private actions
-    const _createPoint = useCallback((point: paper.Point) => {
-        if (cache.current.point != null) {
-            cache.current.point.remove();
+    const _createCircle = useCallback((point: paper.Point) => {
+        if (cache.current.circle.obj != null) {
+            cache.current.circle.obj.remove();
         }
-        const pt = new paper.Path.Circle(
+        const circle = createCircle(
             point,
-            cache.current.edit.indicatorSize,
+            cache.current.circle.radius,
+            cache.current.circle.strokeWidth,
         );
-        pt.strokeColor = new paper.Color('black');
-        pt.strokeWidth = cache.current.edit.indicatorWidth;
-        const data: DataIndicator = { type: DataType.INDICATOR };
-        pt.data = data;
-
-        cache.current.point = pt;
+        cache.current.circle.obj = circle;
     }, []);
 
-    const _generateTitle = useCallback(() => {
-        let string = ' ';
-        if (cache.current.keypoint) {
-            let index = cache.current.keypoint.indexLabel;
-            let visibility = cache.current.keypoint.visibility;
-
-            string += 'Keypoint \n';
-            string += 'Visibility: ' + visibility + ' \n';
-            string +=
-                index === -1
-                    ? 'No Label \n'
-                    : 'Label: ' +
-                      cache.current.keypoint.keypoints.labels[index - 1] +
-                      ' \n';
-            return string.replace(/\n/g, ' \n ').slice(0, -2);
-        }
-
-        if (
-            cache.current.hover.categoryId &&
-            cache.current.hover.annotationId
-        ) {
-            let id = cache.current.hover.textId;
-            let category = cache.current.hover.categoryId;
-            string += 'ID: ' + id + ' \n';
-            string += 'Category: ' + category + ' \n';
-        }
-
-        return string.replace(/\n/g, ' \n ').slice(0, -2) + ' \n ';
+    const _removeCircle = useCallback(() => {
+        if (!cache.current.circle.obj) return;
+        cache.current.circle.obj.remove();
+        cache.current.circle.obj = null;
     }, []);
 
-    const _generateStringFromMetadata = useCallback(() => {
-        if (cache.current.keypoint) return '';
-        let string = '';
-
-        //let metadata = this.hover.annotation.$refs.metadata.metadataList; // TODO add metadata for project
-        let metadata: Array<{ key: string; value: string }> = [];
-
-        if (metadata == null || metadata.length === 0) {
-            string += 'No Metadata \n';
-        } else {
-            string += 'Metadata \n';
-            metadata.forEach(element => {
-                if (element.key.length !== 0) {
-                    string += ' ' + element.key + ' = ' + element.value + ' \n';
-                }
-            });
-        }
-        return string.replace(/\n/g, ' \n ').slice(0, -2);
-    }, []);
-
-    const _checkBbox = useCallback((item: Maybe<paper.Item>) => {
-        if (!item) return false;
-        // let annotationId = item.data.annotationId;   // TODO uncomment when bbox select functionlity will be on
-        // let categoryId = item.data.categoryId;
-        // let category = this.$parent.getCategory(categoryId);
-        // let annotation = category.getAnnotation(annotationId);
-        // return annotation.annotation.isbbox;
-        return false;
-    }, []);
-
-    const _clear = useCallback(() => {
-        cache.current.hover.categoryId = null;
-        cache.current.hover.annotationId = null;
-
-        cache.current.bbox.isBbox = false;
-        cache.current.bbox.moveObject = null;
-
-        cache.current.segment = null;
-
-        if (cache.current.hover.text) {
-            cache.current.hover.text.remove();
-            cache.current.hover.text = null;
-        }
-        if (cache.current.hover.box) {
-            cache.current.hover.box.remove();
-            cache.current.hover.box = null;
-        }
-    }, []);
-
-    const _hoverText = useCallback(() => {
+    const _adjustTooltip = useCallback(() => {
         if (!settings.tooltipOn) return;
-        if (!cache.current.keypoint) {
-            if (cache.current.hover.categoryId == null) return;
-            if (cache.current.hover.annotationId == null) return;
-        }
 
-        let position = cache.current.hover.position.add(
-            cache.current.hover.textShift,
+        const position = cache.current.hover.position.add(
+            cache.current.tooltip.textShift,
         );
 
+        // Check if Tooltip exist for hovered point
+        // In case yes - adjust content
+        // In case no - create ne one
         if (
-            !cache.current.hover.text ||
-            cache.current.hover.annotationId !== cache.current.hover.textId ||
-            cache.current.keypoint != null
+            !cache.current.tooltip.text ||
+            cache.current.hover.shape.annotationId !==
+                cache.current.tooltip.textId ||
+            cache.current.hover.keypoint != null
         ) {
-            if (cache.current.hover.text) cache.current.hover.text.remove();
-            if (cache.current.hover.box) cache.current.hover.box.remove();
-
-            let content = _generateTitle() + _generateStringFromMetadata();
-            if (cache.current.hover.annotationId) {
-                cache.current.hover.textId =
-                    cache.current.hover.annotationId || 0; // TO DO check
+            if (cache.current.tooltip.text) cache.current.tooltip.text.remove();
+            if (cache.current.tooltip.box) cache.current.tooltip.box.remove();
+            if (cache.current.hover.shape.annotationId) {
+                cache.current.tooltip.textId =
+                    cache.current.hover.shape.annotationId || -1;
             }
 
-            const data: DataIndicator = { type: DataType.INDICATOR };
+            const { keypoint, shape } = cache.current.hover;
 
-            const hover = new paper.PointText(position);
-            hover.justification = 'left';
-            hover.fillColor = new paper.Color('black');
-            hover.content = content;
-            hover.fontSize = cache.current.hover.fontSize;
-            hover.data = data;
-
-            cache.current.hover.text = hover;
-
-            const box = new paper.Path.Rectangle(
-                cache.current.hover.text.bounds,
-                new paper.Size(
-                    cache.current.hover.rounded,
-                    cache.current.hover.rounded,
-                ),
+            const ttip = createTooltip(
+                position,
+                cache.current.tooltip.rounded,
+                cache.current.tooltip.fontSize,
+                keypoint,
+                shape.categoryId,
+                shape.annotationId,
             );
-            box.fillColor = new paper.Color('white');
-            box.strokeColor = new paper.Color('white');
-            box.opacity = 0.5;
-            box.data = data;
-
-            cache.current.hover.box = box;
+            cache.current.tooltip.text = ttip.text;
+            cache.current.tooltip.box = ttip.box;
         }
 
-        cache.current.hover.shift =
-            (cache.current.hover.text.bounds.bottomRight.x -
-                cache.current.hover.text.bounds.bottomLeft.x) /
-            2;
+        // Adjust Tooltip position
+        if (cache.current.tooltip.text) {
+            cache.current.tooltip.totalShift =
+                (cache.current.tooltip.text.bounds.bottomRight.x -
+                    cache.current.tooltip.text.bounds.bottomLeft.x) /
+                2;
+        }
+        if (cache.current.tooltip.box) {
+            cache.current.tooltip.box.position = position.add(
+                cache.current.tooltip.totalShift,
+            );
+            cache.current.tooltip.box.bringToFront();
+        }
+        if (cache.current.tooltip.text) {
+            cache.current.tooltip.text.position = position.add(
+                cache.current.tooltip.totalShift,
+            );
+            cache.current.tooltip.text.bringToFront();
+        }
+    }, [settings.tooltipOn]);
 
-        if (cache.current.hover.box) {
-            cache.current.hover.box.position = position.add(
-                cache.current.hover.shift,
-            );
-            cache.current.hover.box.bringToFront();
+    const _clear = useCallback(() => {
+        cache.current.hover.shape.categoryId = null;
+        cache.current.hover.shape.annotationId = null;
+
+        cache.current.shape.segment = null;
+        cache.current.shape.obj = null;
+        cache.current.shape.isBBOX = false;
+        cache.current.shape.initPoint = null;
+
+        if (cache.current.tooltip.text) {
+            cache.current.tooltip.text.remove();
+            cache.current.tooltip.text = null;
         }
-        if (cache.current.hover.text) {
-            cache.current.hover.text.position = position.add(
-                cache.current.hover.shift,
-            );
-            cache.current.hover.text.bringToFront();
+        if (cache.current.tooltip.box) {
+            cache.current.tooltip.box.remove();
+            cache.current.tooltip.box = null;
         }
-    }, [_generateTitle, _generateStringFromMetadata, settings.tooltipOn]);
+    }, []);
 
     const setTooltipOn = useCallback((isOn: boolean) => {
         _setSettings(oldState => ({ ...oldState, tooltipOn: isOn }));
@@ -281,68 +221,114 @@ export const useSelect: IToolSelect = (paperRef, isActive, scale) => {
     const onMouseDown = useCallback(
         (event: MouseEvent) => {
             if (!paperRef.current) return;
-            let hitResult = paperRef.current.project.hitTest(
-                event.point,
-                hitOptions,
-            );
-            if (!hitResult) return;
 
-            if (event.modifiers && event.modifiers.shift) {
-                if (hitResult.type === 'segment') {
-                    hitResult.segment.remove();
+            const project = paperRef.current.project;
+            const { point, modifiers } = event;
+
+            const hitResult = project.hitTest(point, hitOptions); // hit result on segment
+
+            if (!hitResult) {
+                // If we did not hit the segment nor keypoint - try to hit shape fill
+                // in case we clicked BBOX fill - initialize BBOX move
+                const hitResultFill = project.hitTest(point, hitOptionsFill);
+                if (
+                    hitResultFill &&
+                    hitResultFill.item &&
+                    isAnnotationShape(hitResultFill.item) &&
+                    hitResultFill.item.isBBOX
+                ) {
+                    cache.current.shape.isBBOX = true;
+                    cache.current.shape.obj = hitResultFill.item;
+                    cache.current.shape.initPoint = point;
+                }
+                return;
+            }
+            const { item, type } = hitResult;
+
+            if (isKeypoint(item)) {
+                // remove Keypoint onClick
+                if (modifiers && modifiers.shift) {
+                    if (item && isKeypointGroup(item.parent)) {
+                        if (cache.current.keypoint.obj) {
+                            cache.current.keypoint.obj.selected = false;
+                        }
+                        cache.current.keypoint.obj = null;
+                        item.parent.removeKeypoint(item);
+                    }
+                    return;
+                }
+                // unselect point if the same point was clicked
+                if (cache.current.keypoint.obj === item) {
+                    cache.current.keypoint.obj.selected = false;
+                    cache.current.keypoint.obj = null;
+                    return;
+                }
+                // select point if there was nothing selected previously
+                if (cache.current.keypoint.obj === null) {
+                    cache.current.keypoint.obj = item;
+                    cache.current.keypoint.obj.selected = true;
+                    return;
+                }
+                // link / unlink selected keypoint with another
+                if (cache.current.keypoint.obj) {
+                    const keypoint = cache.current.keypoint.obj;
+                    const parent = keypoint.parent;
+
+                    if (isKeypointGroup(parent)) {
+                        parent.linkKeypoints(keypoint, item);
+                    }
+                    cache.current.keypoint.obj.selected = false;
+                    cache.current.keypoint.obj = null;
+                    return;
                 }
                 return;
             }
 
-            let path = hitResult.item;
-            let paperItem: Maybe<paper.Item> = null;
-            if (hitResult.type === 'segment') {
-                cache.current.segment = hitResult.segment;
-                paperItem = path.parent;
-            } else if (hitResult.type === 'stroke') {
-                let location = hitResult.location;
-                if (path instanceof paper.Path) {
-                    cache.current.segment = path.insert(
-                        location.index + 1,
-                        event.point,
-                    );
+            if (isAnnotationShape(item.parent)) {
+                // remove segment from AnnotationShape
+                if (modifiers && modifiers.shift) {
+                    if (type === 'segment') hitResult.segment.remove();
+                    return;
                 }
-            } else if (event.item.className === 'CompoundPath') {
-                cache.current.bbox.initPoint = event.point;
-                cache.current.bbox.moveObject = event.item;
-                paperItem = event.item;
-            }
-            cache.current.bbox.isBbox = _checkBbox(paperItem);
 
-            if (cache.current.point) {
-                cache.current.edit.canMove = cache.current.point.contains(
-                    event.point,
-                );
-            } else {
-                cache.current.edit.canMove = false;
+                // select segment from AnnotationShape
+                if (type === 'segment') {
+                    cache.current.shape.segment = hitResult.segment;
+                }
+                cache.current.shape.isBBOX = item.parent.isBBOX || false;
+
+                if (cache.current.circle.obj) {
+                    cache.current.circle.canMove = cache.current.circle.obj.contains(
+                        point,
+                    );
+                } else {
+                    cache.current.circle.canMove = false;
+                }
             }
         },
-        [paperRef, _checkBbox],
+        [paperRef],
     );
 
     const onMouseMove = useCallback(
         (event: MouseEvent) => {
             if (!paperRef.current) return;
 
-            let hitResult = paperRef.current.project.hitTest(
-                event.point,
-                hitOptions,
-            );
-            const noPoint = () => {
-                if (cache.current.point != null) {
-                    cache.current.point.remove();
-                    cache.current.point = null;
+            const project = paperRef.current.project;
+
+            // Display / Hide Circle around AnnotationShape segment
+            const drawCircle = () => {
+                const hitResult = project.hitTest(event.point, hitOptions);
+
+                if (!hitResult) {
+                    _removeCircle();
+                    return;
                 }
-            };
+                if (!isAnnotationShape(hitResult.item.parent)) {
+                    _removeCircle();
+                    return;
+                }
 
-            if (hitResult) {
                 let point = null;
-
                 if (hitResult.type === 'segment') {
                     point = hitResult.segment.location.point;
                 } else if (hitResult.type === 'stroke') {
@@ -350,36 +336,34 @@ export const useSelect: IToolSelect = (paperRef, isActive, scale) => {
                 }
 
                 if (point != null) {
-                    cache.current.edit.center = point;
-                    _createPoint(point);
+                    cache.current.circle.center = point;
+                    _createCircle(point);
                 } else {
-                    noPoint();
+                    _removeCircle();
                 }
-            } else noPoint();
+            };
+            drawCircle();
 
-            // this.$parent.hover.annotation = -1;  // TODO add parent hover values
-            // this.$parent.hover.category = -1;    // TODO add parent hover values
-            paperRef.current.project.activeLayer.selected = false;
+            project.activeLayer.selected = false;
 
-            cache.current.keypoint = null;
+            // Display / Hide Tooltip
+            cache.current.hover.keypoint = null;
 
             if (event.item && event.item instanceof paper.Group) {
                 const groupHit = event.item.hitTest(event.point);
-                if (groupHit && isAnnotation(groupHit.item.data)) {
+                if (isAnnotationShape(groupHit.item)) {
                     const { categoryId, annotationId } = groupHit.item.data;
                     cache.current.hover.position = event.point;
-                    cache.current.hover.categoryId = categoryId;
-                    cache.current.hover.annotationId = annotationId;
-                    // this.hover.category = this.$parent.getCategory(categoryId);  // TODO  getCategory method to project
-                    if (cache.current.hover.categoryId != null) {
-                        // this.hover.annotation = this.hover.category.getAnnotation(annotationId); // TODO getAnnotation method to project
+                    cache.current.hover.shape.categoryId = categoryId;
+                    cache.current.hover.shape.annotationId = annotationId;
+                    if (cache.current.hover.shape.categoryId != null) {
                         groupHit.item.selected = true;
-                        _hoverText();
+                        _adjustTooltip();
                     }
-                } else if (groupHit && isKeypoint(groupHit.item.data)) {
+                } else if (isKeypoint(groupHit.item)) {
                     cache.current.hover.position = event.point;
-                    let item = groupHit.item.data;
-                    cache.current.keypoint = item;
+                    cache.current.hover.keypoint = groupHit.item;
+                    _adjustTooltip();
                 } else {
                     _clear();
                 }
@@ -387,54 +371,81 @@ export const useSelect: IToolSelect = (paperRef, isActive, scale) => {
                 _clear();
             }
         },
-        [paperRef, _createPoint, _hoverText, _clear],
+        [paperRef, _createCircle, _removeCircle, _adjustTooltip, _clear],
     );
 
     const onMouseDrag = useCallback(
         (event: MouseEvent) => {
-            if (
-                cache.current.bbox.isBbox &&
-                cache.current.bbox.moveObject &&
-                cache.current.bbox.initPoint // TODO check when bbox select will be active
-            ) {
-                let delta_x = cache.current.bbox.initPoint.x - event.point.x;
-                let delta_y = cache.current.bbox.initPoint.y - event.point.y;
+            // Keypoint Drag
+            if (cache.current.keypoint.obj) {
+                cache.current.keypoint.isMoving = true;
+                const keypoint = cache.current.keypoint.obj;
+                if (isKeypointGroup(keypoint.parent)) {
+                    keypoint.parent.moveKeypoint(keypoint, event.point);
+                }
+                return;
+            }
 
-                let child0 = cache.current.bbox.moveObject.children[0]; // TODO check when bbox select will be active
-                if (child0 instanceof paper.Path) {
-                    let segments = child0.segments;
+            // AnnotationShape-BBOX some point drag => moving BBOX
+            if (
+                cache.current.shape.isBBOX &&
+                cache.current.shape.obj &&
+                cache.current.shape.initPoint
+            ) {
+                const delta_x = cache.current.shape.initPoint.x - event.point.x;
+                const delta_y = cache.current.shape.initPoint.y - event.point.y;
+
+                const child = cache.current.shape.obj.children[0]; // AnnotationShape BBOX has only one children
+                if (child instanceof paper.Path) {
+                    const segments = child.segments;
                     segments.forEach(segment => {
-                        let p = segment.point;
+                        const p = segment.point;
                         segment.point = new paper.Point(
                             p.x - delta_x,
                             p.y - delta_y,
                         );
                     });
-                    cache.current.bbox.initPoint = event.point;
+                    cache.current.shape.initPoint = event.point;
                 }
             }
-            if (cache.current.segment && cache.current.edit.canMove) {
-                _createPoint(event.point);
-                if (cache.current.bbox.isBbox) {
-                    let isCounterClock =
-                        cache.current.segment.previous.point.x ===
-                        cache.current.segment.point.x;
-                    let prev = isCounterClock
-                        ? cache.current.segment.previous
-                        : cache.current.segment.next;
-                    let next = !isCounterClock
-                        ? cache.current.segment.previous
-                        : cache.current.segment.next;
+
+            // AnnotationShape Segment Drag
+            if (cache.current.shape.segment && cache.current.circle.canMove) {
+                _createCircle(event.point);
+
+                // AnnotationShape-BBOX segment drag => resizing BBOX
+                if (cache.current.shape.segment && cache.current.shape.isBBOX) {
+                    console.log('BBOX resize');
+                    const isCounterClock =
+                        cache.current.shape.segment.previous.point.x ===
+                        cache.current.shape.segment.point.x;
+                    const prev = isCounterClock
+                        ? cache.current.shape.segment.previous
+                        : cache.current.shape.segment.next;
+                    const next = !isCounterClock
+                        ? cache.current.shape.segment.previous
+                        : cache.current.shape.segment.next;
                     prev.point = new paper.Point(event.point.x, prev.point.y);
                     next.point = new paper.Point(next.point.x, event.point.y);
                 }
-                cache.current.segment.point = event.point;
+
+                // move AnnotationShape segment
+                cache.current.shape.segment.point = event.point;
             }
         },
-        [_createPoint],
+        [_createCircle],
     );
 
-    const onMouseUp = useCallback((event: MouseEvent) => _clear(), [_clear]);
+    const onMouseUp = useCallback(
+        (event: MouseEvent) => {
+            if (cache.current.keypoint.obj && cache.current.keypoint.isMoving) {
+                cache.current.keypoint.isMoving = false;
+                cache.current.keypoint.obj.selected = false;
+                cache.current.keypoint.obj = null;
+            } else _clear();
+        },
+        [_clear],
+    );
 
     // tool effects
     useEffect(() => {
@@ -447,59 +458,77 @@ export const useSelect: IToolSelect = (paperRef, isActive, scale) => {
     }, [onMouseDown, onMouseDrag, onMouseMove, onMouseUp]);
 
     useEffect(() => {
-        cache.current.hover.rounded = scale * CONFIG.TOOLS_SELECT_SCALE_ROUNDED;
-        cache.current.hover.textShift =
+        cache.current.tooltip.rounded =
+            scale * CONFIG.TOOLS_SELECT_SCALE_ROUNDED;
+        cache.current.tooltip.textShift =
             scale * CONFIG.TOOLS_SELECT_SCALE_TEXT_SHIFT;
-        cache.current.hover.fontSize =
+        cache.current.tooltip.fontSize =
             scale * CONFIG.TOOLS_SELECT_SCALE_FONTSIZE;
 
-        cache.current.edit.indicatorSize =
+        cache.current.circle.radius =
             scale * CONFIG.TOOLS_SELECT_SCALE_INDICATOR_SIZE;
-        cache.current.edit.indicatorWidth =
+        cache.current.circle.strokeWidth =
             scale * CONFIG.TOOLS_SELECT_SCALE_INDICATOR_WIDTH;
 
-        if (cache.current.edit.center && cache.current.point) {
-            _createPoint(cache.current.edit.center);
+        if (cache.current.circle.obj && cache.current.circle.center) {
+            _createCircle(cache.current.circle.center);
         }
 
-        if (cache.current.hover.text) {
-            cache.current.hover.text.fontSize = cache.current.hover.fontSize;
-            cache.current.hover.shift =
-                (cache.current.hover.text.bounds.bottomRight.x -
-                    cache.current.hover.text.bounds.bottomLeft.x) /
+        if (cache.current.tooltip.text) {
+            cache.current.tooltip.text.fontSize =
+                cache.current.tooltip.fontSize;
+            cache.current.tooltip.totalShift =
+                (cache.current.tooltip.text.bounds.bottomRight.x -
+                    cache.current.tooltip.text.bounds.bottomLeft.x) /
                 2;
-            let totalShift =
-                cache.current.hover.shift + cache.current.hover.textShift;
-            cache.current.hover.text.position = cache.current.hover.position.add(
+            const totalShift =
+                cache.current.tooltip.totalShift +
+                cache.current.tooltip.textShift;
+            cache.current.tooltip.text.position = cache.current.hover.position.add(
                 totalShift,
             );
-            if (cache.current.hover.box) {
-                cache.current.hover.box.bounds =
-                    cache.current.hover.text.bounds;
+            if (cache.current.tooltip.box) {
+                cache.current.tooltip.box.bounds =
+                    cache.current.tooltip.text.bounds;
             }
         }
-    }, [scale, _createPoint]);
+    }, [scale, _createCircle]);
 
     useEffect(() => {
         if (toolRef.current != null && isActive) {
             toolRef.current.activate();
         } else {
-            if (cache.current.hover.text) {
-                cache.current.hover.text.remove();
-                cache.current.hover.text = null;
+            // Clear whole cache
+            cache.current.shape.segment = null;
+            cache.current.shape.obj = null;
+            cache.current.shape.isBBOX = false;
+            cache.current.shape.initPoint = null;
+
+            if (cache.current.keypoint.obj) {
+                cache.current.keypoint.obj.selected = false;
+                cache.current.keypoint.obj = null;
             }
-            if (cache.current.hover.box) {
-                cache.current.hover.box.remove();
-                cache.current.hover.box = null;
+            cache.current.keypoint.isMoving = false;
+
+            cache.current.hover.position = new paper.Point(0, 0);
+            cache.current.hover.keypoint = null;
+            cache.current.hover.shape.obj = null;
+            cache.current.hover.shape.categoryId = null;
+            cache.current.hover.shape.annotationId = null;
+
+            if (cache.current.circle.obj) {
+                cache.current.circle.obj.remove();
+                cache.current.circle.obj = null;
+                cache.current.shape.segment = null;
             }
-            if (cache.current.point) {
-                cache.current.point.remove();
-                cache.current.point = null;
-                cache.current.segment = null;
+            if (cache.current.tooltip.text) {
+                cache.current.tooltip.text.remove();
+                cache.current.tooltip.text = null;
             }
-            // if (this.hover.annotation) {
-            //      this.hover.annotation.compoundPath.selected = false;    // TODO add method to project
-            // }
+            if (cache.current.tooltip.box) {
+                cache.current.tooltip.box.remove();
+                cache.current.tooltip.box = null;
+            }
         }
     }, [isActive]);
 

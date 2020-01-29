@@ -13,7 +13,7 @@ interface IToolBBox {
     (
         enabled: boolean,
         scale: number,
-        updateAnnotation: (a: paper.Path) => void,
+        uniteBBox: (a: paper.Path) => void,
     ): ToolBBoxResponse;
 }
 export interface ToolBBoxResponse {
@@ -29,7 +29,7 @@ interface PathOptions {
     strokeWidth: number;
 }
 
-export const useBBox: IToolBBox = (isActive, scale, updateAnnotation) => {
+export const useBBox: IToolBBox = (isActive, scale, uniteBBox) => {
     const toolRef = useRef<Maybe<paper.Tool>>(null);
     const polygonRef = useRef<Maybe<paper.Path>>(null);
     const pointRef = useRef<PointCache>({
@@ -88,7 +88,7 @@ export const useBBox: IToolBBox = (isActive, scale, updateAnnotation) => {
         polygonRef.current.fillColor = new paper.Color('black');
         polygonRef.current.closePath();
 
-        updateAnnotation(polygonRef.current); // TODO probably more parameters
+        uniteBBox(polygonRef.current);
 
         polygonRef.current.remove();
         polygonRef.current = null;
@@ -96,9 +96,8 @@ export const useBBox: IToolBBox = (isActive, scale, updateAnnotation) => {
         pointRef.current.p1 = null;
         pointRef.current.p2 = null;
 
-        //removeUndos(this.actionTypes.ADD_POINTS); // TODO implement undo mechanism
         return true;
-    }, [updateAnnotation]);
+    }, [uniteBBox]);
 
     const removeLastBBox = useCallback(() => {
         if (polygonRef.current != null) {
@@ -162,7 +161,7 @@ export const useBBox: IToolBBox = (isActive, scale, updateAnnotation) => {
     }, [isActive]);
 
     useEffect(() => {
-        const newScale = scale * CONFIG.TOOL_SCALE_FACTOR;
+        const newScale = scale * CONFIG.TOOLS_BBOX_SCALE_FACTOR;
 
         optionsRef.current.strokeWidth = newScale;
         if (polygonRef.current != null) {

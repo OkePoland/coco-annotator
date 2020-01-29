@@ -3,6 +3,7 @@ import clsx from 'clsx';
 import { useNavigation } from 'react-navi';
 import Box from '@material-ui/core/Box';
 import Divider from '@material-ui/core/Divider';
+import CircularProgress from '@material-ui/core/CircularProgress';
 
 import { Tool } from './annotator.types';
 
@@ -27,10 +28,9 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
         selected,
         setSelected,
     } = useChoices();
-
-    const { categories, filename, previous, next } = useDataset(imageId);
-    const info = useInfo(categories);
-    const filter = useFilter(categories);
+    const dataset = useDataset(imageId);
+    const info = useInfo(dataset.categories);
+    const filter = useFilter(dataset.categories);
     const cursor = useCursor(activeTool, selected.annotationId);
 
     // all Paper.js data & callbacks
@@ -42,8 +42,7 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
         onWheelAction,
     } = useCanvas(`/api/image/${imageId}`);
 
-    const groups = useGroups(categories, selected);
-
+    const groups = useGroups(dataset.categories, selected);
     const tools = useTools(
         paperRef,
         activeTool,
@@ -52,15 +51,14 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
         imageInfo.scale,
         imageInfo.size,
         imageInfo.data,
-        groups.unite,
-        groups.subtract,
-        groups.simplify,
-        () => {
-            // TODO addKeypoint
-        },
+        groups.shape.unite,
+        groups.shape.subtract,
+        groups.shape.simplify,
+        groups.shape.uniteBBOX,
+        groups.keypoints.add,
     );
 
-    useTitle(imageInfo.size, filename);
+    useTitle(imageInfo.size, dataset.filename);
 
     return (
         <div className={classes.root}>
@@ -99,9 +97,9 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
             <Box className={classes.rightPanel}>
                 <Panel.FileTile
                     className={classes.fileTitle}
-                    filename={filename}
-                    prevImgId={previous}
-                    nextImgId={next}
+                    filename={dataset.filename}
+                    prevImgId={dataset.previous}
+                    nextImgId={dataset.next}
                     changeImage={id => {
                         navigate(`/annotate/${id}`);
                     }}
@@ -109,79 +107,102 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
 
                 <Divider className={classes.divider} />
 
-                <Box>
-                    {categories.length > 0 && (
-                        <Panel.SearchInput
-                            className={classes.searchInput}
-                            value={filter.searchText}
-                            setValue={filter.setSearchText}
+                {info.data.length > 1 && (
+                    <Panel.SearchInput
+                        className={classes.searchInput}
+                        value={filter.searchText}
+                        setValue={filter.setSearchText}
+                    />
+                )}
+
+                {segmentOn &&
+                    info.data.map(categoryInfo => (
+                        <Panel.CategoryCard
+                            key={categoryInfo.id}
+                            data={categoryInfo.data}
+                            isVisible={
+                                filter.filterObj[categoryInfo.id] != null
+                            }
+                            isSelected={categoryInfo.id === selected.categoryId}
+                            isEnabled={categoryInfo.enabled}
+                            isExpanded={categoryInfo.expanded}
+                            annotationCount={categoryInfo.annotations.length}
+                            setSelected={() => {
+                                setSelected(categoryInfo.id, null);
+                            }}
+                            setEnabled={info.enabler.setCategoryEnabled}
+                            setExpanded={info.enabler.setCategoryExpanded}
+                            editCategory={(id: number) => {
+                                // TODO
+                            }}
+                            addAnnotation={async (id: number) => {
+                                const newItem = await info.creator.create(
+                                    imageId,
+                                    id,
+                                );
+                                if (newItem) {
+                                    groups.creator.add(
+                                        categoryInfo.id,
+                                        newItem,
+                                    );
+                                    setSelected(categoryInfo.id, newItem.id);
+                                }
+                            }}
+                            renderExpandedList={() =>
+                                categoryInfo.annotations.map(item => (
+                                    <Panel.AnnotationCard
+                                        key={item.id}
+                                        data={item.data}
+                                        isSelected={
+                                            item.id === selected.annotationId
+                                        }
+                                        isEnabled={item.enabled}
+                                        edit={() => {
+                                            // TODO
+                                        }}
+                                        remove={() => {
+                                            setSelected(null, null);
+                                            info.creator.remove(
+                                                categoryInfo.id,
+                                                item.id,
+                                            );
+                                            groups.creator.remove(
+                                                categoryInfo.id,
+                                                item.id,
+                                            );
+                                        }}
+                                        setSelected={() => {
+                                            setSelected(
+                                                categoryInfo.id,
+                                                item.id,
+                                            );
+                                        }}
+                                        setEnabled={() => {
+                                            info.enabler.setAnnotationEnabled(
+                                                categoryInfo.id,
+                                                item.id,
+                                            );
+                                        }}
+                                    />
+                                ))
+                            }
                         />
-                    )}
-                    {categories.length > 0 ? (
-                        segmentOn ? (
-                            info.data.map(categoryInfo => (
-                                <Panel.CategoryCard
-                                    key={categoryInfo.id}
-                                    data={categoryInfo.data}
-                                    isVisible={
-                                        filter.filteredIds.indexOf(
-                                            categoryInfo.id,
-                                        ) > -1
-                                    }
-                                    isSelected={
-                                        categoryInfo.id === selected.categoryId
-                                    }
-                                    isEnabled={categoryInfo.enabled}
-                                    isExpanded={categoryInfo.expanded}
-                                    setSelected={setSelected}
-                                    setEnabled={info.setCategoryEnabled}
-                                    setExpanded={info.setCategoryExpanded}
-                                    editCategory={(id: number) => {
-                                        // TODO
-                                    }}
-                                    addAnnotation={(id: number) => {
-                                        // TODO
-                                    }}
-                                    renderExpandedList={() =>
-                                        categoryInfo.annotations.map(item => (
-                                            <Panel.AnnotationCard
-                                                key={item.id}
-                                                data={item.data}
-                                                isSelected={
-                                                    item.id ===
-                                                    selected.annotationId
-                                                }
-                                                isEnabled={item.enabled}
-                                                edit={() => {}}
-                                                remove={() => {
-                                                    // TODO
-                                                }}
-                                                setSelected={() => {
-                                                    setSelected(
-                                                        categoryInfo.id,
-                                                        item.id,
-                                                    );
-                                                }}
-                                                setEnabled={() => {
-                                                    info.setAnnotationEnabled(
-                                                        categoryInfo.id,
-                                                        item.id,
-                                                    );
-                                                }}
-                                            />
-                                        ))
-                                    }
-                                />
-                            ))
-                        ) : (
-                            <Panel.CLabel />
-                        )
-                    ) : (
-                        <Box textAlign="center">
-                            No categories have been enabled for this image
-                        </Box>
-                    )}
-                </Box>
+                    ))}
+
+                {info.data.length === 0 && (
+                    <Box textAlign="center">
+                        <CircularProgress />
+                        {!dataset.isLoading &&
+                            dataset.categories.length === 0 && (
+                                <div>
+                                    No categories have been enabled for this
+                                    image
+                                </div>
+                            )}
+                    </Box>
+                )}
+
+                {!segmentOn && <Panel.CLabel />}
 
                 <Divider className={classes.divider} />
 
@@ -318,45 +339,40 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
                 </div>
             </div>
 
-            {canvasRef.current != null && (
-                <div>
-                    {info.data.map(categoryInfo => (
-                        <React.Fragment key={categoryInfo.id}>
-                            <Part.CategoryInfo
-                                key={categoryInfo.id}
-                                id={categoryInfo.id}
-                                enabled={categoryInfo.enabled}
+            {canvasRef.current != null &&
+                info.data.map(categoryInfo => (
+                    <React.Fragment key={categoryInfo.id}>
+                        <Part.CategoryInfo
+                            key={categoryInfo.id}
+                            id={categoryInfo.id}
+                            enabled={categoryInfo.enabled}
+                            color={
+                                categoryInfo.enabled && !categoryInfo.expanded
+                                    ? categoryInfo.data.color
+                                    : null
+                            }
+                            groupsRef={groups.groupsRef}
+                        />
+                        {categoryInfo.annotations.map(annotationInfo => (
+                            <Part.AnnotationInfo
+                                key={annotationInfo.id}
+                                id={annotationInfo.id}
+                                categoryId={categoryInfo.id}
+                                enabled={annotationInfo.enabled}
                                 color={
                                     categoryInfo.enabled &&
-                                    !categoryInfo.expanded
-                                        ? categoryInfo.data.color
+                                    categoryInfo.expanded
+                                        ? annotationInfo.data.color
                                         : null
+                                }
+                                isSelected={
+                                    annotationInfo.id === selected.annotationId
                                 }
                                 groupsRef={groups.groupsRef}
                             />
-                            {categoryInfo.annotations.map(annotationInfo => (
-                                <Part.AnnotationInfo
-                                    key={annotationInfo.id}
-                                    id={annotationInfo.id}
-                                    categoryId={categoryInfo.id}
-                                    enabled={annotationInfo.enabled}
-                                    color={
-                                        categoryInfo.enabled &&
-                                        categoryInfo.expanded
-                                            ? annotationInfo.data.color
-                                            : null
-                                    }
-                                    isSelected={
-                                        annotationInfo.id ===
-                                        selected.annotationId
-                                    }
-                                    groupsRef={groups.groupsRef}
-                                />
-                            ))}
-                        </React.Fragment>
-                    ))}
-                </div>
-            )}
+                        ))}
+                    </React.Fragment>
+                ))}
         </div>
     );
 };

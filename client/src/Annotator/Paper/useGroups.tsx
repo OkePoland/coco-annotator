@@ -2,127 +2,203 @@ import { useRef, useEffect, useCallback } from 'react';
 import { MutableRefObject } from 'react';
 import paper from 'paper';
 
-import { Category } from '../../common/types';
-import {
-    SelectedState,
-    DataType,
-    DataGroup,
-    DataAnnotation,
-} from '../annotator.types';
+import { Category, Annotation } from '../../common/types';
+import { SelectedState } from '../annotator.types';
 
-import * as CONFIG from '../annotator.config';
-
-import * as pathUtils from '../Paper/Utils/pathUtils';
+import { CategoryGroup, AnnotationGroup } from './Group';
+import { findCategoryGroup, findAnnotationGroup } from './Utils/groupUtils';
 
 // interfaces
 interface IUseGroups {
-    (categories: Category[], selected: SelectedState): UsGroupResponse;
+    (categories: Category[], selected: SelectedState): UseGroupsResponse;
 }
-export interface UsGroupResponse {
-    groupsRef: MutableRefObject<paper.Group[]>;
+interface UseGroupsResponse {
+    groupsRef: MutableRefObject<CategoryGroup[]>;
+    creator: UseCreatorResponse;
+    shape: UseShapeResponse;
+    keypoints: UseKeypointsResponse;
+}
+interface UseCreatorResponse {
+    add: (categoryId: number, annotation: Annotation) => void;
+    remove: (categoryId: number, annotationId: number) => void;
+}
+interface UseShapeResponse {
     unite: (toAdd: paper.Path) => void;
     subtract: (toRemove: paper.Path) => void;
     simplify: () => void;
+    uniteBBOX: (toAdd: paper.Path) => void;
+}
+interface UseKeypointsResponse {
+    add: (point: paper.Point) => void;
+    remove: (id: number) => void;
 }
 
 const useGroups: IUseGroups = (categories, selected) => {
-    const groups = useRef<paper.Group[]>([]);
+    const groupsRef = useRef<CategoryGroup[]>([]);
+    const creator = useCreator(groupsRef);
+    const shape = useShape(groupsRef, selected);
+    const keypoints = useKeypoints(groupsRef, selected);
 
-    const unite = useCallback(
-        (toAdd: paper.Path) => {
-            const idx = groups.current.findIndex(
-                o => o.data.categoryId === selected.categoryId,
-            );
-            if (idx === -1) return;
-
-            const aIdx = groups.current[idx].children.findIndex(
-                o => o.data.annotationId === selected.annotationId,
-            );
-            if (aIdx === -1) return;
-
-            let path = groups.current[idx].children[aIdx];
-            if (path instanceof paper.CompoundPath) {
-                const newPath = pathUtils.unite(path, toAdd);
-                groups.current[idx].children[aIdx].replaceWith(newPath);
-                path.remove(); // make sure that old path is removed
-            }
-        },
-        [selected],
-    );
-    const subtract = useCallback(
-        (toRemove: paper.Path) => {
-            const idx = groups.current.findIndex(
-                o => o.data.categoryId === selected.categoryId,
-            );
-            if (idx === -1) return;
-
-            const aIdx = groups.current[idx].children.findIndex(
-                o => o.data.annotationId === selected.annotationId,
-            );
-            if (aIdx === -1) return;
-
-            let path = groups.current[idx].children[aIdx];
-            if (path instanceof paper.CompoundPath) {
-                const newPath = pathUtils.subtract(path, toRemove);
-                groups.current[idx].children[aIdx].replaceWith(newPath);
-                path.remove(); // make sure that old path is removed
-            }
-        },
-        [selected],
-    );
-
-    const simplify = useCallback(() => {
-        const idx = groups.current.findIndex(
-            o => o.data.categoryId === selected.categoryId,
-        );
-        if (idx === -1) return;
-
-        const aIdx = groups.current[idx].children.findIndex(
-            o => o.data.annotationId === selected.annotationId,
-        );
-        if (aIdx === -1) return;
-
-        let path = groups.current[idx].children[aIdx];
-        if (path instanceof paper.CompoundPath) {
-            pathUtils.simplify(path);
-        }
-    }, [selected]);
-
+    // create initial groups
     useEffect(() => {
-        const initialGroups = categories.map(cat => {
-            const group = new paper.Group();
-            group.name = CONFIG.CATEGORY_NAME_PREFIX + cat.id;
-            const data: DataGroup = {
-                type: DataType.GROUP,
-                categoryId: cat.id,
-            };
-            group.data = data;
-
-            if (cat.annotations != null) {
-                const arr: paper.CompoundPath[] = cat.annotations.map(a => {
-                    const path = pathUtils.create(a, a.color);
-                    path.name = CONFIG.ANNOTATION_NAME_PREFIX + a.id;
-                    path.locked = false;
-                    const data: DataAnnotation = {
-                        type: DataType.ANNOTATION,
-                        categoryId: cat.id,
-                        annotationId: a.id,
-                    };
-                    path.data = data;
-                    return path;
-                });
+        const initialGroups = categories.map(category => {
+            const group = new CategoryGroup(category.id);
+            if (category.annotations != null) {
+                const arr: AnnotationGroup[] = category.annotations.map(
+                    annotation =>
+                        new AnnotationGroup(category.id, annotation.id),
+                );
                 group.addChildren(arr);
             }
             return group;
         });
-        groups.current = initialGroups;
+        groupsRef.current = initialGroups;
     }, [categories]);
 
     return {
-        groupsRef: groups,
+        groupsRef,
+        creator,
+        shape,
+        keypoints,
+    };
+};
+
+// add/remove Annotations Groups
+const useCreator = (groupsRef: MutableRefObject<CategoryGroup[]>) => {
+    const add = useCallback(
+        (categoryId: number, annotation: Annotation) => {
+            const categoryGroup = findCategoryGroup(
+                groupsRef.current,
+                categoryId,
+            );
+            if (!categoryGroup) return;
+
+            const newItem = new AnnotationGroup(categoryId, annotation.id);
+            categoryGroup.addChild(newItem);
+        },
+        [groupsRef],
+    );
+
+    const remove = useCallback(
+        (categoryId: number, annotationId: number) => {
+            const categoryGroup = findCategoryGroup(
+                groupsRef.current,
+                categoryId,
+            );
+            if (!categoryGroup) return;
+
+            const aIdx = categoryGroup.children.findIndex(
+                o => o.data.annotationId === annotationId,
+            );
+            if (aIdx === -1) return;
+
+            categoryGroup.removeChildren(aIdx);
+        },
+        [groupsRef],
+    );
+    return { add, remove };
+};
+
+// adjust Annotations Shapes
+const useShape = (
+    groups: MutableRefObject<CategoryGroup[]>,
+    selected: SelectedState,
+) => {
+    const unite = useCallback(
+        (toAdd: paper.Path) => {
+            const group = findAnnotationGroup(
+                groups.current,
+                selected.categoryId,
+                selected.annotationId,
+            );
+            if (!group) return;
+
+            group.uniteShape(toAdd);
+        },
+        [groups, selected.annotationId, selected.categoryId],
+    );
+
+    const subtract = useCallback(
+        (toRemove: paper.Path) => {
+            const group = findAnnotationGroup(
+                groups.current,
+                selected.categoryId,
+                selected.annotationId,
+            );
+            if (!group) return;
+
+            group.subtractShape(toRemove);
+        },
+        [groups, selected.annotationId, selected.categoryId],
+    );
+
+    const simplify = useCallback(() => {
+        const group = findAnnotationGroup(
+            groups.current,
+            selected.categoryId,
+            selected.annotationId,
+        );
+        if (!group) return;
+
+        group.simplifyShape();
+    }, [groups, selected.annotationId, selected.categoryId]);
+
+    const uniteBBOX = useCallback(
+        (toAdd: paper.Path) => {
+            const group = findAnnotationGroup(
+                groups.current,
+                selected.categoryId,
+                selected.annotationId,
+            );
+            if (!group) return;
+
+            group.uniteBBOX(toAdd);
+        },
+        [groups, selected.annotationId, selected.categoryId],
+    );
+
+    return {
         unite,
         subtract,
         simplify,
+        uniteBBOX,
     };
 };
+
+// adjust Annotations Keypoints
+const useKeypoints = (
+    groups: MutableRefObject<CategoryGroup[]>,
+    selected: SelectedState,
+) => {
+    const add = useCallback(
+        (point: paper.Point) => {
+            const group = findAnnotationGroup(
+                groups.current,
+                selected.categoryId,
+                selected.annotationId,
+            );
+            if (!group) return;
+
+            group.keypoints.addKeypoint(point);
+        },
+        [groups, selected.annotationId, selected.categoryId],
+    );
+
+    const remove = useCallback(
+        (id: number) => {
+            const group = findAnnotationGroup(
+                groups.current,
+                selected.categoryId,
+                selected.annotationId,
+            );
+            if (group) {
+                // group.keypoints.deleteKeypoint();    // TODO
+            }
+        },
+        [groups, selected.annotationId, selected.categoryId],
+    );
+
+    return { add, remove };
+};
+
 export default useGroups;

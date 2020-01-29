@@ -1,54 +1,51 @@
 /**
- * Utils methods to modify exisitng paper.shapes
+ * Utils methods to modify exisitng paper.CompundPath
  */
 import paper from 'paper';
 
-import { Annotation } from '../../../common/types';
+import { DataAnnotationShape } from '../../annotator.types';
 
 import * as CONFIG from '../../annotator.config';
 
-export const create = (annotation: Annotation, color?: string) => {
-    const item = new paper.CompoundPath({});
-    item.name = 'Annotation_' + annotation.id;
+import { AnnotationShape } from '../Group';
+
+export const create = (categoryId: number, annotationId: number) => {
+    const data: DataAnnotationShape = { categoryId, annotationId };
+
+    const item = new AnnotationShape({});
+    item.name = CONFIG.ANNOTATION_SHAPE_PREFIX + annotationId;
+    item.data = data;
+
     item.remove(); // newly created item is removed from project
-    item.visible = false; // and not visible
-
-    let center = new paper.Point(annotation.width / 2, annotation.height / 2);
-    let children: Array<paper.Path> = [];
-    annotation.segmentation.forEach(polygon => {
-        let path = new paper.Path();
-        for (let j = 0; j < polygon.length; j += 2) {
-            let point = new paper.Point(polygon[j], polygon[j + 1]);
-            path.add(point.subtract(center));
-        }
-        path.closePath();
-
-        children.push(path);
-    });
-    item.children = children;
-    item.fillColor = new paper.Color(color ? color : 'black');
-    item.opacity = CONFIG.ANNOTATION_OPACITY;
+    item.visible = false;
+    item.opacity = CONFIG.ANNOTATION_SHAPE_OPACITY;
+    item.locked = false;
 
     return item;
 };
 
-export const unite = (item: paper.CompoundPath, toAdd: paper.Path) => {
+export const unite = (
+    item: AnnotationShape,
+    toAdd: paper.Path,
+    isBBOX: boolean,
+) => {
     // create copy of existing paper object ( + make sure that it is not insterted )
     const copy: paper.Item = item.clone({ insert: false, deep: true });
 
-    if (copy instanceof paper.CompoundPath) {
+    if (copy instanceof AnnotationShape) {
         // unite old geometry & new geometry
         const pathItem: paper.PathItem = copy.unite(toAdd);
 
         // use new geometry for new Compound path
-        const newItem = new paper.CompoundPath(pathItem);
+        const newItem = new AnnotationShape(pathItem, isBBOX);
         newItem.remove();
 
         // make sure that new object has the same important properties
         newItem.name = item.name;
         newItem.data = { ...item.data };
+
         newItem.fillColor = item.fillColor;
-        newItem.opacity = CONFIG.ANNOTATION_OPACITY;
+        newItem.opacity = CONFIG.ANNOTATION_SHAPE_OPACITY;
 
         simplify(newItem);
         return newItem;
@@ -56,30 +53,31 @@ export const unite = (item: paper.CompoundPath, toAdd: paper.Path) => {
     return item;
 };
 
-export const subtract = (item: paper.CompoundPath, toRemove: paper.Path) => {
+export const subtract = (item: AnnotationShape, toRemove: paper.Path) => {
     // create copy of existing paper object ( + make sure that it is not insterted )
     const copy: paper.Item = item.clone({ insert: false, deep: true });
 
-    if (copy instanceof paper.CompoundPath) {
+    if (copy instanceof AnnotationShape) {
         // subtract new geometry from old geometry
         const pathItem: paper.PathItem = copy.subtract(toRemove);
 
         // use new geometry for new Compound path
-        const newItem = new paper.CompoundPath(pathItem);
+        const newItem = new AnnotationShape(pathItem);
         newItem.remove();
 
         // make sure that new object has the same important properties
         newItem.name = item.name;
         newItem.data = { ...item.data };
+
         newItem.fillColor = item.fillColor;
-        newItem.opacity = CONFIG.ANNOTATION_OPACITY;
+        newItem.opacity = CONFIG.ANNOTATION_SHAPE_OPACITY;
 
         return newItem;
     }
     return item;
 };
 
-export const simplify = (item: paper.CompoundPath) => {
+export const simplify = (item: AnnotationShape) => {
     item.flatten(1);
 
     const newChildren: paper.Path[] = [];

@@ -3,36 +3,122 @@
  * with specific categories / annotations
  */
 import { useState, useEffect, useCallback } from 'react';
+import { Dispatch, SetStateAction } from 'react';
 
 import { Category, Annotation } from '../../common/types';
+import { CategoryInfo, AnnotationInfo, Maybe } from '../annotator.types';
 
-// interfaces
-interface IUseCategories {
-    (categories: Category[]): UseCategoriesResponse;
+import * as AnnotatorApi from '../annotator.api';
+
+interface IUseInfo {
+    (categories: Category[]): UseInfoResponse;
 }
-interface UseCategoriesResponse {
+interface UseInfoResponse {
     data: CategoryInfo[];
+    creator: UseCreatorResponse;
+    enabler: UseEnablerResponse;
+}
+interface UseCreatorResponse {
+    create: (imageId: number, categoryId: number) => Promise<Maybe<Annotation>>;
+    remove: (categoryId: number, annotationId: number) => Promise<void>;
+}
+interface UseEnablerResponse {
     setCategoryEnabled: (categoryId: number) => void;
     setCategoryExpanded: (categoryId: number) => void;
     setAnnotationEnabled: (categoryId: number, annotationId: number) => void;
 }
-
-interface CategoryInfo {
-    id: number;
-    data: Category;
-    enabled: boolean;
-    expanded: boolean;
-    annotations: AnnotationInfo[];
-}
-interface AnnotationInfo {
-    id: number;
-    data: Annotation;
-    enabled: boolean;
+interface ISubHook<T> {
+    (
+        data: CategoryInfo[],
+        setData: Dispatch<SetStateAction<CategoryInfo[]>>,
+    ): T;
 }
 
-const useInfo: IUseCategories = categories => {
+const useInfo: IUseInfo = categories => {
     const [data, _setData] = useState<CategoryInfo[]>([]);
 
+    const creator = useCreator(data, _setData);
+    const enabler = useEnabler(data, _setData);
+
+    useEffect(() => {
+        const initialData: CategoryInfo[] = categories.map(cat => {
+            let annotations: AnnotationInfo[] = [];
+            if (cat.annotations != null) {
+                annotations = cat.annotations.map(a => ({
+                    id: a.id,
+                    enabled: true,
+                    data: a,
+                }));
+            }
+            return {
+                id: cat.id,
+                enabled: cat.annotations != null && cat.annotations.length > 0,
+                expanded: true,
+                data: cat,
+                annotations,
+            };
+        });
+        _setData(initialData);
+    }, [categories]);
+
+    return {
+        data,
+        creator,
+        enabler,
+    };
+};
+
+// Helper sub-Hook to extract add / remove / edit methods on annotations
+const useCreator: ISubHook<UseCreatorResponse> = (data, setData) => {
+    const create = useCallback(
+        async (imageId: number, categoryId: number) => {
+            const idx = data.findIndex(o => o.id === categoryId);
+            if (idx === -1) return null;
+
+            const item = await AnnotatorApi.createAnnotation(
+                imageId,
+                categoryId,
+            );
+
+            const id = item.id;
+            const newInfo = { id, enabled: true, data: item };
+
+            const newArr = [...data];
+            newArr[idx].annotations.push(newInfo);
+            setData(newArr);
+
+            return item;
+        },
+        [data, setData],
+    );
+
+    const remove = useCallback(
+        async (categoryId: number, annotationId: number) => {
+            const idx = data.findIndex(o => o.id === categoryId);
+            if (idx === -1) return;
+
+            const aIdx = data[idx].annotations.findIndex(
+                o => o.id === annotationId,
+            );
+            if (aIdx === -1) return;
+
+            await AnnotatorApi.deleteAnnotation(annotationId);
+
+            const newArr = [...data];
+            newArr[idx].annotations.splice(aIdx, 1);
+            setData(newArr);
+        },
+        [data, setData],
+    );
+
+    return {
+        create,
+        remove,
+    };
+};
+
+// Helper sub-Hook to extract enable method on annotation
+const useEnabler: ISubHook<UseEnablerResponse> = (data, setData) => {
     const setCategoryEnabled = useCallback(
         (categoryId: number) => {
             const idx = data.findIndex(o => o.id === categoryId);
@@ -47,9 +133,9 @@ const useInfo: IUseCategories = categories => {
                       }
                     : item,
             );
-            _setData(newArr);
+            setData(newArr);
         },
-        [data],
+        [data, setData],
     );
 
     const setCategoryExpanded = useCallback(
@@ -66,9 +152,9 @@ const useInfo: IUseCategories = categories => {
                       }
                     : item,
             );
-            _setData(newArr);
+            setData(newArr);
         },
-        [data],
+        [data, setData],
     );
 
     const setAnnotationEnabled = useCallback(
@@ -82,40 +168,20 @@ const useInfo: IUseCategories = categories => {
             if (aIdx === -1) return;
 
             const newArr = [...data];
-            data[idx].annotations[aIdx].enabled = !newArr[idx].annotations[aIdx]
-                .enabled;
+            newArr[idx].annotations[aIdx].enabled = !newArr[idx].annotations[
+                aIdx
+            ].enabled;
 
-            _setData(newArr);
+            setData(newArr);
         },
-        [data],
+        [data, setData],
     );
 
-    useEffect(() => {
-        const initialData: CategoryInfo[] = categories.map(cat => {
-            let annotations: AnnotationInfo[] = [];
-            if (cat.annotations != null) {
-                annotations = cat.annotations.map(a => ({
-                    id: a.id,
-                    data: a,
-                    enabled: true,
-                }));
-            }
-            return {
-                id: cat.id,
-                data: cat,
-                enabled: cat.annotations != null && cat.annotations.length > 0,
-                expanded: true,
-                annotations: annotations,
-            };
-        });
-        _setData(initialData);
-    }, [categories]);
-
     return {
-        data,
         setCategoryEnabled,
         setCategoryExpanded,
         setAnnotationEnabled,
     };
 };
+
 export default useInfo;
