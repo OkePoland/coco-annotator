@@ -1,72 +1,118 @@
-import { useState, useEffect, Dispatch, SetStateAction } from 'react';
+import { useState, useEffect, Dispatch, SetStateAction, useMemo } from 'react';
 import { useNavigation } from 'react-navi';
-import { FormikConfig, FormikHelpers } from 'formik';
-import * as Yup from 'yup';
 
-import { Dataset } from '../../common/types';
+import { Dataset, Category, UserInfo } from '../../common/types';
 import * as DatasetApi from '../datasets.api';
+import * as AdminPanelApi from '../../AdminPanel/adminPanel.api';
 import useGlobalContext from '../../common/hooks/useGlobalContext';
+import useAuthContext from '../../common/hooks/useAuthContext';
 import { addProcess, removeProcess } from '../../common/utils/globalActions';
 
 // interfaces
 interface DatasetsState {
     list: ListState;
     dialogs: DialogsState;
+    edit: [
+        DatasetWithCategories | null,
+        Dispatch<SetStateAction<DatasetWithCategories | null>>,
+    ];
+    share: [
+        DatasetWithCategories | null,
+        Dispatch<SetStateAction<DatasetWithCategories | null>>,
+    ];
     navigation: NavigationState;
+    datasetWithCategories: DatasetWithCategories[];
 }
 interface NavigationState {
-    openDetails(dataset: Dataset): void;
+    openDetails(dataset: DatasetWithCategories): void;
 }
 interface ListState {
-    page: number;
+    offset: [number, Dispatch<SetStateAction<number>>];
     pageCount: number;
     datasets: Dataset[];
-    categories: string[];
+    categories: Category[];
+    tags: string[];
+    usernames: string[];
     setPage: Dispatch<SetStateAction<number>>;
     refreshPage(): void;
 }
 interface DialogsState {
     help: [boolean, Dispatch<SetStateAction<boolean>>];
     create: [boolean, Dispatch<SetStateAction<boolean>>];
-    share: [boolean, Dispatch<SetStateAction<boolean>>];
-    edit: [boolean, Dispatch<SetStateAction<boolean>>];
 }
-interface FormCreateState {
-    name: string;
-    categories: Array<string>;
+export interface DatasetWithCategories {
+    dataset: Dataset;
+    categories: Category[];
 }
 
 // hooks
 export const useDatasetsPage = (): DatasetsState => {
+    const { getCurrentUser } = useAuthContext();
+    const currentUser: UserInfo | null = useMemo(getCurrentUser, [
+        getCurrentUser,
+    ]);
+
     const navigation = usePageNavigation();
-    const list = useList(52);
+    const list = useList(52, currentUser);
     const dialogs = useDialogs();
+    const edit = useState<DatasetWithCategories | null>(null);
+    const share = useState<DatasetWithCategories | null>(null);
+
+    const categoriesDictionary = useMemo(
+        () =>
+            list.categories.reduce(
+                (result: { [key: string]: Category }, category: Category) => {
+                    result[category.id] = category;
+                    return result;
+                },
+                {},
+            ),
+        [list.categories],
+    );
+
+    const datasetWithCategories: DatasetWithCategories[] = list.datasets.map(
+        dataset => {
+            const categories = dataset.categories
+                .map(categoryId => ({ ...categoriesDictionary[categoryId] }))
+                .filter(datasetCategory => Object.keys(datasetCategory).length);
+
+            return { dataset: dataset, categories: categories };
+        },
+    );
 
     return {
-        list: list,
-        dialogs: dialogs,
-        navigation: navigation,
+        list,
+        dialogs,
+        edit,
+        share,
+        navigation,
+        datasetWithCategories,
     };
 };
 
 const usePageNavigation = (): NavigationState => {
-    const navigation = useNavigation();
-    const openDetails = (dataset: Dataset) => {
-        navigation.navigate(`/dataset/${dataset.id}`);
+    const { navigate } = useNavigation();
+    const openDetails = ({ dataset }: DatasetWithCategories) => {
+        navigate(`/dataset/${dataset.id}`);
     };
     return {
-        openDetails: openDetails,
+        openDetails,
     };
 };
 
-const useList = (itemsPerPage: number): ListState => {
+const useList = (
+    itemsPerPage: number,
+    currentUser: UserInfo | null,
+): ListState => {
     const [, dispatch] = useGlobalContext();
 
-    const [page, setPage] = useState(0);
+    const [page, setPage] = useState(1);
+    const offset = useState(0);
     const [generation, moveGeneration] = useState(0);
-    const [pageCount, setPageCount] = useState(0);
+    const [pageCount, setPageCount] = useState(1);
     const [datasets, setDatasets] = useState<Dataset[]>([]);
-    const [categories, setCategories] = useState<string[]>([]); // TODO
+    const [categories, setCategories] = useState<Category[]>([]);
+    const [users, setUsers] = useState<UserInfo[]>([]);
 
     const refreshPage = () => {
         moveGeneration(c => c + 1);
@@ -82,74 +128,38 @@ const useList = (itemsPerPage: number): ListState => {
             setDatasets(data.datasets);
             setCategories(data.categories);
             setPageCount(data.pagination.pages);
-
+            if (currentUser && currentUser.is_admin) {
+                const {
+                    data: { users },
+                } = await AdminPanelApi.getUsers(itemsPerPage);
+                setUsers(users);
+            }
             removeProcess(dispatch, process);
         };
         update(page);
-    }, [page, generation, itemsPerPage, dispatch]);
+    }, [page, generation, itemsPerPage, dispatch, currentUser]);
+
+    const tags = categories.map(category => category.name);
+    const usernames = users.map(user => user.username);
 
     return {
-        page: page,
-        pageCount: pageCount,
-        datasets: datasets,
-        categories: categories,
-        setPage: setPage,
-        refreshPage: refreshPage,
+        offset,
+        pageCount,
+        datasets,
+        categories,
+        tags,
+        usernames,
+        setPage,
+        refreshPage,
     };
 };
 
 const useDialogs = () => {
     const help = useState(false);
     const create = useState(false);
-    const edit = useState(false);
-    const share = useState(false);
+
     return {
-        help: help,
-        create: create,
-        edit: edit,
-        share: share,
+        help,
+        create,
     };
-};
-
-export const useFormikCreate = (
-    refeshPage: () => void,
-): FormikConfig<FormCreateState> => {
-    const initialValues = {
-        name: '',
-        categories: [],
-    };
-    const validationSchema = Yup.object({
-        name: Yup.string()
-            .max(10, 'Must be 10 characters or less')
-            .required('Required'),
-        categories: Yup.array()
-            .of(Yup.string())
-            .max(2, 'Must be Max 2 categories'),
-    });
-    const onSubmit = async (
-        values: FormCreateState,
-        { resetForm }: FormikHelpers<FormCreateState>,
-    ) => {
-        await DatasetApi.create(values.name);
-
-        resetForm();
-        refeshPage();
-    };
-    return {
-        initialValues,
-        validationSchema,
-        onSubmit,
-    };
-};
-
-export const useFormikImport = () => {
-    // TODO
-};
-
-export const useFormikEdit = () => {
-    // TODO
-};
-
-export const useFormikShare = () => {
-    // TODO
 };

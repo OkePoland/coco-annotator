@@ -43,7 +43,7 @@ export interface Dataset {
     deleted_date?: {
         $data: number;
     };
-    permissions?: DatasetPermissions | {};
+    permissions?: DatasetPermissions;
 }
 
 export interface Image {
@@ -112,7 +112,7 @@ export interface Annotation {
     events?: [];
 }
 
-interface IDict {
+export interface IDict {
     [key: string]: any;
 }
 
@@ -142,12 +142,12 @@ export interface Undo {
 }
 
 export interface DatasetPermissions {
-    owner: boolean;
-    edit: boolean;
-    share: boolean;
-    generate: boolean;
-    delete: boolean;
-    download: boolean;
+    owner?: boolean;
+    edit?: boolean;
+    share?: boolean;
+    generate?: boolean;
+    delete?: boolean;
+    download?: boolean;
 }
 
 export interface ImagePermissions {

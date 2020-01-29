@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+
 import Box from '@material-ui/core/Box';
 import Grid from '@material-ui/core/Grid';
 import Card from '@material-ui/core/Card';
@@ -9,40 +10,45 @@ import IconButton from '@material-ui/core/IconButton';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
 import Menu from '@material-ui/core/Menu';
 import LinearProgress from '@material-ui/core/LinearProgress';
+import Chip from '@material-ui/core/Chip';
 
-import { Dataset } from '../../common/types';
 import { useStyles } from './listCard.styles';
+import { DatasetWithCategories } from './list.hooks';
 
 interface Props {
-    item: Dataset;
+    item: DatasetWithCategories;
+    imageUrl: string;
     onClick(): void;
-    renderMenuItems(): JSX.Element;
+    renderMenuItems(closeMenu: () => void): JSX.Element;
 }
 
-const DatasetCard: React.FC<Props> = ({ item, onClick, renderMenuItems }) => {
+const DatasetCard: React.FC<Props> = ({
+    item: {
+        dataset: { name, numberImages, numberAnnotated, owner },
+        categories,
+    },
+    imageUrl,
+    onClick,
+    renderMenuItems,
+}) => {
     const classes = useStyles();
     const [anchorEl, setAnchor] = useState<null | HTMLElement>(null);
 
-    const categories: Array<string> = ['category']; // TODO
+    const closeMenu = () => {
+        setAnchor(null);
+    };
 
     return (
         <Card>
             <CardActionArea onClick={onClick}>
-                <CardMedia
-                    className={classes.image}
-                    image={
-                        item.first_image_id != null
-                            ? `/api/image/${item.first_image_id}/"?width=250"`
-                            : 'img/no-image.png'
-                    }
-                />
+                <CardMedia className={classes.image} image={imageUrl} />
             </CardActionArea>
 
             <Box pt={1} pb={1} pl={2} pr={2}>
                 <Grid container justify="space-between" alignItems="center">
                     <Grid item>
                         <Typography component="div">
-                            <Box fontWeight="fontWeightBold">{item.name}</Box>
+                            <Box fontWeight="fontWeightBold">{name}</Box>
                         </Typography>
                     </Grid>
                     <Grid item>
@@ -58,18 +64,15 @@ const DatasetCard: React.FC<Props> = ({ item, onClick, renderMenuItems }) => {
                 </Grid>
 
                 <Box mb={1}>
-                    {item.numberImages > 0 ? (
+                    {numberImages > 0 ? (
                         <Box textAlign="center">
                             <Typography>
-                                {`${item.numberAnnotated} of ${item.numberImages} images annotated.`}
+                                {`${numberAnnotated} of ${numberImages} images annotated.`}
                             </Typography>
 
                             <LinearProgress
                                 variant="determinate"
-                                value={
-                                    (item.numberAnnotated / item.numberImages) *
-                                    100
-                                }
+                                value={(numberAnnotated / numberImages) * 100}
                             />
                         </Box>
                     ) : (
@@ -77,24 +80,21 @@ const DatasetCard: React.FC<Props> = ({ item, onClick, renderMenuItems }) => {
                     )}
                 </Box>
 
-                <Box>
-                    {categories.map(o => (
-                        <Box
-                            key={o}
-                            component="span"
-                            borderRadius={16}
-                            boxShadow={3}
-                            pl={1}
-                            pr={1}
-                        >
-                            {o}
-                        </Box>
+                <Box textAlign="left">
+                    {categories.map(category => (
+                        <Chip
+                            size="small"
+                            key={category.id}
+                            label={category.name}
+                            style={{ backgroundColor: category.color }}
+                            className={classes.categoryChip}
+                        />
                     ))}
                 </Box>
             </Box>
 
             <Box textAlign="center" boxShadow={3}>
-                Created by {item.owner}
+                Created by {owner}
             </Box>
 
             <Menu
@@ -106,7 +106,7 @@ const DatasetCard: React.FC<Props> = ({ item, onClick, renderMenuItems }) => {
                     setAnchor(null);
                 }}
             >
-                {renderMenuItems()}
+                {renderMenuItems(closeMenu)}
             </Menu>
         </Card>
     );

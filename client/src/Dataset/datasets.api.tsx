@@ -1,5 +1,5 @@
 import Api from '../common/api';
-import { Image } from '../common/types';
+import { Image, Dataset } from '../common/types';
 
 const baseURL = '/dataset';
 
@@ -18,8 +18,35 @@ export const create = async (name: string, categories?: Array<string>) => {
     const params = {
         name,
     };
-    const body = { categories: categories != null ? categories : [] };
+    const body = { categories: categories || [] };
     const response = await Api.post(url, body, { params });
+    return response;
+};
+
+export const edit = async (
+    id: number,
+    categories?: Array<string>,
+    default_annotation_metadata?: { [key: string]: string | number | boolean },
+) => {
+    const url = `${baseURL}/${id}`;
+    const body = {
+        categories: categories || [],
+        default_annotation_metadata: default_annotation_metadata || {},
+    };
+    const response = await Api.post(url, body);
+    return response;
+};
+
+export const share = async (id: number, users: Array<string>) => {
+    const url = `${baseURL}/${id}/share`;
+    const body = { users: users || [] };
+    const response = await Api.post(url, body);
+    return response;
+};
+
+export const deleteDataset = async (id: number) => {
+    const url = `${baseURL}/${id}`;
+    const response = Api.delete(url);
     return response;
 };
 
@@ -37,7 +64,7 @@ interface IGetDetailsResponse {
     images: Image[];
     folder: string;
     directory: string;
-    dataset: any;
+    dataset: Dataset;
     categories: string[];
     subdirectories: string[];
     time_ms: number;
@@ -109,9 +136,14 @@ export const getMetadata = async (id: number) => {
 };
 
 // TODO
-// getCoco
 // uploadCoco
 // exportingCOCO
+
+export const getCoco = async (id: number) => {
+    const url = `${baseURL}/${id}/coco`;
+    const response = await Api.get(url);
+    return response;
+};
 
 // image requests
 export const deleteImage = async (id: number) => {

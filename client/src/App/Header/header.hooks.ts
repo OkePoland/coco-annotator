@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 
 import {
     NavItem,
@@ -10,7 +10,7 @@ import {
     Help,
     Admin,
 } from '../navItems';
-import { Dataset } from '../../common/types';
+import { Dataset, UserInfo } from '../../common/types';
 import { SocketEvent } from '../../common/sockets/events';
 
 import useSocketEvent from '../../common/hooks/useSocketEvent';
@@ -93,7 +93,9 @@ const useConnectionState = (): boolean | null => {
 const useMenuItems = (dataset: Dataset | null): Array<NavItem> => {
     // Calculate extra page for menu
     const { getCurrentUser } = useAuthContext();
-    const currentUser = getCurrentUser();
+    const currentUser: UserInfo | null = useMemo(getCurrentUser, [
+        getCurrentUser,
+    ]);
     const menuItems: Array<NavItem> = [];
 
     menuItems.push(Datasets);
