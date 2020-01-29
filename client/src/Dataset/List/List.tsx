@@ -18,9 +18,17 @@ import CustomDialog from '../../common/components/CustomDialog';
 import ListCreate from './ListForm/ListCreate';
 import ListEdit from './ListForm/ListEdit';
 import ListShare from './ListForm/ListShare';
+import {
+    getImageUrl,
+    onDeleteClick,
+    onCocoDownloadClick,
+} from '../datasets.utils';
+import { addProcess, removeProcess } from '../../common/utils/globalActions';
+import useGlobalContext from '../../common/hooks/useGlobalContext';
 
 const List: React.FC = () => {
     const classes = useStyles();
+    const [, dispatch] = useGlobalContext();
     const {
         list: {
             offset: [offset, setOffset],
@@ -38,9 +46,6 @@ const List: React.FC = () => {
         share: [shared, setShared],
         navigation: { openDetails },
         datasetWithCategories,
-        getImageUrl,
-        onDeleteClick,
-        onCocoDownloadClick,
     } = useDatasetsPage();
 
     return (
@@ -98,6 +103,7 @@ const List: React.FC = () => {
                                         first_image_id,
                                     },
                                 } = item;
+                                const process = 'Generating COCO for ' + name;
                                 return (
                                     <Grid key={id} item xs={12} sm={4} md={3}>
                                         <DatasetCard
@@ -138,8 +144,20 @@ const List: React.FC = () => {
                                                             <MenuItem
                                                                 onClick={() => {
                                                                     onCocoDownloadClick(
-                                                                        name,
-                                                                        id,
+                                                                        {
+                                                                            name,
+                                                                            id,
+                                                                            addCallback: () =>
+                                                                                addProcess(
+                                                                                    dispatch,
+                                                                                    process,
+                                                                                ),
+                                                                            removeCallback: () =>
+                                                                                removeProcess(
+                                                                                    dispatch,
+                                                                                    process,
+                                                                                ),
+                                                                        },
                                                                     );
                                                                     closeMenu();
                                                                 }}
@@ -158,6 +176,7 @@ const List: React.FC = () => {
                                                                     onClick={() =>
                                                                         onDeleteClick(
                                                                             id,
+                                                                            refreshPage,
                                                                         )
                                                                     }
                                                                 >

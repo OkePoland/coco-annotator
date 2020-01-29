@@ -45,8 +45,8 @@ const useFormikEdit = (
                     value = value.toString();
                 }
                 return {
-                    key: key,
-                    value: value,
+                    key,
+                    value,
                 };
             }),
         [defaultMetadata],

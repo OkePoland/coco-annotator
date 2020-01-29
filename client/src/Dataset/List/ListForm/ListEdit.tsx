@@ -58,10 +58,7 @@ const ListEdit: React.FC<Props> = ({
                                 name="updatedMetadata"
                                 keyTitle="key"
                                 valueTitle="value"
-                                metadata={
-                                    formik.values.updatedMetadata &&
-                                    formik.values.updatedMetadata
-                                }
+                                metadata={formik.values.updatedMetadata}
                             />
                         </Form>
                     )}

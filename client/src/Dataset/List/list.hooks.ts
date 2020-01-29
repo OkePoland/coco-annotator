@@ -7,7 +7,6 @@ import * as AdminPanelApi from '../../AdminPanel/adminPanel.api';
 import useGlobalContext from '../../common/hooks/useGlobalContext';
 import useAuthContext from '../../common/hooks/useAuthContext';
 import { addProcess, removeProcess } from '../../common/utils/globalActions';
-import { downloadURI } from '../datasets.utils';
 
 // interfaces
 interface DatasetsState {
@@ -23,9 +22,6 @@ interface DatasetsState {
     ];
     navigation: NavigationState;
     datasetWithCategories: DatasetWithCategories[];
-    getImageUrl(imageId: number | undefined): string;
-    onDeleteClick(id: number): Promise<void>;
-    onCocoDownloadClick(name: string, id: number): Promise<void>;
 }
 interface NavigationState {
     openDetails(dataset: DatasetWithCategories): void;
@@ -62,8 +58,6 @@ export const useDatasetsPage = (): DatasetsState => {
     const edit = useState<DatasetWithCategories | null>(null);
     const share = useState<DatasetWithCategories | null>(null);
 
-    const [, dispatch] = useGlobalContext();
-
     const categoriesDictionary = useMemo(
         () =>
             list.categories.reduce(
@@ -86,32 +80,6 @@ export const useDatasetsPage = (): DatasetsState => {
         },
     );
 
-    const getImageUrl = (imageId: number | undefined) => {
-        if (imageId != null) {
-            return `/api/image/${imageId}?width=250`;
-        } else {
-            return 'img/no-image.png';
-        }
-    };
-
-    const onCocoDownloadClick = async (name: string, id: number) => {
-        const process = 'Generating COCO for ' + name;
-        addProcess(dispatch, process);
-
-        const response = await DatasetApi.getCoco(id);
-        const dataStr =
-            'data:text/json;charset=utf-8,' +
-            encodeURIComponent(JSON.stringify(response.data));
-        downloadURI(dataStr, name + '.json');
-
-        removeProcess(dispatch, process);
-    };
-
-    const onDeleteClick = async (id: number) => {
-        await DatasetApi.deleteDataset(id);
-        list.refreshPage();
-    };
-
     return {
         list,
         dialogs,
@@ -119,9 +87,6 @@ export const useDatasetsPage = (): DatasetsState => {
         share,
         navigation,
         datasetWithCategories,
-        getImageUrl,
-        onDeleteClick,
-        onCocoDownloadClick,
     };
 };
 
