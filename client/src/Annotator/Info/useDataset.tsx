@@ -31,12 +31,14 @@ const useDataset: IUseDataset = imageId => {
     const [isLoading, _setIsLoading] = useState<boolean>(false);
 
     // image data
-    const [, setMetadata] = useState<Maybe<{}>>(null);
+    const [, setMetadata] = useState<{
+        [key: string]: string | number;
+    }>({});
     const [filename, setFilename] = useState<string>('');
     const [next, setNext] = useState<Maybe<number>>(null);
     const [previous, setPrevious] = useState<Maybe<number>>(null);
     const [, setCategoriesIds] = useState<Array<number>>([]);
-    const [, setAnnotating] = useState<[]>([]);
+    const [, setAnnotating] = useState<string[]>([]); // array of users names, which touched specific image
 
     // others
     const [, setPreferences] = useState<{}>({}); // TODO adjust type

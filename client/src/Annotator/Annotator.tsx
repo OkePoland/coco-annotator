@@ -28,9 +28,11 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
         selected,
         setSelected,
     } = useChoices();
-    const dataset = useDataset(imageId);
-    const info = useInfo(dataset.categories);
-    const filter = useFilter(dataset.categories);
+    const { categories, filename, previous, next, isLoading } = useDataset(
+        imageId,
+    );
+    const info = useInfo(categories);
+    const filter = useFilter(categories);
     const cursor = useCursor(activeTool, selected.annotationId);
 
     // all Paper.js data & callbacks
@@ -42,7 +44,7 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
         onWheelAction,
     } = useCanvas(`/api/image/${imageId}`);
 
-    const groups = useGroups(dataset.categories, selected);
+    const groups = useGroups(categories, selected);
     const tools = useTools(
         paperRef,
         activeTool,
@@ -58,7 +60,7 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
         groups.keypoints.add,
     );
 
-    useTitle(imageInfo.size, dataset.filename);
+    useTitle(imageInfo.size, filename);
 
     return (
         <div className={classes.root}>
@@ -97,9 +99,9 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
             <Box className={classes.rightPanel}>
                 <Panel.FileTile
                     className={classes.fileTitle}
-                    filename={dataset.filename}
-                    prevImgId={dataset.previous}
-                    nextImgId={dataset.next}
+                    filename={filename}
+                    prevImgId={previous}
+                    nextImgId={next}
                     changeImage={id => {
                         navigate(`/annotate/${id}`);
                     }}
@@ -192,13 +194,11 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
                 {info.data.length === 0 && (
                     <Box textAlign="center">
                         <CircularProgress />
-                        {!dataset.isLoading &&
-                            dataset.categories.length === 0 && (
-                                <div>
-                                    No categories have been enabled for this
-                                    image
-                                </div>
-                            )}
+                        {!isLoading && categories.length === 0 && (
+                            <div>
+                                No categories have been enabled for this image
+                            </div>
+                        )}
                     </Box>
                 )}
 

@@ -77,9 +77,9 @@ const createShapeText = (
     annotationId: Maybe<number>,
 ) => {
     // info text
-    let msg;
-    msg = `CategoryId: ${categoryId}\nAnnotationId: ${annotationId}`;
-    msg.replace(/\n/g, ' \n ').slice(0, -2);
+    const msg = `CategoryId: ${categoryId}\nAnnotationId: ${annotationId}`
+        .replace(/\n/g, ' \n ')
+        .slice(0, -2);
 
     // metadataData text
     const metadata: Array<{ key: string; value: string }> = []; // TODO get
