@@ -1,27 +1,33 @@
 export const DEBUGGING_ON = false;
 
-export const ZOOM_FACTOR = 1.2;
-export const ZOOM_MIN = 0.01;
-export const ZOOM_MAX = 10;
+// Info Config
+export const INITIAL_CATEGORY_ID = null;
+export const INITIAL_ANNOTATION_ID = null;
+export const ANNOTATION_EXPANDED = true;
 
-export const PAN_FACTOR = 0.5;
+// Paper.js Config
+export const CANVAS_ZOOM_FACTOR = 1.2;
+export const CANVAS_ZOOM_MIN = 0.01;
+export const CANVAS_ZOOM_MAX = 10;
+export const CANVAS_PAN_FACTOR = 0.5;
+
+export const CATEGORY_GROUP_PREFIX = 'CATEGORY_GROUP_';
+export const ANNOTATION_GROUP_PREFIX = 'ANNOTATION_GROUP_';
+export const ANNOTATION_SHAPE_PREFIX = 'ANNOTATION_SHAPE_';
+export const ANNOTATION_KEYPOINTS_PREFIX = 'KEYPOINTS_';
+
+export const ANNOTATION_SHAPE_OPACITY = 0.6;
 
 export const TITLE_FONT_SCALE = 0.025;
 export const TITLE_HEIGHT_SCALE = 0.5;
 
-export const ANNOTATION_OPACITY = 0.6;
+export const TOOLS_BBOX_SCALE_FACTOR = 3;
 
-export const INITIAL_CATEGORY_ID = null;
-export const INITIAL_ANNOTATION_ID = null;
+export const TOOLS_BRUSH_SCALE_FACTOR = 3;
+export const TOOLS_BRUSH_INITIAL_STROKE_WIDTH = 1;
+export const TOOLS_BRUSH_INITIAL_RADIUS = 30;
 
-export const CATEGORY_NAME_PREFIX = 'CATEGORY_';
-export const ANNOTATION_NAME_PREFIX = 'ANNOTATION_';
-
-export const TOOL_SCALE_FACTOR = 3;
-export const TOOLS_INITIAL_STROKE_WIDTH = 1;
-export const TOOLS_INITIAL_RADIUS = 30;
-
-export const TOOLS_SELECT_INITIAL_TOOLTIP_ON = false;
+export const TOOLS_SELECT_INITIAL_TOOLTIP_ON = true;
 export const TOOLS_SELECT_INITIAL_HIT_TOLERANCE = 10;
 export const TOOLS_SELECT_SCALE_ROUNDED = 5;
 export const TOOLS_SELECT_SCALE_TEXT_SHIFT = 40;

@@ -1,6 +1,9 @@
 import paper from 'paper';
+import { Category, Annotation } from '../common/types';
 
 export type Maybe<T> = T | null | undefined;
+
+// info types
 
 export enum Tool {
     SELECT = 'SELECT',
@@ -22,14 +25,29 @@ export enum Cursor {
     DEFAULT = 'default',
 }
 
-export interface ImageSize {
-    width: number;
-    height: number;
-}
-
 export interface SelectedState {
     categoryId: Maybe<number>;
     annotationId: Maybe<number>;
+}
+
+export interface CategoryInfo {
+    id: number;
+    enabled: boolean;
+    expanded: boolean;
+    data: Category;
+    annotations: AnnotationInfo[];
+}
+
+export interface AnnotationInfo {
+    id: number;
+    enabled: boolean;
+    data: Annotation;
+}
+
+// paper types
+export interface ImageSize {
+    width: number;
+    height: number;
 }
 
 export interface MouseEvent {
@@ -39,32 +57,22 @@ export interface MouseEvent {
         shift?: boolean;
     };
 }
-
 export enum DataType {
-    INDICATOR = 'INDICATOR',
-    GROUP = 'GROUP',
-    ANNOTATION = 'ANNOTATION',
+    ANNOTATION_SHAPE = 'ANNOTATION_SHAPE',
     KEYPOINT = 'KEYPOINT',
+    INDICATOR = 'INDICATOR',
 }
-export type DataGroup = {
-    type: DataType.GROUP;
-    categoryId: number;
-};
-export interface DataAnnotation {
-    type: DataType.ANNOTATION;
+
+export interface DataAnnotationShape {
     categoryId: number;
     annotationId: number;
-    isBBox?: boolean;
 }
+
+export interface DataKeypoint {
+    categoryId: number;
+    annotationId: number;
+}
+
 export interface DataIndicator {
     type: DataType.INDICATOR;
-}
-export interface DataKeypoint {
-    type: DataType.KEYPOINT;
-    indexLabel: number;
-    visibility: boolean;
-    keypoints: {
-        labels: string[];
-    };
-    labels: string[];
 }

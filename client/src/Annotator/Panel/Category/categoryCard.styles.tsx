@@ -17,6 +17,7 @@ export const useStyles = makeStyles((theme: AugmentedTheme) => ({
     },
     expanededEye: {
         color: theme.palette.common.white,
+        opacity: 0.1,
     },
     disabledEye: {
         color: 'grey',

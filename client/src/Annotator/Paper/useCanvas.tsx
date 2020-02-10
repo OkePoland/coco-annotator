@@ -56,12 +56,18 @@ const useCanvas = (imageUrl: string): CanvasState => {
 
         if (e.altKey) {
             // pan up and down
-            const delta = new paper.Point(0, CONFIG.PAN_FACTOR * e.deltaY);
+            const delta = new paper.Point(
+                0,
+                CONFIG.CANVAS_PAN_FACTOR * e.deltaY,
+            );
             const newCenterP = centerPt.add(delta);
             paperRef.current.view.center = newCenterP;
         } else if (e.shiftKey) {
             // pan left and right
-            const delta = new paper.Point(CONFIG.PAN_FACTOR * e.deltaY, 0);
+            const delta = new paper.Point(
+                CONFIG.CANVAS_PAN_FACTOR * e.deltaY,
+                0,
+            );
             const newCenterP = centerPt.add(delta);
             paperRef.current.view.center = newCenterP;
         } else {
@@ -73,15 +79,18 @@ const useCanvas = (imageUrl: string): CanvasState => {
             const oldZoom = view.zoom || 0;
             const newZoom =
                 e.deltaY < 0
-                    ? oldZoom * CONFIG.ZOOM_FACTOR
-                    : oldZoom / CONFIG.ZOOM_FACTOR;
+                    ? oldZoom * CONFIG.CANVAS_ZOOM_FACTOR
+                    : oldZoom / CONFIG.CANVAS_ZOOM_FACTOR;
             const beta = oldZoom / newZoom;
             const pc = viewPosition.subtract(centerPt);
             const newOffset = viewPosition
                 .subtract(pc.multiply(beta))
                 .subtract(centerPt);
 
-            if (newZoom < CONFIG.ZOOM_MAX && newZoom > CONFIG.ZOOM_MIN) {
+            if (
+                newZoom < CONFIG.CANVAS_ZOOM_MAX &&
+                newZoom > CONFIG.CANVAS_ZOOM_MIN
+            ) {
                 _setImgScale(1 / newZoom);
                 paperRef.current.view.zoom = newZoom;
                 paperRef.current.view.center = view.center.add(newOffset);

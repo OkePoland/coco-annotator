@@ -16,7 +16,7 @@ interface UseChoicesResponse {
     segmentMode: [boolean, Dispatch<SetStateAction<boolean>>];
     toolState: [Maybe<Tool>, (name: Tool) => void];
     selected: SelectedState;
-    setSelected: (catId: number, annotationId?: number) => void;
+    setSelected: (catId: Maybe<number>, annotationId: Maybe<number>) => void;
 }
 
 const useChoices: IUseChoices = () => {
@@ -31,12 +31,15 @@ const useChoices: IUseChoices = () => {
         _setTool(oldState => (oldState === name ? null : name));
     }, []);
 
-    const setSelected = useCallback((catId: number, annotationId?: number) => {
-        _setSelected({
-            categoryId: catId,
-            annotationId: annotationId || null,
-        });
-    }, []);
+    const setSelected = useCallback(
+        (catId: Maybe<number>, annotationId: Maybe<number>) => {
+            _setSelected({
+                categoryId: catId,
+                annotationId: annotationId || null,
+            });
+        },
+        [],
+    );
 
     return {
         segmentMode,

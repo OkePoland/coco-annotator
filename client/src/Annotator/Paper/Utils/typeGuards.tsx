@@ -1,23 +1,19 @@
-import {
-    DataType,
-    DataGroup,
-    DataAnnotation,
-    DataIndicator,
-    DataKeypoint,
-} from '../../annotator.types';
+import { DataIndicator, DataType } from '../../annotator.types';
 
-export function isGroup(obj: Object): obj is DataGroup {
-    return (obj as DataGroup).type === DataType.GROUP;
+import { AnnotationShape, KeypointsGroup, Keypoint } from '../Group';
+
+export function isAnnotationShape(obj: Object): obj is AnnotationShape {
+    return obj instanceof AnnotationShape;
 }
 
-export function isAnnotation(obj: Object): obj is DataAnnotation {
-    return (obj as DataAnnotation).type === DataType.ANNOTATION;
+export function isKeypointGroup(obj: Object): obj is KeypointsGroup {
+    return obj instanceof KeypointsGroup;
+}
+
+export function isKeypoint(obj: Object): obj is Keypoint {
+    return obj instanceof Keypoint;
 }
 
 export function isIndicator(obj: Object): obj is DataIndicator {
     return (obj as DataIndicator).type === DataType.INDICATOR;
-}
-
-export function isKeypoint(obj: Object): obj is DataKeypoint {
-    return (obj as DataKeypoint).type === DataType.KEYPOINT;
 }

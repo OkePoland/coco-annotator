@@ -52,8 +52,11 @@ const AnnotationCard: React.FC<Props> = ({
                 </IconButton>
             </Grid>
             <Grid item xs={7}>
-                <Typography align="center" onClick={setSelected}>
-                    {`${name != null ? name : '-'} (${true ? 'Empty' : id})`}
+                <Typography align="left" onClick={setSelected}>
+                    <small>
+                        <span>[{id}] </span>
+                        <span>{name || 'No Name'}</span>
+                    </small>
                 </Typography>
             </Grid>
             <Grid item xs>

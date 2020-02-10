@@ -14,6 +14,7 @@ export const useStyles = makeStyles((theme: AugmentedTheme) => ({
     },
     disabledEye: {
         color: 'grey',
+        opacity: 0.5,
     },
     colorEye: {
         color: (props: Props) => props.color,

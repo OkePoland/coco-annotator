@@ -10,23 +10,38 @@ import * as AnnotatorApi from '../annotator.api';
 import useGlobalContext from '../../common/hooks/useGlobalContext';
 import { addProcess, removeProcess } from '../../common/utils/globalActions';
 
-const useDataset = (imageId: number) => {
+interface IUseDataset {
+    (imageId: number): IUseDatasetResponse;
+}
+interface IUseDatasetResponse {
+    dataset: Maybe<Dataset>;
+    categories: Category[];
+    filename: string;
+    next: Maybe<number>;
+    previous: Maybe<number>;
+    isLoading: boolean;
+}
+
+const useDataset: IUseDataset = imageId => {
     const [, dispatch] = useGlobalContext();
 
     // datasetdata
     const [dataset, setDataset] = useState<Maybe<Dataset>>(null);
     const [categories, setCategories] = useState<Array<Category>>([]);
+    const [isLoading, _setIsLoading] = useState<boolean>(false);
 
     // image data
-    const [metadata, setMetadata] = useState<Maybe<{}>>(null);
+    const [, setMetadata] = useState<{
+        [key: string]: string | number;
+    }>({});
     const [filename, setFilename] = useState<string>('');
     const [next, setNext] = useState<Maybe<number>>(null);
     const [previous, setPrevious] = useState<Maybe<number>>(null);
-    const [categoriesIds, setCategoriesIds] = useState<Array<number>>([]);
-    const [annotating, setAnnotating] = useState<[]>([]);
+    const [, setCategoriesIds] = useState<Array<number>>([]);
+    const [, setAnnotating] = useState<string[]>([]); // array of users names, which touched specific image
 
     // others
-    const [preferences, setPreferences] = useState<{}>({}); // TODO adjust type
+    const [, setPreferences] = useState<{}>({}); // TODO adjust type
 
     useEffect(() => {
         const process = 'Loading annotation data';
@@ -48,11 +63,13 @@ const useDataset = (imageId: number) => {
         };
 
         try {
+            _setIsLoading(true);
             addProcess(dispatch, process);
             update();
         } catch (error) {
             // TODO display toast
         } finally {
+            _setIsLoading(false);
             removeProcess(dispatch, process);
         }
     }, [imageId, dispatch]);
@@ -60,13 +77,10 @@ const useDataset = (imageId: number) => {
     return {
         dataset,
         categories,
-        metadata,
         filename,
         next,
         previous,
-        categoriesIds,
-        annotating,
-        preferences,
+        isLoading,
     };
 };
 export default useDataset;

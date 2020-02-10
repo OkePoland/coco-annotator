@@ -24,7 +24,8 @@ interface IUseTools {
         unite: (toAdd: paper.Path) => void,
         subtract: (toRemove: paper.Path) => void,
         simplify: () => void,
-        addKeypoint: () => void,
+        uniteBBOX: (toAdd: paper.Path) => void,
+        addKeypoint: (point: paper.Point) => void,
     ): {
         empty: null;
         select: ToolSelectResponse;
@@ -49,6 +50,7 @@ const useTools: IUseTools = (
     unite,
     subtract,
     simplify,
+    uniteBBOX,
     addKeypoint,
 ) => {
     const isDisabled: boolean = useMemo(() => {
@@ -63,11 +65,10 @@ const useTools: IUseTools = (
         activeTool === Tool.SELECT && selectedAnnotation != null,
         imageScale,
     );
-
     const bbox = useBBox(
         activeTool === Tool.BBOX && selectedAnnotation != null,
         imageScale,
-        unite,
+        uniteBBOX,
     );
     const polygon = usePolygon(
         activeTool === Tool.POLYGON && selectedAnnotation != null,

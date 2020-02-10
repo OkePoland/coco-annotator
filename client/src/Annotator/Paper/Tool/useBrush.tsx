@@ -39,10 +39,10 @@ export const useBrush: IToolBrush = (
     const brushRef = useRef<Maybe<paper.Path.Circle>>(null);
     const optionsRef = useRef<PathOptions>({
         strokeColor: 'white',
-        strokeWidth: CONFIG.TOOLS_INITIAL_STROKE_WIDTH,
-        radius: CONFIG.TOOLS_INITIAL_RADIUS,
+        strokeWidth: CONFIG.TOOLS_BRUSH_INITIAL_STROKE_WIDTH,
+        radius: CONFIG.TOOLS_BRUSH_INITIAL_RADIUS,
     });
-    const [radius, _setRadius] = useState(CONFIG.TOOLS_INITIAL_RADIUS);
+    const [radius, _setRadius] = useState(CONFIG.TOOLS_BRUSH_INITIAL_RADIUS);
     const [color, _setColor] = useState('white');
 
     // private actions
@@ -61,10 +61,8 @@ export const useBrush: IToolBrush = (
     const _moveBrush = useCallback(
         (point: paper.Point) => {
             if (brushRef.current == null) {
-                console.log('---create brush');
                 brushRef.current = _createBrush(point);
             }
-            console.log('---move brush');
             brushRef.current.bringToFront();
             brushRef.current.position = point;
         },
@@ -147,7 +145,8 @@ export const useBrush: IToolBrush = (
     useEffect(() => {
         //this.eraser.pathOptions.strokeWidth = newScale * this.scaleFactor;
         if (brushRef.current != null) {
-            brushRef.current.strokeWidth = scale * CONFIG.TOOL_SCALE_FACTOR;
+            brushRef.current.strokeWidth =
+                scale * CONFIG.TOOLS_BRUSH_SCALE_FACTOR;
         }
     }, [scale]);
 
