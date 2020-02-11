@@ -31,18 +31,18 @@ export const Settings: React.FC<Props> = ({
 }) => (
     <Fragment>
         <ToolButton
-            name="Download COCO"
-            icon={<SaveAltIcon />}
-            enabled={true}
-            active={false}
-            onClick={downloadImageAction}
-        />
-        <ToolButton
             name="Save"
             icon={<SaveIcon />}
             enabled={true}
             active={false}
             onClick={saveImageAction}
+        />
+        <ToolButton
+            name="Download COCO"
+            icon={<SaveAltIcon />}
+            enabled={false}
+            active={false}
+            onClick={downloadImageAction}
         />
         <ToolButton
             name={`Mode: ${segmentOn ? 'segment' : 'label'}`}
@@ -54,9 +54,9 @@ export const Settings: React.FC<Props> = ({
             }}
         />
         <ToolButton
-            name="Select"
+            name="Settings"
             icon={<SettingsIcon />}
-            enabled={true}
+            enabled={false}
             active={false}
             onClick={openImageAction}
         />
@@ -68,7 +68,7 @@ export const Settings: React.FC<Props> = ({
         <ToolButton
             name="Delete Image"
             icon={<DeleteIcon />}
-            enabled={true}
+            enabled={false}
             active={false}
             onClick={deleteImageAction}
         />

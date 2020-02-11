@@ -101,7 +101,14 @@ export interface Annotation {
     width: number;
     height: number;
     color: string;
-    keypoints: [];
+    keypoints: {
+        keypoints: {
+            pointId: number;
+            x: number;
+            y: number;
+        }[];
+        edges: [number, number][];
+    };
     metadata: IDict;
     paper_object: [];
     deleted: boolean;

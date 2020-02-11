@@ -4,16 +4,17 @@ import {
     Category,
     DatasetPermissions,
     ImagePermissions,
-    Preferences,
     Image,
 } from '../common/types';
 
+import { ToolPreferences } from './annotator.types';
+
 const annotationBaseUrl = `/annotation/`;
 
-interface IGetDataResponse {
+interface IGetDatasetResponse {
     categories: Category[];
     dataset: Dataset;
-    preferences?: Preferences | {};
+    preferences: ToolPreferences;
     permissions?: {
         dataset: DatasetPermissions;
         image: ImagePermissions;
@@ -21,10 +22,17 @@ interface IGetDataResponse {
     image: Image;
 }
 
-export const getData = async (imageId: number): Promise<IGetDataResponse> => {
+export const getDataset = async (
+    imageId: number,
+): Promise<IGetDatasetResponse> => {
     const url = `/annotator/data/${imageId}`;
-    const { data } = await Api.get<IGetDataResponse>(url);
+    const { data } = await Api.get<IGetDatasetResponse>(url);
     return data;
+};
+
+export const saveDataset = async (obj: Object) => {
+    const url = `/annotator/data`;
+    await Api.post(url, JSON.stringify(obj));
 };
 
 export const createAnnotation = async (imageId: number, categoryId: number) => {

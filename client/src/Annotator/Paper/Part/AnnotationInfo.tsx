@@ -63,7 +63,7 @@ const AnnotationInfo: React.FC<Props> = ({
 
     useEffect(() => {
         const path = findPath(groupsRef, categoryId, id);
-        if (path != null && color) {
+        if (path && color) {
             console.log(`Annotation set color (id: ${id})`);
             path.fillColor = new paper.Color(color);
         }

@@ -4,7 +4,7 @@
 import { useRef, useState, useEffect, useCallback } from 'react';
 import paper from 'paper';
 
-import { Maybe, MouseEvent } from '../../annotator.types';
+import { Maybe, MouseEvent, ToolSettingsBrush } from '../../annotator.types';
 
 import * as CONFIG from '../../annotator.config';
 
@@ -13,46 +13,54 @@ interface IToolBrush {
     (
         isActive: boolean,
         scale: number,
+        preferences: Maybe<ToolSettingsBrush>,
         updatePath: (o: paper.Path.Circle) => void,
         simplifyPath: () => void,
     ): ToolBrushResponse;
 }
 export interface ToolBrushResponse {
-    color: string;
-    radius: number;
+    settings: ToolSettingsBrush;
     setColor: (color: string) => void;
     setRadius: (val: number) => void;
 }
-interface PathOptions {
-    strokeColor: string;
-    strokeWidth: number;
-    radius: number;
+interface Cache {
+    brush: Maybe<paper.Path.Circle>;
+    path: {
+        strokeColor: string;
+        strokeWidth: number;
+        radius: number;
+    };
 }
 
 export const useBrush: IToolBrush = (
     isActive,
     scale,
+    preferences,
     updatePath,
     simplifyPath,
 ) => {
     const toolRef = useRef<Maybe<paper.Tool>>(null);
-    const brushRef = useRef<Maybe<paper.Path.Circle>>(null);
-    const optionsRef = useRef<PathOptions>({
-        strokeColor: 'white',
-        strokeWidth: CONFIG.TOOLS_BRUSH_INITIAL_STROKE_WIDTH,
+    const cache = useRef<Cache>({
+        brush: null,
+        path: {
+            strokeColor: 'white',
+            strokeWidth: CONFIG.TOOLS_BRUSH_INITIAL_STROKE_WIDTH,
+            radius: CONFIG.TOOLS_BRUSH_INITIAL_RADIUS,
+        },
+    });
+    const [settings, _setSettings] = useState<ToolSettingsBrush>({
+        color: CONFIG.TOOLS_BRUSH_INITIAL_COLOR,
         radius: CONFIG.TOOLS_BRUSH_INITIAL_RADIUS,
     });
-    const [radius, _setRadius] = useState(CONFIG.TOOLS_BRUSH_INITIAL_RADIUS);
-    const [color, _setColor] = useState('white');
 
     // private actions
     const _createBrush = useCallback((center?: paper.Point) => {
         const newCenter = center || new paper.Point(0, 0);
 
         const brush = new paper.Path.Circle({
-            strokeColor: optionsRef.current.strokeColor,
-            strokeWidth: optionsRef.current.strokeWidth,
-            radius: optionsRef.current.radius,
+            strokeColor: cache.current.path.strokeColor,
+            strokeWidth: cache.current.path.strokeWidth,
+            radius: cache.current.path.radius,
             center: newCenter,
         });
         return brush;
@@ -60,11 +68,11 @@ export const useBrush: IToolBrush = (
 
     const _moveBrush = useCallback(
         (point: paper.Point) => {
-            if (brushRef.current == null) {
-                brushRef.current = _createBrush(point);
+            if (cache.current.brush == null) {
+                cache.current.brush = _createBrush(point);
             }
-            brushRef.current.bringToFront();
-            brushRef.current.position = point;
+            cache.current.brush.bringToFront();
+            cache.current.brush.position = point;
         },
         [_createBrush],
     );
@@ -73,29 +81,29 @@ export const useBrush: IToolBrush = (
         // Undo action, will be handled on mouse down
         // Simplify, will be handled on mouse up
         //this.$parent.currentAnnotation.subtract(this.eraser.brush, false, false);
-        if (brushRef.current != null) {
-            updatePath(brushRef.current);
+        if (cache.current.brush != null) {
+            updatePath(cache.current.brush);
         }
     }, [updatePath]);
 
-    // pathOptions methods
+    // settings methods
     const setColor = useCallback((color: string) => {
-        if (brushRef.current != null) {
-            _setColor(color);
-            optionsRef.current.strokeColor = color;
-            brushRef.current.strokeColor = new paper.Color(color);
+        if (cache.current.brush != null) {
+            _setSettings(oldState => ({ ...oldState, color }));
+            cache.current.path.strokeColor = color;
+            cache.current.brush.strokeColor = new paper.Color(color);
         }
     }, []);
 
     const setRadius = useCallback(
         (radius: number) => {
-            if (brushRef.current != null) {
-                _setRadius(radius);
-                optionsRef.current.radius = radius;
+            if (cache.current.brush != null) {
+                _setSettings(oldState => ({ ...oldState, radius }));
+                cache.current.path.radius = radius;
 
-                const position = brushRef.current.position;
-                brushRef.current.remove();
-                brushRef.current = _createBrush(position);
+                const position = cache.current.brush.position;
+                cache.current.brush.remove();
+                cache.current.brush = _createBrush(position);
             }
         },
         [_createBrush],
@@ -131,6 +139,18 @@ export const useBrush: IToolBrush = (
         [simplifyPath],
     );
 
+    // adjust preferences
+    useEffect(() => {
+        _setSettings(oldState => {
+            const newState = { ...oldState };
+            if (preferences) {
+                if (preferences.color) newState.color = preferences.color;
+                if (preferences.radius) newState.radius = preferences.radius;
+            }
+            return newState;
+        });
+    }, [preferences]);
+
     // tool effects
     useEffect(() => {
         if (!toolRef.current) {
@@ -144,15 +164,15 @@ export const useBrush: IToolBrush = (
 
     useEffect(() => {
         //this.eraser.pathOptions.strokeWidth = newScale * this.scaleFactor;
-        if (brushRef.current != null) {
-            brushRef.current.strokeWidth =
+        if (cache.current.brush != null) {
+            cache.current.brush.strokeWidth =
                 scale * CONFIG.TOOLS_BRUSH_SCALE_FACTOR;
         }
     }, [scale]);
 
     useEffect(() => {
-        if (brushRef.current != null) {
-            brushRef.current.visible = isActive;
+        if (cache.current.brush != null) {
+            cache.current.brush.visible = isActive;
         }
 
         if (toolRef.current != null && isActive) {
@@ -161,8 +181,7 @@ export const useBrush: IToolBrush = (
     }, [isActive]);
 
     return {
-        color,
-        radius,
+        settings,
         setColor,
         setRadius,
     };

@@ -3,26 +3,9 @@
  */
 import paper from 'paper';
 
-import { DataAnnotationShape } from '../../annotator.types';
-
 import * as CONFIG from '../../annotator.config';
 
-import { AnnotationShape } from '../Group';
-
-export const create = (categoryId: number, annotationId: number) => {
-    const data: DataAnnotationShape = { categoryId, annotationId };
-
-    const item = new AnnotationShape({});
-    item.name = CONFIG.ANNOTATION_SHAPE_PREFIX + annotationId;
-    item.data = data;
-
-    item.remove(); // newly created item is removed from project
-    item.visible = false;
-    item.opacity = CONFIG.ANNOTATION_SHAPE_OPACITY;
-    item.locked = false;
-
-    return item;
-};
+import { AnnotationShape } from '../Shape';
 
 export const unite = (
     item: AnnotationShape,

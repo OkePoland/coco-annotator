@@ -23,6 +23,7 @@ interface UseCreatorResponse {
     remove: (categoryId: number, annotationId: number) => Promise<void>;
 }
 interface UseEnablerResponse {
+    setCategoriesEnabled: (isOn: boolean) => void;
     setCategoryEnabled: (categoryId: number) => void;
     setCategoryExpanded: (categoryId: number) => void;
     setAnnotationEnabled: (categoryId: number, annotationId: number) => void;
@@ -75,6 +76,8 @@ const useCreator: ISubHook<UseCreatorResponse> = (data, setData) => {
             const idx = data.findIndex(o => o.id === categoryId);
             if (idx === -1) return null;
 
+            console.log('Info: Create new AnnotationInfo');
+
             const item = await AnnotatorApi.createAnnotation(
                 imageId,
                 categoryId,
@@ -119,6 +122,18 @@ const useCreator: ISubHook<UseCreatorResponse> = (data, setData) => {
 
 // Helper sub-Hook to extract enable method on annotation
 const useEnabler: ISubHook<UseEnablerResponse> = (data, setData) => {
+    const setCategoriesEnabled = useCallback(
+        (isOn: boolean) => {
+            const newArr = [...data];
+            newArr.forEach(c => {
+                c.enabled = isOn;
+                c.expanded = false;
+            });
+            setData(newArr);
+        },
+        [data, setData],
+    );
+
     const setCategoryEnabled = useCallback(
         (categoryId: number) => {
             const idx = data.findIndex(o => o.id === categoryId);
@@ -178,6 +193,7 @@ const useEnabler: ISubHook<UseEnablerResponse> = (data, setData) => {
     );
 
     return {
+        setCategoriesEnabled,
         setCategoryEnabled,
         setCategoryExpanded,
         setAnnotationEnabled,

@@ -101,7 +101,7 @@ const useCanvas = (imageUrl: string): CanvasState => {
     // init Canvas
     useEffect(() => {
         if (canvasRef.current != null) {
-            console.log('Canvas: Init');
+            console.log('Info: Canvas Init');
 
             // in order to prevent forest fires (remove scrollbar when page is active)
             document.body.style.overflow = 'hidden';
@@ -118,6 +118,7 @@ const useCanvas = (imageUrl: string): CanvasState => {
 
             // init Raster
             rasterRef.current = new paper.Raster(imageUrl);
+            rasterRef.current.name = CONFIG.CANVAS_RASTER_PREFIX;
             rasterRef.current.locked = true; // disable interactions with the mouse
             rasterRef.current.onLoad = () => {
                 if (!rasterRef.current) return;
@@ -146,7 +147,7 @@ const useCanvas = (imageUrl: string): CanvasState => {
         }
 
         return () => {
-            console.log('Canvas: Clean');
+            console.log('Info: Canvas Clean');
             document.body.style.overflow = 'visible';
         };
     }, [centerImageAction, imageUrl]);

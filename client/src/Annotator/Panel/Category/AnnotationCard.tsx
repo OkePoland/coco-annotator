@@ -72,6 +72,7 @@ const AnnotationCard: React.FC<Props> = ({
             </Grid>
             <Grid item xs>
                 <IconButton
+                    disabled
                     size="small"
                     color="inherit"
                     onClick={() => {

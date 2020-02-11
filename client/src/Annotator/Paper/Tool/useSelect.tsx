@@ -4,15 +4,15 @@
 import { useRef, useState, useEffect, useCallback } from 'react';
 import paper from 'paper';
 
-import { Maybe, MouseEvent } from '../../annotator.types';
+import { Maybe, MouseEvent, ToolSettingsSelect } from '../../annotator.types';
 
 import * as CONFIG from '../../annotator.config';
 
-import { AnnotationShape, Keypoint } from '../Group';
+import { AnnotationShape, KeypointShape } from '../Shape';
 import {
     isAnnotationShape,
     isKeypointGroup,
-    isKeypoint,
+    isKeypointShape,
 } from '../Utils/typeGuards';
 import {
     hitOptions,
@@ -27,10 +27,11 @@ interface IToolSelect {
         paperRef: React.MutableRefObject<Maybe<paper.PaperScope>>,
         isActive: boolean,
         scale: number,
+        preferences: Maybe<ToolSettingsSelect>,
     ): ToolSelectResponse;
 }
 export interface ToolSelectResponse {
-    tooltipOn: boolean;
+    settings: ToolSettingsSelect;
     setTooltipOn: (isOn: boolean) => void;
 }
 interface Cache {
@@ -41,12 +42,12 @@ interface Cache {
         initPoint: Maybe<paper.Point>; // point in middle of AnnotationShape-BBOX fill which we use as 'move center'
     };
     keypoint: {
-        obj: Maybe<Keypoint>; // reference to SELECTED keypoint
+        obj: Maybe<KeypointShape>; // reference to SELECTED keypoint
         isMoving: boolean; // whether SELECTED keypoint if moving
     };
     hover: {
         position: paper.Point; // hovered position
-        keypoint: Maybe<Keypoint>; // reference for HOVERED keypoint
+        keypoint: Maybe<KeypointShape>; // reference for HOVERED keypoint
         shape: {
             obj: Maybe<paper.Path>; // reference for HOVERED AnnotationShape
             categoryId: Maybe<number>; // hovered annotation CategoryId
@@ -70,11 +71,13 @@ interface Cache {
         rounded: number; // radius of tooltip box (based on scale)
     };
 }
-interface Settings {
-    tooltipOn: boolean;
-}
 
-export const useSelect: IToolSelect = (paperRef, isActive, scale) => {
+export const useSelect: IToolSelect = (
+    paperRef,
+    isActive,
+    scale,
+    preferences,
+) => {
     const toolRef = useRef<Maybe<paper.Tool>>(null);
     const cache = useRef<Cache>({
         shape: {
@@ -113,7 +116,7 @@ export const useSelect: IToolSelect = (paperRef, isActive, scale) => {
             rounded: 0,
         },
     });
-    const [settings, _setSettings] = useState<Settings>({
+    const [settings, _setSettings] = useState<ToolSettingsSelect>({
         tooltipOn: CONFIG.TOOLS_SELECT_INITIAL_TOOLTIP_ON,
     });
 
@@ -245,8 +248,8 @@ export const useSelect: IToolSelect = (paperRef, isActive, scale) => {
             }
             const { item, type } = hitResult;
 
-            if (isKeypoint(item)) {
-                // remove Keypoint onClick
+            if (isKeypointShape(item)) {
+                // remove KeypointShape onClick
                 if (modifiers && modifiers.shift) {
                     if (item && isKeypointGroup(item.parent)) {
                         if (cache.current.keypoint.obj) {
@@ -360,7 +363,7 @@ export const useSelect: IToolSelect = (paperRef, isActive, scale) => {
                         groupHit.item.selected = true;
                         _adjustTooltip();
                     }
-                } else if (isKeypoint(groupHit.item)) {
+                } else if (isKeypointShape(groupHit.item)) {
                     cache.current.hover.position = event.point;
                     cache.current.hover.keypoint = groupHit.item;
                     _adjustTooltip();
@@ -376,7 +379,7 @@ export const useSelect: IToolSelect = (paperRef, isActive, scale) => {
 
     const onMouseDrag = useCallback(
         (event: MouseEvent) => {
-            // Keypoint Drag
+            // KeypointShape Drag
             if (cache.current.keypoint.obj) {
                 cache.current.keypoint.isMoving = true;
                 const keypoint = cache.current.keypoint.obj;
@@ -446,6 +449,16 @@ export const useSelect: IToolSelect = (paperRef, isActive, scale) => {
         },
         [_clear],
     );
+
+    // Adjust preferences
+    useEffect(() => {
+        _setSettings(oldState => {
+            const newState = { ...oldState };
+            if (preferences && preferences.tooltipOn != null)
+                newState.tooltipOn = preferences.tooltipOn;
+            return newState;
+        });
+    }, [preferences]);
 
     // tool effects
     useEffect(() => {
@@ -533,7 +546,7 @@ export const useSelect: IToolSelect = (paperRef, isActive, scale) => {
     }, [isActive]);
 
     return {
-        tooltipOn: settings.tooltipOn,
+        settings,
         setTooltipOn,
     };
 };

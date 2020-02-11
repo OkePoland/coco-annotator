@@ -2,10 +2,10 @@
  * Tool to Draw various continous paths
  * which auto-complete into polygons
  */
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useRef, useState, useEffect, useCallback } from 'react';
 import paper from 'paper';
 
-import { Maybe, MouseEvent } from '../../annotator.types';
+import { Maybe, MouseEvent, ToolSettingsPolygon } from '../../annotator.types';
 
 import * as CONFIG from '../../annotator.config';
 
@@ -14,15 +14,12 @@ interface IToolPolygon {
     (
         isActive: boolean,
         scale: number,
+        preferences: Maybe<ToolSettingsPolygon>,
         update: (a: paper.Path) => void,
     ): ToolPolygonResponse;
 }
 export interface ToolPolygonResponse {
-    guidanceOn: boolean;
-    strokeColor: string;
-    minDistance: number;
-    completeDistance: number;
-
+    settings: ToolSettingsPolygon;
     setGuidanceOn: (on: boolean) => void;
     setStrokeColor: (color: string) => void;
     setMinDistance: (value: number) => void;
@@ -33,24 +30,20 @@ interface Cache {
     circle: Maybe<paper.Path.Circle>;
     actionPoints: number;
 }
-interface Settings {
-    guidanceOn: boolean;
-    minDistance: number;
-    completeDistance: number;
-    colorAuto: boolean;
-    colorRadius: number;
-    strokeColor: string;
-    strokeWidth: number;
-}
 
-export const usePolygon: IToolPolygon = (isActive, scale, update) => {
+export const usePolygon: IToolPolygon = (
+    isActive,
+    scale,
+    preferences,
+    update,
+) => {
     const toolRef = useRef<Maybe<paper.Tool>>(null);
     const cache = useRef<Cache>({
         polygon: null,
         circle: null,
         actionPoints: 0,
     });
-    const [settings, setSettings] = useState<Settings>({
+    const [settings, _setSettings] = useState<ToolSettingsPolygon>({
         guidanceOn: CONFIG.TOOLS_POLYGON_INITIAL_GUIDANCE,
         minDistance: CONFIG.TOOLS_POLYGON_INITIAL_MIN_DISTANCE,
         completeDistance: CONFIG.TOOLS_POLYGON_INITIAL_COMPLETE_DISTANCE,
@@ -150,11 +143,11 @@ export const usePolygon: IToolPolygon = (isActive, scale, update) => {
 
     // settings methods
     const setGuidanceOn = useCallback((guidanceOn: boolean) => {
-        setSettings(oldState => ({ ...oldState, guidanceOn: guidanceOn }));
+        _setSettings(oldState => ({ ...oldState, guidanceOn: guidanceOn }));
     }, []);
 
     const setStrokeColor = useCallback((color: string) => {
-        setSettings(oldState => ({
+        _setSettings(oldState => ({
             ...oldState,
             strokeColor: color,
         }));
@@ -163,7 +156,7 @@ export const usePolygon: IToolPolygon = (isActive, scale, update) => {
     }, []);
 
     const setMinDistance = useCallback((value: number) => {
-        setSettings(oldState => ({ ...oldState, minDistance: value }));
+        _setSettings(oldState => ({ ...oldState, minDistance: value }));
 
         if (toolRef.current) {
             toolRef.current.minDistance = value;
@@ -171,7 +164,7 @@ export const usePolygon: IToolPolygon = (isActive, scale, update) => {
     }, []);
 
     const setCompleteDistance = useCallback((value: number) => {
-        setSettings(oldState => ({ ...oldState, completeDistance: value }));
+        _setSettings(oldState => ({ ...oldState, completeDistance: value }));
     }, []);
 
     // mouse events
@@ -233,6 +226,28 @@ export const usePolygon: IToolPolygon = (isActive, scale, update) => {
         // this.addUndo(action);
     }, []);
 
+    // adjust preferences
+    useEffect(() => {
+        // setSetting + update cache variables
+        if (preferences) {
+            if (preferences.guidanceOn) {
+                setGuidanceOn(preferences.guidanceOn);
+            }
+            if (preferences.strokeColor)
+                setStrokeColor(preferences.strokeColor);
+            if (preferences.minDistance)
+                setMinDistance(preferences.minDistance);
+            if (preferences.completeDistance)
+                setCompleteDistance(preferences.completeDistance);
+        }
+    }, [
+        preferences,
+        setCompleteDistance,
+        setGuidanceOn,
+        setMinDistance,
+        setStrokeColor,
+    ]);
+
     // tool effects
     useEffect(() => {
         if (!toolRef.current) {
@@ -255,7 +270,7 @@ export const usePolygon: IToolPolygon = (isActive, scale, update) => {
     useEffect(() => {
         const newScale = scale * CONFIG.TOOLS_POLYGON_SCALE;
 
-        setSettings(oldState => ({
+        _setSettings(oldState => ({
             ...oldState,
             strokeWidth: newScale,
         }));
@@ -265,10 +280,7 @@ export const usePolygon: IToolPolygon = (isActive, scale, update) => {
     }, [scale]);
 
     return {
-        guidanceOn: settings.guidanceOn,
-        strokeColor: settings.strokeColor,
-        minDistance: settings.minDistance,
-        completeDistance: settings.completeDistance,
+        settings,
         setGuidanceOn,
         setStrokeColor,
         setMinDistance,

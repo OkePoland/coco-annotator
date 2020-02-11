@@ -16,6 +16,8 @@ import { useCanvas, useGroups, useTools, useTitle, Part } from './Paper';
 import * as Menu from './Menu';
 import * as Panel from './Panel';
 
+import { createExportObj } from './Annotator.utils';
+
 const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
     const classes = useStyles();
 
@@ -23,14 +25,22 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
 
     // all data & callbacks WITHOUT! Paper.js references
     const {
+        dataset,
+        categories,
+        filename,
+        previous,
+        next,
+        isLoading,
+        toolPreferences,
+        saveAction,
+    } = useDataset(imageId);
+    const {
         segmentMode: [segmentOn, setSegmentOn],
         toolState: [activeTool, toggleTool],
         selected,
         setSelected,
     } = useChoices();
-    const { categories, filename, previous, next, isLoading } = useDataset(
-        imageId,
-    );
+
     const info = useInfo(categories);
     const filter = useFilter(categories);
     const cursor = useCursor(activeTool, selected.annotationId);
@@ -47,6 +57,7 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
     const groups = useGroups(categories, selected);
     const tools = useTools(
         paperRef,
+        toolPreferences,
         activeTool,
         selected.annotationId,
         imageId,
@@ -76,7 +87,10 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
                         <Menu.Annotation
                             annotationAction={() => {}}
                             annotationCopyAction={() => {}}
-                            setAnnotationOn={() => {}}
+                            setCategoriesEnabled={(isOn: boolean) => {
+                                info.enabler.setCategoriesEnabled(isOn);
+                                setSelected(null, null);
+                            }}
                         />
                         <Divider className={classes.divider} />
                     </Box>
@@ -90,7 +104,19 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
                     segmentOn={segmentOn}
                     setSegmentOn={setSegmentOn}
                     downloadImageAction={() => {}}
-                    saveImageAction={() => {}}
+                    saveImageAction={() => {
+                        const obj = createExportObj(
+                            imageId,
+                            dataset,
+                            segmentOn,
+                            activeTool,
+                            selected,
+                            tools.exportData,
+                            info.data,
+                            groups.groupsRef.current,
+                        );
+                        saveAction(obj);
+                    }}
                     openImageAction={() => {}}
                     deleteImageAction={() => {}}
                 />
@@ -215,7 +241,9 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
                                     return (
                                         <Panel.Select
                                             className={classes.bboxPanel}
-                                            tooltipOn={tools.select.tooltipOn}
+                                            tooltipOn={
+                                                tools.select.settings.tooltipOn
+                                            }
                                             setTooltipOn={
                                                 tools.select.setTooltipOn
                                             }
@@ -225,7 +253,7 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
                                     return (
                                         <Panel.BBox
                                             className={classes.bboxPanel}
-                                            color={tools.bbox.color}
+                                            color={tools.bbox.settings.color}
                                             setColor={tools.bbox.setColor}
                                         />
                                     );
@@ -234,16 +262,20 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
                                         <Panel.Polygon
                                             className={classes.bboxPanel}
                                             guidanceOn={
-                                                tools.polygon.guidanceOn
+                                                tools.polygon.settings
+                                                    .guidanceOn
                                             }
                                             strokeColor={
-                                                tools.polygon.strokeColor
+                                                tools.polygon.settings
+                                                    .strokeColor
                                             }
                                             minDistance={
-                                                tools.polygon.minDistance
+                                                tools.polygon.settings
+                                                    .minDistance
                                             }
                                             completeDistance={
-                                                tools.polygon.completeDistance
+                                                tools.polygon.settings
+                                                    .completeDistance
                                             }
                                             setGuidanceOn={
                                                 tools.polygon.setGuidanceOn
@@ -264,8 +296,10 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
                                     return (
                                         <Panel.Wand
                                             className={classes.bboxPanel}
-                                            threshold={tools.wand.threshold}
-                                            blur={tools.wand.blur}
+                                            threshold={
+                                                tools.wand.settings.threshold
+                                            }
+                                            blur={tools.wand.settings.blur}
                                             setThreshold={
                                                 tools.wand.setThreshold
                                             }
@@ -276,8 +310,8 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
                                     return (
                                         <Panel.Brush
                                             className={classes.bboxPanel}
-                                            radius={tools.brush.radius}
-                                            color={tools.brush.color}
+                                            radius={tools.brush.settings.radius}
+                                            color={tools.brush.settings.color}
                                             setColor={tools.brush.setColor}
                                             setRadius={tools.brush.setRadius}
                                         />
@@ -286,8 +320,10 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
                                     return (
                                         <Panel.Brush
                                             className={classes.bboxPanel}
-                                            radius={tools.eraser.radius}
-                                            color={tools.eraser.color}
+                                            radius={
+                                                tools.eraser.settings.radius
+                                            }
+                                            color={tools.eraser.settings.color}
                                             setColor={tools.eraser.setColor}
                                             setRadius={tools.eraser.setRadius}
                                         />

@@ -1,21 +1,9 @@
 import paper from 'paper';
-import { Category, Annotation } from '../common/types';
+import { Dataset, Category, Annotation } from '../common/types';
 
 export type Maybe<T> = T | null | undefined;
 
 // info types
-
-export enum Tool {
-    SELECT = 'SELECT',
-    BBOX = 'BBOX',
-    POLYGON = 'POLYGON',
-    WAND = 'WAND',
-    BRUSH = 'BRUSH',
-    ERASER = 'ERASER',
-    KEYPOINT = 'KEYPOINT',
-    DEXTR = 'DEXTR',
-}
-
 export enum Cursor {
     POINTER = 'pointer',
     COPY = 'copy',
@@ -44,6 +32,55 @@ export interface AnnotationInfo {
     data: Annotation;
 }
 
+// Tool Types
+export enum Tool {
+    SELECT = 'SELECT',
+    BBOX = 'BBOX',
+    POLYGON = 'POLYGON',
+    WAND = 'WAND',
+    BRUSH = 'BRUSH',
+    ERASER = 'ERASER',
+    KEYPOINT = 'KEYPOINT',
+    DEXTR = 'DEXTR',
+}
+
+export interface ToolPreferences {
+    select: Maybe<ToolSettingsSelect>;
+    bbox: Maybe<ToolSettingsBBOX>;
+    polygon: Maybe<ToolSettingsPolygon>;
+    brush: Maybe<ToolSettingsBrush>;
+    eraser: Maybe<ToolSettingsBrush>;
+    wand: Maybe<ToolSettingsWand>;
+}
+
+export interface ToolSettingsSelect {
+    tooltipOn: boolean;
+}
+
+export interface ToolSettingsBBOX {
+    color: string;
+}
+
+export interface ToolSettingsPolygon {
+    guidanceOn: boolean;
+    minDistance: number;
+    completeDistance: number;
+    colorAuto: boolean;
+    colorRadius: number;
+    strokeColor: string;
+    strokeWidth: number;
+}
+
+export interface ToolSettingsBrush {
+    color: string;
+    radius: number;
+}
+
+export interface ToolSettingsWand {
+    threshold: number;
+    blur: number;
+}
+
 // paper types
 export interface ImageSize {
     width: number;
@@ -57,22 +94,54 @@ export interface MouseEvent {
         shift?: boolean;
     };
 }
+
 export enum DataType {
-    ANNOTATION_SHAPE = 'ANNOTATION_SHAPE',
-    KEYPOINT = 'KEYPOINT',
     INDICATOR = 'INDICATOR',
-}
-
-export interface DataAnnotationShape {
-    categoryId: number;
-    annotationId: number;
-}
-
-export interface DataKeypoint {
-    categoryId: number;
-    annotationId: number;
 }
 
 export interface DataIndicator {
     type: DataType.INDICATOR;
+}
+
+// Export types
+export interface ExportObj {
+    mode: string;
+    user: ToolPreferences;
+    dataset: Maybe<Dataset>;
+    image: {
+        id: number;
+        settings: SelectedState;
+    };
+    category_ids: number[];
+    settings: {
+        activeTool: Maybe<Tool>;
+        zoom: number;
+    };
+    categories: ExportObjCategory[];
+}
+
+export interface ExportObjCategory {
+    id: number;
+    name: string;
+    show: boolean;
+    visualize: boolean;
+    color: string;
+    annotations: ExportObjAnnotation[];
+}
+
+export interface ExportObjAnnotation {
+    id: number;
+    color: string;
+    isbbox: boolean;
+    compoundPath: Object; // Paper.Item
+    keypoints: ExportObjKeypointGroup;
+}
+
+export interface ExportObjKeypointGroup {
+    keypoints: {
+        pointId: number;
+        x: number;
+        y: number;
+    }[];
+    edges: [number, number][];
 }

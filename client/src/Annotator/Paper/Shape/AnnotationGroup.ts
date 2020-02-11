@@ -1,5 +1,7 @@
 import paper from 'paper';
 
+import { ExportObjKeypointGroup } from '../../annotator.types';
+
 import * as CONFIG from '../../annotator.config';
 
 import * as shapeUtils from '../Utils/shapeUtils';
@@ -16,12 +18,26 @@ class AnnotationGroup extends paper.Group {
         this.name = CONFIG.ANNOTATION_GROUP_PREFIX + annotationId;
         this.data = { categoryId, annotationId };
 
-        this.shape = shapeUtils.create(categoryId, annotationId);
-
+        // create keypoints
         this.keypoints = new KeypointsGroup();
         this.keypoints.name = CONFIG.ANNOTATION_KEYPOINTS_PREFIX + annotationId;
 
+        // create shape
+        const shape = new AnnotationShape({});
+        shape.name = CONFIG.ANNOTATION_SHAPE_PREFIX + annotationId;
+        shape.data = { categoryId, annotationId };
+
+        shape.opacity = CONFIG.ANNOTATION_SHAPE_OPACITY;
+        shape.locked = false;
+
+        this.shape = shape;
+
         this.addChildren([this.shape, this.keypoints]);
+    }
+
+    set fillColor(color: paper.Color | null) {
+        this.shape.fillColor = color;
+        this.keypoints.color = color;
     }
 
     // shape methods
@@ -59,8 +75,27 @@ class AnnotationGroup extends paper.Group {
         }
     }
 
+    public importData(
+        isBBOX: boolean = false,
+        paper_object: Object = {},
+        segmentation: number[][] = [],
+        width: number,
+        height: number,
+        keypoints: ExportObjKeypointGroup,
+    ) {
+        if (isBBOX) this.shape.activateBBOX();
+
+        this.shape.importData(paper_object, segmentation, width, height);
+
+        this.keypoints.importData(keypoints);
+    }
+
     public exportData() {
-        return ''; // TODO
+        const obj = {
+            shape: this.shape.exportData(),
+            keypoints: this.keypoints.exportData(),
+        };
+        return obj;
     }
 }
 export default AnnotationGroup;

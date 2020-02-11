@@ -57,6 +57,7 @@ const CategoryCard: React.FC<Props> = ({
             <Grid container justify="center" alignItems="center">
                 <Grid item xs>
                     <IconButton
+                        disabled={annotationCount === 0}
                         size="small"
                         className={clsx(
                             isEnabled
@@ -97,6 +98,7 @@ const CategoryCard: React.FC<Props> = ({
                 </Grid>
                 <Grid item xs>
                     <IconButton
+                        disabled
                         size="small"
                         color="inherit"
                         onClick={() => {

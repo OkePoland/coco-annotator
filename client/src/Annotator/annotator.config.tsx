@@ -6,6 +6,7 @@ export const INITIAL_ANNOTATION_ID = null;
 export const ANNOTATION_EXPANDED = true;
 
 // Paper.js Config
+export const CANVAS_RASTER_PREFIX = 'RASTER';
 export const CANVAS_ZOOM_FACTOR = 1.2;
 export const CANVAS_ZOOM_MIN = 0.01;
 export const CANVAS_ZOOM_MAX = 10;
@@ -18,14 +19,17 @@ export const ANNOTATION_KEYPOINTS_PREFIX = 'KEYPOINTS_';
 
 export const ANNOTATION_SHAPE_OPACITY = 0.6;
 
+export const TITLE_GROUP_PREFIX = 'TITLE_GROUP';
 export const TITLE_FONT_SCALE = 0.025;
 export const TITLE_HEIGHT_SCALE = 0.5;
 
 export const TOOLS_BBOX_SCALE_FACTOR = 3;
+export const TOOLS_BBOX_INITIAL_COLOR = 'black';
 
 export const TOOLS_BRUSH_SCALE_FACTOR = 3;
 export const TOOLS_BRUSH_INITIAL_STROKE_WIDTH = 1;
 export const TOOLS_BRUSH_INITIAL_RADIUS = 30;
+export const TOOLS_BRUSH_INITIAL_COLOR = 'white';
 
 export const TOOLS_SELECT_INITIAL_TOOLTIP_ON = true;
 export const TOOLS_SELECT_INITIAL_HIT_TOLERANCE = 10;

@@ -1,6 +1,6 @@
 import { Maybe } from '../../annotator.types';
 
-import { CategoryGroup, AnnotationGroup } from '../Group';
+import { CategoryGroup, AnnotationGroup } from '../Shape';
 
 export const findCategoryGroup = (
     groups: CategoryGroup[],

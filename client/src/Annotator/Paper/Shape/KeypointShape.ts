@@ -1,6 +1,6 @@
 import paper from 'paper';
 
-class Keypoint extends paper.Path {
+class KeypointShape extends paper.Path {
     public pointId: number; // id is reserverd for paper.Path object
     private _point: paper.Point;
 
@@ -17,8 +17,6 @@ class Keypoint extends paper.Path {
         circle.remove();
         this.addSegments(circle.segments);
         this.closed = true;
-
-        this.fillColor = new paper.Color('red');
     }
 
     move(point: paper.Point) {
@@ -31,8 +29,8 @@ class Keypoint extends paper.Path {
     }
 
     set selected(val: boolean) {
-        this.strokeColor = new paper.Color(val ? 'white' : 'red');
+        this.strokeColor = val ? new paper.Color('white') : this.fillColor;
         this.bringToFront();
     }
 }
-export default Keypoint;
+export default KeypointShape;
