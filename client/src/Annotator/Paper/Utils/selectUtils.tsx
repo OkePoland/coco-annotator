@@ -1,9 +1,9 @@
-import { Maybe, DataType, DataIndicator } from '../../annotator.types';
+import { Maybe } from '../../annotator.types';
 
 import * as CONFIG from '../../annotator.config';
 
-import { Keypoint } from '../Group';
-import { isIndicator } from './typeGuards';
+import { KeypointShape } from '../Shape';
+import { isIndicator, createIndicator } from './typeGuards';
 
 export const hitOptions = {
     segments: true,
@@ -30,12 +30,10 @@ export const createCircle = (
     radius: number,
     strokeWidth: number,
 ) => {
-    const data: DataIndicator = { type: DataType.INDICATOR };
-
     const pt = new paper.Path.Circle(point, radius);
     pt.strokeColor = new paper.Color('black');
     pt.strokeWidth = strokeWidth;
-    pt.data = data;
+    pt.data = createIndicator();
 
     return pt;
 };
@@ -44,13 +42,11 @@ export const createTooltip = (
     position: paper.Point,
     rounded: number,
     fontSize: number,
-    keypoint: Maybe<Keypoint>,
+    keypoint: Maybe<KeypointShape>,
     categoryId: Maybe<number>,
     annotationId: Maybe<number>,
 ) => {
     // Create tooltip paper object
-    const data: DataIndicator = { type: DataType.INDICATOR };
-
     const text = new paper.PointText(position);
     text.justification = 'left';
     text.fillColor = new paper.Color('black');
@@ -58,7 +54,7 @@ export const createTooltip = (
         ? createKeypointText(keypoint)
         : createShapeText(categoryId, annotationId);
     text.fontSize = fontSize;
-    text.data = data;
+    text.data = createIndicator();
 
     const box = new paper.Path.Rectangle(
         text.bounds,
@@ -67,7 +63,7 @@ export const createTooltip = (
     box.fillColor = new paper.Color('white');
     box.strokeColor = new paper.Color('white');
     box.opacity = 0.5;
-    box.data = data;
+    box.data = createIndicator();
 
     return { text, box };
 };
@@ -77,9 +73,10 @@ const createShapeText = (
     annotationId: Maybe<number>,
 ) => {
     // info text
-    const msg = `CategoryId: ${categoryId}\nAnnotationId: ${annotationId}`
-        .replace(/\n/g, ' \n ')
-        .slice(0, -2);
+    const msg = `CategoryId: ${categoryId}\nAnnotationId: ${annotationId}`.replace(
+        /\n/g,
+        ' \n ',
+    );
 
     // metadataData text
     const metadata: Array<{ key: string; value: string }> = []; // TODO get
@@ -98,7 +95,7 @@ const createShapeText = (
     return msg + '\n' + metaMsg;
 };
 
-const createKeypointText = (keypoint: Keypoint) => {
+const createKeypointText = (keypoint: KeypointShape) => {
     const id = keypoint.pointId;
     const msg = `Keypoint \n Id: ${id}`;
     msg.replace(/\n/g, ' \n ').slice(0, -2);

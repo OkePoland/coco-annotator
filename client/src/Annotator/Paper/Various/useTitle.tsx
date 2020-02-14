@@ -44,7 +44,7 @@ const useTitle = (imageSize: Maybe<ImageSize>, leftTitleMsg: string) => {
                     leftTitleRef.current,
                     rightTitleRef.current,
                 ]);
-                group.name = 'Title_Group';
+                group.name = CONFIG.TITLE_GROUP_PREFIX;
                 group.locked = true; // disable interactions with the mouse
                 groupRef.current = group;
             }

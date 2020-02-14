@@ -1,10 +1,15 @@
 /**
  * Tool for selecting area around specific point ( based on colors )
  */
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useRef, useState, useEffect, useCallback } from 'react';
 import paper from 'paper';
 
-import { Maybe, MouseEvent, ImageSize } from '../../annotator.types';
+import {
+    Maybe,
+    MouseEvent,
+    ImageSize,
+    ToolSettingsWand,
+} from '../../annotator.types';
 
 import * as CONFIG from '../../annotator.config';
 
@@ -16,37 +21,33 @@ interface IToolWand {
         isActive: boolean,
         imageSize: Maybe<ImageSize>,
         imageData: Maybe<ImageData>,
+        preferences: Maybe<ToolSettingsWand>,
         unite: (path: paper.Path) => void,
         subtract: (path: paper.Path) => void,
     ): ToolWandResponse;
 }
 export interface ToolWandResponse {
-    threshold: number;
-    blur: number;
+    settings: ToolSettingsWand;
     setThreshold: (value: number) => void;
     setBlur: (value: number) => void;
-}
-
-interface Settings {
-    threshold: number;
-    blur: number;
 }
 
 export const useWand: IToolWand = (
     isActive,
     imageSize,
     imageData,
+    preferences,
     unite,
     subtract,
 ) => {
     const toolRef = useRef<Maybe<paper.Tool>>(null);
 
-    const [settings, _setSettings] = useState<Settings>({
+    const [settings, _setSettings] = useState<ToolSettingsWand>({
         threshold: CONFIG.TOOLS_WAND_INITIAL_THRESHOLD,
         blur: CONFIG.TOOLS_WAND_INITIAL_BLUR,
     });
 
-    // private actions
+    // settings methods
     const setThreshold = useCallback((value: number) => {
         _setSettings(oldState => ({ ...oldState, threshold: value }));
     }, []);
@@ -100,6 +101,20 @@ export const useWand: IToolWand = (
         ],
     );
 
+    // adjust preferences
+    useEffect(() => {
+        _setSettings(oldState => {
+            const newState = { ...oldState };
+            if (preferences) {
+                if (preferences.threshold) {
+                    newState.threshold = preferences.threshold;
+                }
+                if (preferences.blur) newState.blur = preferences.blur;
+            }
+            return newState;
+        });
+    }, [preferences]);
+
     // tool effects
     useEffect(() => {
         if (!toolRef.current) {
@@ -116,8 +131,7 @@ export const useWand: IToolWand = (
     }, [isActive]);
 
     return {
-        threshold: settings.threshold,
-        blur: settings.blur,
+        settings,
         setThreshold,
         setBlur,
     };

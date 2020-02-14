@@ -1,10 +1,10 @@
 /*
  * Manage dataset data
  */
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 import { Dataset, Category } from '../../common/types';
-import { Maybe } from '../annotator.types';
+import { Maybe, ToolPreferences } from '../annotator.types';
 
 import * as AnnotatorApi from '../annotator.api';
 import useGlobalContext from '../../common/hooks/useGlobalContext';
@@ -19,11 +19,15 @@ interface IUseDatasetResponse {
     filename: string;
     next: Maybe<number>;
     previous: Maybe<number>;
+    toolPreferences: ToolPreferences;
     isLoading: boolean;
+    saveAction: (obj: Object) => Promise<void>;
 }
 
 const useDataset: IUseDataset = imageId => {
     const [, dispatch] = useGlobalContext();
+
+    const [generation, moveGeneration] = useState(0);
 
     // datasetdata
     const [dataset, setDataset] = useState<Maybe<Dataset>>(null);
@@ -31,35 +35,37 @@ const useDataset: IUseDataset = imageId => {
     const [isLoading, _setIsLoading] = useState<boolean>(false);
 
     // image data
-    const [, setMetadata] = useState<{
-        [key: string]: string | number;
-    }>({});
     const [filename, setFilename] = useState<string>('');
     const [next, setNext] = useState<Maybe<number>>(null);
     const [previous, setPrevious] = useState<Maybe<number>>(null);
-    const [, setCategoriesIds] = useState<Array<number>>([]);
-    const [, setAnnotating] = useState<string[]>([]); // array of users names, which touched specific image
+    const [toolPreferences, setToolPreferences] = useState<ToolPreferences>({
+        select: null,
+        bbox: null,
+        polygon: null,
+        brush: null,
+        eraser: null,
+        wand: null,
+    });
 
-    // others
-    const [, setPreferences] = useState<{}>({}); // TODO adjust type
+    const saveAction = useCallback(async (obj: Object) => {
+        await AnnotatorApi.saveDataset(obj);
+        moveGeneration(c => c + 1);
+    }, []);
 
     useEffect(() => {
         const process = 'Loading annotation data';
 
         const update = async () => {
-            const data = await AnnotatorApi.getData(imageId);
+            const data = await AnnotatorApi.getDataset(imageId);
+            console.log('Info: Dataset loaded');
+
             setDataset(data.dataset);
             setCategories(data.categories);
-            setMetadata(data.image.metadata || {});
             setFilename(data.image.file_name);
             setNext(data.image.next !== undefined ? data.image.next : null);
             setPrevious(data.image.previous || null);
-            setCategoriesIds(data.image.category_ids || []);
-            setAnnotating(data.image.annotating || []);
 
-            setPreferences(data.preferences || {});
-
-            setDataset(data.dataset);
+            setToolPreferences(data.preferences);
         };
 
         try {
@@ -72,7 +78,7 @@ const useDataset: IUseDataset = imageId => {
             _setIsLoading(false);
             removeProcess(dispatch, process);
         }
-    }, [imageId, dispatch]);
+    }, [imageId, generation, dispatch]);
 
     return {
         dataset,
@@ -80,7 +86,9 @@ const useDataset: IUseDataset = imageId => {
         filename,
         next,
         previous,
+        toolPreferences,
         isLoading,
+        saveAction,
     };
 };
 export default useDataset;

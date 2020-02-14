@@ -10,36 +10,22 @@ import ToolButton from './ToolButton';
 interface Props {
     annotationAction: () => void;
     annotationCopyAction: () => void;
-    setAnnotationOn: (on: boolean) => void;
+    setCategoriesEnabled: (isOn: boolean) => void;
 }
 
 export const Annotation: React.FC<Props> = ({
     annotationAction,
     annotationCopyAction,
-    setAnnotationOn,
+    setCategoriesEnabled,
 }) => (
     <Fragment>
-        <ToolButton
-            name="Annotate url"
-            icon={<CloudDownloadIcon />}
-            enabled={true}
-            active={false}
-            onClick={annotationAction}
-        />
-        <ToolButton
-            name="Copy Annotations"
-            icon={<FileCopyIcon />}
-            enabled={true}
-            active={false}
-            onClick={annotationCopyAction}
-        />
         <ToolButton
             name="Show All"
             icon={<VisibilityIcon />}
             enabled={true}
             active={false}
             onClick={() => {
-                setAnnotationOn(true);
+                setCategoriesEnabled(true);
             }}
         />
         <ToolButton
@@ -48,8 +34,22 @@ export const Annotation: React.FC<Props> = ({
             enabled={true}
             active={false}
             onClick={() => {
-                setAnnotationOn(false);
+                setCategoriesEnabled(false);
             }}
+        />
+        <ToolButton
+            name="Annotate url"
+            icon={<CloudDownloadIcon />}
+            enabled={false}
+            active={false}
+            onClick={annotationAction}
+        />
+        <ToolButton
+            name="Copy Annotations"
+            icon={<FileCopyIcon />}
+            enabled={false}
+            active={false}
+            onClick={annotationCopyAction}
         />
     </Fragment>
 );

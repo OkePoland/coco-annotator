@@ -1,10 +1,10 @@
 /**
  * Tool to Draw Rectangles & unite it with existing shapes
  */
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useRef, useState, useEffect, useCallback } from 'react';
 import paper from 'paper';
 
-import { Maybe, MouseEvent } from '../../annotator.types';
+import { Maybe, MouseEvent, ToolSettingsBBOX } from '../../annotator.types';
 
 import * as CONFIG from '../../annotator.config';
 
@@ -13,39 +13,47 @@ interface IToolBBox {
     (
         enabled: boolean,
         scale: number,
+        preferences: Maybe<ToolSettingsBBOX>,
         uniteBBox: (a: paper.Path) => void,
     ): ToolBBoxResponse;
 }
 export interface ToolBBoxResponse {
-    color: string;
+    settings: ToolSettingsBBOX;
     setColor: (color: string) => void;
 }
-interface PointCache {
-    p1: Maybe<paper.Point>;
-    p2: Maybe<paper.Point>;
-}
-interface PathOptions {
-    strokeColor: string;
-    strokeWidth: number;
+interface Cache {
+    polygon: Maybe<paper.Path>;
+    point: {
+        p1: Maybe<paper.Point>;
+        p2: Maybe<paper.Point>;
+    };
+    path: {
+        strokeColor: string;
+        strokeWidth: number;
+    };
 }
 
-export const useBBox: IToolBBox = (isActive, scale, uniteBBox) => {
+export const useBBox: IToolBBox = (isActive, scale, preferences, uniteBBox) => {
     const toolRef = useRef<Maybe<paper.Tool>>(null);
-    const polygonRef = useRef<Maybe<paper.Path>>(null);
-    const pointRef = useRef<PointCache>({
-        p1: null,
-        p2: null,
+    const cache = useRef<Cache>({
+        polygon: null,
+        point: {
+            p1: null,
+            p2: null,
+        },
+        path: {
+            strokeColor: 'black',
+            strokeWidth: 1,
+        },
     });
-    const optionsRef = useRef<PathOptions>({
-        strokeColor: 'black',
-        strokeWidth: 1,
+    const [settings, _setSettings] = useState<ToolSettingsBBOX>({
+        color: CONFIG.TOOLS_BBOX_INITIAL_COLOR,
     });
-    const [color, _setColor] = useState<string>('black');
 
     // private actions
     const updatePolygon = useCallback(() => {
-        if (!polygonRef.current) return;
-        const { p1, p2 } = pointRef.current;
+        if (!cache.current.polygon) return;
+        const { p1, p2 } = cache.current.point;
 
         let arr: Array<paper.Point> = [];
         if (p1 && p2) {
@@ -61,14 +69,14 @@ export const useBBox: IToolBBox = (isActive, scale, uniteBBox) => {
         }
 
         for (let i = 0; i < arr.length; i++) {
-            polygonRef.current.add(arr[i]);
+            cache.current.polygon.add(arr[i]);
         }
     }, []);
 
     const createBBox = useCallback(
         (p1: paper.Point) => {
-            polygonRef.current = new paper.Path(optionsRef.current);
-            pointRef.current.p1 = new paper.Point(p1.x, p1.y);
+            cache.current.polygon = new paper.Path(cache.current.path);
+            cache.current.point.p1 = new paper.Point(p1.x, p1.y);
             updatePolygon();
         },
         [updatePolygon],
@@ -76,52 +84,48 @@ export const useBBox: IToolBBox = (isActive, scale, uniteBBox) => {
 
     const modifyBBox = useCallback(
         (p2: paper.Point) => {
-            pointRef.current.p2 = new paper.Point(p2.x, p2.y);
+            cache.current.point.p2 = new paper.Point(p2.x, p2.y);
             updatePolygon();
         },
         [updatePolygon],
     );
 
     const completeBBox = useCallback(() => {
-        if (!polygonRef.current) return;
+        if (!cache.current.polygon) return;
 
-        polygonRef.current.fillColor = new paper.Color('black');
-        polygonRef.current.closePath();
+        cache.current.polygon.fillColor = new paper.Color('black');
+        cache.current.polygon.closePath();
 
-        uniteBBox(polygonRef.current);
+        uniteBBox(cache.current.polygon);
 
-        polygonRef.current.remove();
-        polygonRef.current = null;
+        cache.current.polygon.remove();
+        cache.current.polygon = null;
 
-        pointRef.current.p1 = null;
-        pointRef.current.p2 = null;
+        cache.current.point.p1 = null;
+        cache.current.point.p2 = null;
 
         return true;
     }, [uniteBBox]);
 
     const removeLastBBox = useCallback(() => {
-        if (polygonRef.current != null) {
-            polygonRef.current.removeSegments();
+        if (cache.current.polygon != null) {
+            cache.current.polygon.removeSegments();
         }
     }, []);
 
-    // pathOptions methods
+    // settings methods
     const setColor = useCallback((color: string) => {
-        _setColor(color);
-        optionsRef.current.strokeColor = color;
-        if (polygonRef.current != null) {
-            polygonRef.current.strokeColor = new paper.Color(color);
+        _setSettings(oldState => ({ ...oldState, color }));
+        cache.current.path.strokeColor = color;
+        if (cache.current.polygon) {
+            cache.current.polygon.strokeColor = new paper.Color(color);
         }
     }, []);
 
     // mouse Events
     const onMouseDown = useCallback(
         (event: MouseEvent) => {
-            // if (polygonRef.current == null && checkAnnotationExist()) {  // TODO check if annotation exist in parent
-            //     this.$parent.currentCategory.createAnnotation();
-            // }
-
-            if (polygonRef.current === null) {
+            if (cache.current.polygon === null) {
                 createBBox(event.point);
                 return;
             }
@@ -135,15 +139,22 @@ export const useBBox: IToolBBox = (isActive, scale, uniteBBox) => {
 
     const onMouseMove = useCallback(
         (event: MouseEvent) => {
-            if (!polygonRef.current) return;
-            if (polygonRef.current.segments.length === 0) return;
-            //this.autoStrokeColor(event.point);    // TODO implement
+            if (!cache.current.polygon) return;
+            if (cache.current.polygon.segments.length === 0) return;
 
             removeLastBBox();
             modifyBBox(event.point);
         },
         [modifyBBox, removeLastBBox],
     );
+
+    // adjust preferences
+    useEffect(() => {
+        // setSetting + update cache variables
+        if (preferences && preferences.color) {
+            setColor(preferences.color);
+        }
+    }, [preferences, setColor]);
 
     // tool effects
     useEffect(() => {
@@ -163,14 +174,14 @@ export const useBBox: IToolBBox = (isActive, scale, uniteBBox) => {
     useEffect(() => {
         const newScale = scale * CONFIG.TOOLS_BBOX_SCALE_FACTOR;
 
-        optionsRef.current.strokeWidth = newScale;
-        if (polygonRef.current != null) {
-            polygonRef.current.strokeWidth = newScale;
+        cache.current.path.strokeWidth = newScale;
+        if (cache.current.polygon != null) {
+            cache.current.polygon.strokeWidth = newScale;
         }
     }, [scale]);
 
     return {
-        color,
+        settings,
         setColor,
     };
 };

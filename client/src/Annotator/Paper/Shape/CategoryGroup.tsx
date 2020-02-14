@@ -9,6 +9,12 @@ class CategoryGroup extends paper.Group {
         this.data = { categoryId };
     }
 
+    set fillColor(color: paper.Color | null) {
+        this.children.forEach(child => {
+            child.fillColor = color;
+        })
+    }
+
     public exportData() {
         return ''; // TODO
     }

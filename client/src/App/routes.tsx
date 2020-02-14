@@ -76,7 +76,12 @@ export default compose(
         '/annotate/:id': withAuthentication(
             route(async req => {
                 return {
-                    view: <Annotator imageId={parseInt(req.params.id)} />,
+                    view: (
+                        <Annotator
+                            key={req.params.id}
+                            imageId={parseInt(req.params.id)}
+                        />
+                    ),
                 };
             }),
         ),

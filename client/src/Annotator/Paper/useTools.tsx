@@ -1,7 +1,7 @@
-import { useMemo, MutableRefObject } from 'react';
+import { useCallback, useMemo, MutableRefObject } from 'react';
 import paper from 'paper';
 
-import { Maybe, Tool, ImageSize } from '../annotator.types';
+import { Maybe, Tool, ImageSize, ToolPreferences } from '../annotator.types';
 
 import useEmpty from './Tool/useEmpty';
 import { useSelect, ToolSelectResponse } from './Tool/useSelect';
@@ -15,6 +15,7 @@ import { useDextr, ToolDextrResponse } from './Tool/useDextr';
 interface IUseTools {
     (
         paperRef: MutableRefObject<Maybe<paper.PaperScope>>,
+        preferences: ToolPreferences,
         activeTool: Maybe<Tool>,
         selectedAnnotation: Maybe<number>,
         imageId: number,
@@ -36,11 +37,13 @@ interface IUseTools {
         eraser: ToolBrushResponse;
         keypoint: ToolKeypointResponse;
         dextr: ToolDextrResponse;
+        exportData: () => ToolPreferences;
     };
 }
 
 const useTools: IUseTools = (
     paperRef,
+    preferences,
     activeTool,
     selectedAnnotation,
     imageId,
@@ -64,33 +67,39 @@ const useTools: IUseTools = (
         paperRef,
         activeTool === Tool.SELECT && selectedAnnotation != null,
         imageScale,
+        preferences.select,
     );
     const bbox = useBBox(
         activeTool === Tool.BBOX && selectedAnnotation != null,
         imageScale,
+        preferences.bbox,
         uniteBBOX,
     );
     const polygon = usePolygon(
         activeTool === Tool.POLYGON && selectedAnnotation != null,
         imageScale,
+        preferences.polygon,
         unite,
     );
     const wand = useWand(
         activeTool === Tool.WAND && selectedAnnotation != null,
         imageSize,
         imageData,
+        preferences.wand,
         unite,
         subtract,
     );
     const brush = useBrush(
         activeTool === Tool.BRUSH && selectedAnnotation != null,
         imageScale,
+        preferences.brush,
         unite,
         simplify,
     );
     const eraser = useBrush(
         activeTool === Tool.ERASER && selectedAnnotation != null,
         imageScale,
+        preferences.eraser,
         subtract,
         simplify,
     );
@@ -105,6 +114,25 @@ const useTools: IUseTools = (
         unite,
     );
 
+    const exportData = useCallback(() => {
+        const obj: ToolPreferences = {
+            select: select.settings,
+            bbox: bbox.settings,
+            polygon: polygon.settings,
+            brush: brush.settings,
+            eraser: eraser.settings,
+            wand: wand.settings,
+        };
+        return obj;
+    }, [
+        select.settings,
+        bbox.settings,
+        polygon.settings,
+        brush.settings,
+        eraser.settings,
+        wand.settings,
+    ]);
+
     return {
         empty,
         select,
@@ -115,6 +143,7 @@ const useTools: IUseTools = (
         eraser,
         keypoint,
         dextr,
+        exportData,
     };
 };
 export default useTools;

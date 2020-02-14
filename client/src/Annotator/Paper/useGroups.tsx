@@ -5,7 +5,7 @@ import paper from 'paper';
 import { Category, Annotation } from '../../common/types';
 import { SelectedState } from '../annotator.types';
 
-import { CategoryGroup, AnnotationGroup } from './Group';
+import { CategoryGroup, AnnotationGroup } from './Shape';
 import { findCategoryGroup, findAnnotationGroup } from './Utils/groupUtils';
 
 // interfaces
@@ -39,14 +39,36 @@ const useGroups: IUseGroups = (categories, selected) => {
     const shape = useShape(groupsRef, selected);
     const keypoints = useKeypoints(groupsRef, selected);
 
-    // create initial groups
+    // refresh Group
     useEffect(() => {
+        console.log('Info: Refresh Groups');
+        groupsRef.current.forEach(group => {
+            group.remove();
+        });
+        groupsRef.current = [];
+
         const initialGroups = categories.map(category => {
             const group = new CategoryGroup(category.id);
             if (category.annotations != null) {
                 const arr: AnnotationGroup[] = category.annotations.map(
-                    annotation =>
-                        new AnnotationGroup(category.id, annotation.id),
+                    annotation => {
+                        const annotationGroup = new AnnotationGroup(
+                            category.id,
+                            annotation.id,
+                        );
+                        annotationGroup.fillColor = new paper.Color(
+                            annotation.color,
+                        );
+                        annotationGroup.importData(
+                            annotation.isbbox,
+                            annotation.paper_object,
+                            annotation.segmentation,
+                            annotation.width,
+                            annotation.height,
+                            annotation.keypoints,
+                        );
+                        return annotationGroup;
+                    },
                 );
                 group.addChildren(arr);
             }
@@ -74,7 +96,10 @@ const useCreator = (groupsRef: MutableRefObject<CategoryGroup[]>) => {
             if (!categoryGroup) return;
 
             const newItem = new AnnotationGroup(categoryId, annotation.id);
+            newItem.fillColor = new paper.Color(annotation.color);
             categoryGroup.addChild(newItem);
+
+            console.log('Info: Create new AnnotationGroup');
         },
         [groupsRef],
     );

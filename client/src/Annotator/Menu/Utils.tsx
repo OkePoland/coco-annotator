@@ -24,7 +24,7 @@ export const Settings: React.FC<Props> = ({
         <ToolButton
             name="Undo"
             icon={<UndoIcon />}
-            enabled={true}
+            enabled={false}
             active={false}
             onClick={undoAction}
         />

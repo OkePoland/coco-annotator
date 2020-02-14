@@ -1,8 +1,9 @@
 import paper from 'paper';
 
-import { DataType, DataIndicator } from '../../annotator.types';
+import { ExportObjKeypointGroup } from '../../annotator.types';
 
-import Keypoint from './Keypoint';
+import KeypointShape from './KeypointShape';
+import { createIndicator } from '../Utils/typeGuards';
 
 type Edge = [number, number]; // edge between two keypoints
 
@@ -14,13 +15,13 @@ interface KeypointData {
 
 class KeypointsGroup extends paper.Group {
     private _usedIds: number[]; // array of used ids ( sorted ) - ids start from 1
-    private _keypoints: Keypoint[];
+    private _keypoints: KeypointShape[];
 
     private _edges: Edge[]; // [ [1,2], [1,3] ] - represent pairs of connected keypoints [id1, id2] - first elem is always smaller
     private _keypointsEdges: { [pointId: number]: number[] }; // keypoint.pointId -> edgeHash[]
     private _lines: { [hash: number]: paper.Path.Line }; // edgeHash -> paper.Path.Line
 
-    private _strokeColor: paper.Color;
+    private _color: paper.Color | null;
     private _lineWidth: number;
 
     constructor() {
@@ -33,15 +34,25 @@ class KeypointsGroup extends paper.Group {
 
         this._lines = {};
 
-        this._strokeColor = new paper.Color('red');
+        this._color = null;
         this._lineWidth = 4;
+    }
+
+    set color(color: paper.Color | null) {
+        this._color = color;
+        this._keypoints.forEach(child => {
+            child.fillColor = color;
+        });
+        Object.values(this._lines).forEach(line => {
+            line.strokeColor = color;
+        });
     }
 
     // public
     public addKeypoint(point: paper.Point, id?: number) {
         const newId = this._getNextId(id);
 
-        const keypoint: Keypoint = new Keypoint(newId, point);
+        const keypoint: KeypointShape = new KeypointShape(newId, point);
 
         this._keypoints.push(keypoint);
 
@@ -49,7 +60,7 @@ class KeypointsGroup extends paper.Group {
         keypoint.bringToFront();
     }
 
-    public removeKeypoint(keypoint: Keypoint) {
+    public removeKeypoint(keypoint: KeypointShape) {
         // remove all connected lines to keypoint
         this._removeEdge(keypoint);
 
@@ -59,7 +70,7 @@ class KeypointsGroup extends paper.Group {
         keypoint.remove();
     }
 
-    public moveKeypoint(keypoint: Keypoint, point: paper.Point) {
+    public moveKeypoint(keypoint: KeypointShape, point: paper.Point) {
         const id = keypoint.pointId;
 
         // move all connected lines accordingly
@@ -82,7 +93,7 @@ class KeypointsGroup extends paper.Group {
         keypoint.bringToFront();
     }
 
-    public linkKeypoints(k1: Keypoint, k2: Keypoint) {
+    public linkKeypoints(k1: KeypointShape, k2: KeypointShape) {
         const pointId1 = k1.pointId;
         const pointId2 = k2.pointId;
 
@@ -101,7 +112,11 @@ class KeypointsGroup extends paper.Group {
         }
     }
 
-    public importData(keypoints: KeypointData[], edges: Edge[]) {
+    public importData(data: ExportObjKeypointGroup) {
+        if (!data || !data.keypoints || data.keypoints.length === 0) return;
+
+        const { keypoints, edges } = data;
+
         this._usedIds = keypoints.map(k => k.pointId).sort();
 
         // add keypoints
@@ -123,21 +138,19 @@ class KeypointsGroup extends paper.Group {
     }
 
     public exportData() {
-        const keypoints: KeypointData[] = this._keypoints.map(k => ({
-            pointId: k.pointId,
-            x: k.point.x,
-            y: k.point.y,
-        }));
-        const edges = this._edges;
-
-        return {
-            keypoints,
-            edges,
+        const obj: ExportObjKeypointGroup = {
+            keypoints: this._keypoints.map(k => ({
+                pointId: k.pointId,
+                x: k.point.x,
+                y: k.point.y,
+            })),
+            edges: this._edges,
         };
+        return obj;
     }
 
     // private
-    private _addEdge(edge: Edge, k1: Keypoint, k2: Keypoint) {
+    private _addEdge(edge: Edge, k1: KeypointShape, k2: KeypointShape) {
         const edgeHash = this._hashEdge(edge);
 
         this._edges.push(edge);
@@ -155,7 +168,7 @@ class KeypointsGroup extends paper.Group {
         line.insertAbove(k2);
     }
 
-    private _removeEdge(keypoint: Keypoint, edgeHashToRemove?: number) {
+    private _removeEdge(keypoint: KeypointShape, edgeHashToRemove?: number) {
         const pointId = keypoint.pointId;
 
         if (!this._keypointsEdges[pointId]) return;
@@ -201,11 +214,10 @@ class KeypointsGroup extends paper.Group {
     }
 
     private _createLine(p1: paper.Point, p2: paper.Point) {
-        const data: DataIndicator = { type: DataType.INDICATOR };
         const line = new paper.Path.Line(p1, p2);
-        line.strokeColor = this._strokeColor;
+        line.strokeColor = this._color;
         line.strokeWidth = this._lineWidth;
-        line.data = data;
+        line.data = createIndicator();
         line.remove();
 
         return line;
