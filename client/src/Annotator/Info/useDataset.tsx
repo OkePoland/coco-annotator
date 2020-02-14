@@ -48,7 +48,6 @@ const useDataset: IUseDataset = imageId => {
     });
 
     const saveAction = useCallback(async (obj: Object) => {
-        console.log(obj);
         await AnnotatorApi.saveDataset(obj);
         moveGeneration(c => c + 1);
     }, []);

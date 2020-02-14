@@ -12,7 +12,9 @@ import {
     Tool,
     ToolPreferences,
     SelectedState,
+    ExportObjCategory,
 } from './annotator.types';
+
 import { CategoryGroup, AnnotationGroup } from './Paper/Shape';
 
 // Export
@@ -53,16 +55,19 @@ const exportCategories = (
 ) => {
     if (infoArr.length === 0) return [];
 
-    const categories = infoArr.reduce((prevArr: any[], categoryInfo) => {
-        const categoryGroup = groupsArr.find(
-            o => o.data.categoryId === categoryInfo.id,
-        );
-        if (categoryGroup) {
-            const item = parseCategory(categoryInfo, categoryGroup);
-            prevArr.push(item);
-        }
-        return prevArr;
-    }, []);
+    const categories = infoArr.reduce(
+        (prevArr: ExportObjCategory[], categoryInfo) => {
+            const categoryGroup = groupsArr.find(
+                o => o.data.categoryId === categoryInfo.id,
+            );
+            if (categoryGroup) {
+                const item = parseCategory(categoryInfo, categoryGroup);
+                prevArr.push(item);
+            }
+            return prevArr;
+        },
+        [],
+    );
     return categories;
 };
 
