@@ -2,6 +2,7 @@
  * Manage dataset data
  */
 import { useState, useEffect, useCallback } from 'react';
+import { useSnackbar } from 'notistack';
 
 import { Dataset, Category } from '../../common/types';
 import { Maybe, ToolPreferences } from '../annotator.types';
@@ -26,6 +27,7 @@ interface IUseDatasetResponse {
 
 const useDataset: IUseDataset = imageId => {
     const [, dispatch] = useGlobalContext();
+    const { enqueueSnackbar } = useSnackbar();
 
     const [generation, moveGeneration] = useState(0);
 
@@ -47,10 +49,14 @@ const useDataset: IUseDataset = imageId => {
         wand: null,
     });
 
-    const saveAction = useCallback(async (obj: Object) => {
-        await AnnotatorApi.saveDataset(obj);
-        moveGeneration(c => c + 1);
-    }, []);
+    const saveAction = useCallback(
+        async (obj: Object) => {
+            await AnnotatorApi.saveDataset(obj);
+            enqueueSnackbar('Image save', { variant: 'success' });
+            moveGeneration(c => c + 1);
+        },
+        [enqueueSnackbar],
+    );
 
     useEffect(() => {
         const process = 'Loading annotation data';
@@ -73,12 +79,12 @@ const useDataset: IUseDataset = imageId => {
             addProcess(dispatch, process);
             update();
         } catch (error) {
-            // TODO display toast
+            enqueueSnackbar('Loading error', { variant: 'error' });
         } finally {
             _setIsLoading(false);
             removeProcess(dispatch, process);
         }
-    }, [imageId, generation, dispatch]);
+    }, [imageId, generation, dispatch, enqueueSnackbar]);
 
     return {
         dataset,

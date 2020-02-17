@@ -9,6 +9,12 @@ export const useStyles = makeStyles((theme: AugmentedTheme) => ({
         paddingLeft: theme.spacing(1),
         fontSize: '10px',
     },
+    iconCell: {
+        textAlign: 'center',
+    },
+    icon: {
+        fontSize: 18,
+    },
     selected: {
         backgroundColor: 'rgb(75, 98, 76)',
     },

@@ -20,16 +20,25 @@ export interface SelectedState {
 
 export interface CategoryInfo {
     id: number;
+    name: string;
     enabled: boolean;
     expanded: boolean;
-    data: Category;
+    color: string;
+    _data: Category;
     annotations: AnnotationInfo[];
 }
 
 export interface AnnotationInfo {
     id: number;
+    name: string;
+    color: string;
     enabled: boolean;
-    data: Annotation;
+    _data: Annotation;
+}
+
+// Shortcuts types
+export interface Shortcuts {
+    [key: string]: string;
 }
 
 // Tool Types
@@ -131,10 +140,14 @@ export interface ExportObjCategory {
 
 export interface ExportObjAnnotation {
     id: number;
+    name: string;
     color: string;
     isbbox: boolean;
     compoundPath: Object; // Paper.Item
     keypoints: ExportObjKeypointGroup;
+    metadata?: {
+        name?: string;
+    }
 }
 
 export interface ExportObjKeypointGroup {

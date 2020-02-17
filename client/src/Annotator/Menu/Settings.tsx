@@ -15,7 +15,7 @@ import ToolButton from './ToolButton';
 interface Props {
     downloadImageAction: () => void;
     saveImageAction: () => void;
-    openImageAction: () => void;
+    openSettingsAction: () => void;
     deleteImageAction: () => void;
     segmentOn: boolean;
     setSegmentOn: Dispatch<SetStateAction<boolean>>;
@@ -24,7 +24,7 @@ interface Props {
 export const Settings: React.FC<Props> = ({
     downloadImageAction,
     saveImageAction,
-    openImageAction,
+    openSettingsAction,
     deleteImageAction,
     segmentOn,
     setSegmentOn,
@@ -56,9 +56,9 @@ export const Settings: React.FC<Props> = ({
         <ToolButton
             name="Settings"
             icon={<SettingsIcon />}
-            enabled={false}
+            enabled={true}
             active={false}
-            onClick={openImageAction}
+            onClick={openSettingsAction}
         />
 
         <Box mt={2} mb={2}>

@@ -114,7 +114,7 @@ const useCanvas = (imageUrl: string): CanvasState => {
                 window.innerHeight,
             );
             paperRef.current.activate();
-            window.paper = paperRef.current; // TODO remove ( for debugging purpose )
+            if (CONFIG.DEBUGGING_ON) window.paper = paperRef.current; // ( for debugging purpose )
 
             // init Raster
             rasterRef.current = new paper.Raster(imageUrl);

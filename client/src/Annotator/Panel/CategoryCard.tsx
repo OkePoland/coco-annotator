@@ -6,16 +6,17 @@ import Typography from '@material-ui/core/Typography';
 import Collapse from '@material-ui/core/Collapse';
 import Divider from '@material-ui/core/Divider';
 import IconButton from '@material-ui/core/IconButton';
-import VisibilityIcon from '@material-ui/icons/Visibility';
-import VisibilityOffIcon from '@material-ui/icons/VisibilityOff';
+import VisibilityOutlinedIcon from '@material-ui/icons/VisibilityOutlined';
+import VisibilityOffOutlinedIcon from '@material-ui/icons/VisibilityOffOutlined';
 import AddIcon from '@material-ui/icons/Add';
 import SettingsIcon from '@material-ui/icons/Settings';
 
-import { Category } from '../../../common/types';
 import { useStyles } from './categoryCard.styles';
 
 interface Props {
-    data: Category;
+    id: number;
+    name: string;
+    color: string;
     isVisible: boolean;
     isSelected: boolean;
     isEnabled: boolean;
@@ -25,14 +26,16 @@ interface Props {
     setSelected: (id: number) => void;
     setEnabled: (id: number) => void;
     setExpanded: (id: number) => void;
-    editCategory: (id: number) => void;
+    editCategory: () => void;
     addAnnotation: (id: number) => void;
 
     renderExpandedList: () => JSX.Element[];
 }
 
 const CategoryCard: React.FC<Props> = ({
-    data: { id, name, color },
+    id,
+    name,
+    color,
     isVisible,
     isSelected,
     isEnabled,
@@ -54,7 +57,12 @@ const CategoryCard: React.FC<Props> = ({
 
     return (
         <Card className={clsx(classes.root, isSelected && classes.selected)}>
-            <Grid container justify="center" alignItems="center">
+            <Grid
+                container
+                justify="center"
+                alignItems="center"
+                className={classes.row}
+            >
                 <Grid item xs>
                     <IconButton
                         disabled={annotationCount === 0}
@@ -70,11 +78,16 @@ const CategoryCard: React.FC<Props> = ({
                             setEnabled(id);
                         }}
                     >
-                        {isEnabled ? <VisibilityIcon /> : <VisibilityOffIcon />}
+                        {isEnabled ? (
+                            <VisibilityOutlinedIcon />
+                        ) : (
+                            <VisibilityOffOutlinedIcon />
+                        )}
                     </IconButton>
                 </Grid>
                 <Grid item xs={7}>
                     <Typography
+                        className={classes.title}
                         onClick={() => {
                             if (!isSelected) {
                                 setSelected(id);
@@ -85,10 +98,13 @@ const CategoryCard: React.FC<Props> = ({
                         {`${name} (${annotationCount})`}
                     </Typography>
                 </Grid>
-                <Grid item xs>
+                <Grid item xs className={classes.iconCell}>
                     <IconButton
                         size="small"
                         color="inherit"
+                        onKeyPress={e => {
+                            e.preventDefault();
+                        }}
                         onClick={() => {
                             addAnnotation(id);
                         }}
@@ -96,14 +112,14 @@ const CategoryCard: React.FC<Props> = ({
                         <AddIcon />
                     </IconButton>
                 </Grid>
-                <Grid item xs>
+                <Grid item xs className={classes.iconCell}>
                     <IconButton
-                        disabled
                         size="small"
                         color="inherit"
-                        onClick={() => {
-                            editCategory(id);
+                        onKeyPress={e => {
+                            e.preventDefault();
                         }}
+                        onClick={editCategory}
                     >
                         <SettingsIcon />
                     </IconButton>

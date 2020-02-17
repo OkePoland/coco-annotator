@@ -3,7 +3,7 @@ export const DEBUGGING_ON = false;
 // Info Config
 export const INITIAL_CATEGORY_ID = null;
 export const INITIAL_ANNOTATION_ID = null;
-export const ANNOTATION_EXPANDED = true;
+export const ANNOTATION_EXPANDED = false;
 
 // Paper.js Config
 export const CANVAS_RASTER_PREFIX = 'RASTER';
@@ -53,3 +53,15 @@ export const TOOLS_WAND_INITIAL_BLUR = 30;
 
 export const TOOLS_DEXTR_INITIAL_PADDING = 50;
 export const TOOLS_DEXTR_INITIAL_THRESHOLD = 80;
+
+export const SHORTCUT_LIST_MOVE_UP = 'ArrowUp';
+export const SHORTCUT_LIST_MOVE_DOWN = 'ArrowDown';
+export const SHORTCUT_LIST_EXPAND = 'ArrowRight';
+export const SHORTCUT_LIST_COLLAPSE = 'ArrowLeft';
+export const SHORTCUT_ANNOTATION_ADD = ' ';
+export const SHORTCUT_ANNOTATION_REMOVE = 'Backspace';
+export const SHORTCUT_UNDO = 'Control';
+export const SHORTCUT_SAVE = 'Enter';
+export const SHORTCUT_IMAGE_CENTER = 'c';
+export const SHORTCUT_IMAGE_NEXT = 'n';
+export const SHORTCUT_IMAGE_PREV = 'p';

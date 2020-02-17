@@ -8,6 +8,8 @@ import { Dispatch, SetStateAction } from 'react';
 import { Category, Annotation } from '../../common/types';
 import { CategoryInfo, AnnotationInfo, Maybe } from '../annotator.types';
 
+import * as CONFIG from '../annotator.config';
+
 import * as AnnotatorApi from '../annotator.api';
 
 interface IUseInfo {
@@ -16,17 +18,28 @@ interface IUseInfo {
 interface UseInfoResponse {
     data: CategoryInfo[];
     creator: UseCreatorResponse;
-    enabler: UseEnablerResponse;
+    editor: UseEditorResponse;
 }
 interface UseCreatorResponse {
     create: (imageId: number, categoryId: number) => Promise<Maybe<Annotation>>;
     remove: (categoryId: number, annotationId: number) => Promise<void>;
 }
-interface UseEnablerResponse {
+interface UseEditorResponse {
     setCategoriesEnabled: (isOn: boolean) => void;
     setCategoryEnabled: (categoryId: number) => void;
-    setCategoryExpanded: (categoryId: number) => void;
+    setCategoryExpanded: (categoryId: number, isOn?: boolean) => void;
+    setCategoryColor: (categoryId: number, color: string) => void;
     setAnnotationEnabled: (categoryId: number, annotationId: number) => void;
+    setAnnotationName: (
+        categoryId: number,
+        annotationId: number,
+        name: string,
+    ) => void;
+    setAnnotationColor: (
+        categoryId: number,
+        annotationId: number,
+        color: string,
+    ) => void;
 }
 interface ISubHook<T> {
     (
@@ -39,7 +52,7 @@ const useInfo: IUseInfo = categories => {
     const [data, _setData] = useState<CategoryInfo[]>([]);
 
     const creator = useCreator(data, _setData);
-    const enabler = useEnabler(data, _setData);
+    const editor = useEditor(data, _setData);
 
     useEffect(() => {
         const initialData: CategoryInfo[] = categories.map(cat => {
@@ -47,15 +60,19 @@ const useInfo: IUseInfo = categories => {
             if (cat.annotations != null) {
                 annotations = cat.annotations.map(a => ({
                     id: a.id,
+                    name: a.metadata && a.metadata.name ? a.metadata.name : '',
+                    color: a.color,
                     enabled: true,
-                    data: a,
+                    _data: a,
                 }));
             }
             return {
                 id: cat.id,
+                name: cat.name,
                 enabled: cat.annotations != null && cat.annotations.length > 0,
-                expanded: true,
-                data: cat,
+                expanded: CONFIG.ANNOTATION_EXPANDED,
+                color: cat.color,
+                _data: cat,
                 annotations,
             };
         });
@@ -65,7 +82,7 @@ const useInfo: IUseInfo = categories => {
     return {
         data,
         creator,
-        enabler,
+        editor,
     };
 };
 
@@ -83,8 +100,13 @@ const useCreator: ISubHook<UseCreatorResponse> = (data, setData) => {
                 categoryId,
             );
 
-            const id = item.id;
-            const newInfo = { id, enabled: true, data: item };
+            const newInfo = {
+                id: item.id,
+                name: '',
+                color: item.color,
+                enabled: true,
+                _data: item,
+            };
 
             const newArr = [...data];
             newArr[idx].annotations.push(newInfo);
@@ -121,7 +143,7 @@ const useCreator: ISubHook<UseCreatorResponse> = (data, setData) => {
 };
 
 // Helper sub-Hook to extract enable method on annotation
-const useEnabler: ISubHook<UseEnablerResponse> = (data, setData) => {
+const useEditor: ISubHook<UseEditorResponse> = (data, setData) => {
     const setCategoriesEnabled = useCallback(
         (isOn: boolean) => {
             const newArr = [...data];
@@ -154,7 +176,7 @@ const useEnabler: ISubHook<UseEnablerResponse> = (data, setData) => {
     );
 
     const setCategoryExpanded = useCallback(
-        (categoryId: number) => {
+        (categoryId: number, isOn?: boolean) => {
             const idx = data.findIndex(o => o.id === categoryId);
             if (idx === -1) return;
             if (!data[idx].enabled) return;
@@ -163,9 +185,23 @@ const useEnabler: ISubHook<UseEnablerResponse> = (data, setData) => {
                 item.id === categoryId
                     ? {
                           ...item,
-                          expanded: !item.expanded,
+                          expanded: isOn !== undefined ? isOn : !item.expanded,
                       }
                     : item,
+            );
+            setData(newArr);
+        },
+        [data, setData],
+    );
+
+    const setCategoryColor = useCallback(
+        (categoryId: number, color: string) => {
+            const idx = data.findIndex(o => o.id === categoryId);
+            if (idx === -1) return;
+            if (!data[idx].enabled) return;
+
+            const newArr = data.map(item =>
+                item.id === categoryId ? { ...item, color } : item,
             );
             setData(newArr);
         },
@@ -192,11 +228,50 @@ const useEnabler: ISubHook<UseEnablerResponse> = (data, setData) => {
         [data, setData],
     );
 
+    const setAnnotationName = useCallback(
+        (categoryId: number, annotationId: number, name: string) => {
+            const idx = data.findIndex(o => o.id === categoryId);
+            if (idx === -1) return;
+
+            const aIdx = data[idx].annotations.findIndex(
+                o => o.id === annotationId,
+            );
+            if (aIdx === -1) return;
+
+            const newArr = [...data];
+            newArr[idx].annotations[aIdx].name = name;
+
+            setData(newArr);
+        },
+        [data, setData],
+    );
+
+    const setAnnotationColor = useCallback(
+        (categoryId: number, annotationId: number, color: string) => {
+            const idx = data.findIndex(o => o.id === categoryId);
+            if (idx === -1) return;
+
+            const aIdx = data[idx].annotations.findIndex(
+                o => o.id === annotationId,
+            );
+            if (aIdx === -1) return;
+
+            const newArr = [...data];
+            newArr[idx].annotations[aIdx].color = color;
+
+            setData(newArr);
+        },
+        [data, setData],
+    );
+
     return {
         setCategoriesEnabled,
         setCategoryEnabled,
         setCategoryExpanded,
+        setCategoryColor,
         setAnnotationEnabled,
+        setAnnotationName,
+        setAnnotationColor,
     };
 };
 

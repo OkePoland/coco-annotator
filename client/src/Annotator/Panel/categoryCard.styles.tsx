@@ -7,9 +7,15 @@ interface Props {
 export const useStyles = makeStyles((theme: AugmentedTheme) => ({
     root: {
         color: 'inherit',
-        backgroundColor: 'rgba(0,0,0,.03)',
-        borderBottom: '1px solid rgba(0,0,0,.125)',
-        marginBottom: 2,
+        border: '1px solid rgba(0,0,0,.125)',
+        marginBottom: 5,
+        backgroundColor: 'inherit',
+    },
+    row: {
+        backgroundColor: 'rgba(0,0,0,.04)',
+    },
+    iconCell: {
+        textAlign: 'center',
     },
     selected: {
         borderColor: theme.palette.primary.main,
@@ -24,5 +30,8 @@ export const useStyles = makeStyles((theme: AugmentedTheme) => ({
     },
     colorEye: {
         color: (props: Props) => props.color,
+    },
+    title: {
+        fontWeight: 'bold',
     },
 }));

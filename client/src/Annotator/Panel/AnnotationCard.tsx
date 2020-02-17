@@ -3,26 +3,29 @@ import clsx from 'clsx';
 import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
-import VisibilityIcon from '@material-ui/icons/Visibility';
-import VisibilityOffIcon from '@material-ui/icons/VisibilityOff';
-import SettingsIcon from '@material-ui/icons/Settings';
+import VisibilityOutlinedIcon from '@material-ui/icons/VisibilityOutlined';
+import VisibilityOffOutlinedIcon from '@material-ui/icons/VisibilityOffOutlined';
+import SettingsOutlinedIcon from '@material-ui/icons/SettingsOutlined';
 import DeleteIcon from '@material-ui/icons/Delete';
 
-import { Annotation } from '../../../common/types';
 import { useStyles } from './annotationCard.styles';
 
 interface Props {
-    data: Annotation;
+    id: number;
+    name: string;
+    color: string;
     isSelected: boolean;
     isEnabled: boolean;
-    edit: (id: number) => void;
-    remove: (id: number) => void;
+    edit: () => void;
+    remove: () => void;
     setSelected: () => void;
     setEnabled: () => void;
 }
 
 const AnnotationCard: React.FC<Props> = ({
-    data: { id, name, color },
+    id,
+    name,
+    color,
     isSelected,
     isEnabled,
     edit,
@@ -48,7 +51,11 @@ const AnnotationCard: React.FC<Props> = ({
                     color="inherit"
                     onClick={setEnabled}
                 >
-                    {isEnabled ? <VisibilityIcon /> : <VisibilityOffIcon />}
+                    {isEnabled ? (
+                        <VisibilityOutlinedIcon className={classes.icon} />
+                    ) : (
+                        <VisibilityOffOutlinedIcon className={classes.icon} />
+                    )}
                 </IconButton>
             </Grid>
             <Grid item xs={7}>
@@ -59,27 +66,28 @@ const AnnotationCard: React.FC<Props> = ({
                     </small>
                 </Typography>
             </Grid>
-            <Grid item xs>
+            <Grid item xs className={classes.iconCell}>
                 <IconButton
                     size="small"
                     color="inherit"
-                    onClick={() => {
-                        remove(id);
+                    onKeyPress={e => {
+                        e.preventDefault();
                     }}
+                    onClick={remove}
                 >
-                    <DeleteIcon />
+                    <DeleteIcon className={classes.icon} />
                 </IconButton>
             </Grid>
-            <Grid item xs>
+            <Grid item xs className={classes.iconCell}>
                 <IconButton
-                    disabled
                     size="small"
                     color="inherit"
-                    onClick={() => {
-                        edit(id);
+                    onKeyPress={e => {
+                        e.preventDefault();
                     }}
+                    onClick={edit}
                 >
-                    <SettingsIcon />
+                    <SettingsOutlinedIcon className={classes.icon} />
                 </IconButton>
             </Grid>
         </Grid>
