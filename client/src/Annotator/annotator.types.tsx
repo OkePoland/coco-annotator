@@ -90,7 +90,7 @@ export interface ToolSettingsWand {
     blur: number;
 }
 
-// paper types
+// paper canvas types
 export interface ImageSize {
     width: number;
     height: number;
@@ -147,7 +147,7 @@ export interface ExportObjAnnotation {
     keypoints: ExportObjKeypointGroup;
     metadata?: {
         name?: string;
-    }
+    };
 }
 
 export interface ExportObjKeypointGroup {
@@ -157,4 +157,32 @@ export interface ExportObjKeypointGroup {
         y: number;
     }[];
     edges: [number, number][];
+}
+
+// paper undo types
+export enum ToolEvent {
+    POLYGON_ADD_POINT = 'POLYGON_ADD_POINT',
+}
+
+export type UndoItem = UndoItemShape | UndoItemTool;
+
+export enum UndoItemType {
+    SHAPE_CHANGED = 'SHAPE_CHANGED',
+    TOOL_CHANGED = 'TOOL_CHANGED',
+}
+
+export interface UndoItemShape {
+    type: UndoItemType.SHAPE_CHANGED;
+    dispatch: {
+        categoryId: number;
+        annotationId: number;
+        paperItem: paper.Item;
+    };
+}
+
+export interface UndoItemTool {
+    type: UndoItemType.TOOL_CHANGED;
+    dispatch: {
+        toolEvent: ToolEvent;
+    };
 }

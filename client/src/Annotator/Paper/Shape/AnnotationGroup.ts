@@ -75,6 +75,20 @@ class AnnotationGroup extends paper.Group {
         }
     }
 
+    public getPaperItem() {
+        const item: paper.Item = this.shape.clone({
+            insert: false,
+            deep: true,
+        });
+        return item;
+    }
+
+    public replacePaperItem(itemToReplace: paper.Item) {
+        const newPath = shapeUtils.replace(this.shape, itemToReplace);
+        const isReplaced = this.shape.replaceWith(newPath);
+        if (isReplaced) this.shape = newPath;
+    }
+
     public importData(
         isBBOX: boolean = false,
         paper_object: Object = {},

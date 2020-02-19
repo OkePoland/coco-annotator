@@ -22,8 +22,8 @@ interface IToolWand {
         imageSize: Maybe<ImageSize>,
         imageData: Maybe<ImageData>,
         preferences: Maybe<ToolSettingsWand>,
-        unite: (path: paper.Path) => void,
-        subtract: (path: paper.Path) => void,
+        unite: (path: paper.Path, isUndoable?: boolean) => void,
+        subtract: (path: paper.Path, isUndoable?: boolean) => void,
     ): ToolWandResponse;
 }
 export interface ToolWandResponse {
@@ -85,9 +85,9 @@ export const useWand: IToolWand = (
             if (!path) return;
 
             if (event.modifiers && event.modifiers.shift) {
-                subtract(path);
+                subtract(path, true);
             } else {
-                unite(path);
+                unite(path, true);
             }
             path.remove();
         },

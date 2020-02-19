@@ -3,7 +3,7 @@ import { MutableRefObject } from 'react';
 import paper from 'paper';
 
 import { Category, Annotation } from '../../common/types';
-import { SelectedState } from '../annotator.types';
+import { Maybe, SelectedState } from '../annotator.types';
 
 import { CategoryGroup, AnnotationGroup } from './Shape';
 import { findCategoryGroup, findAnnotationGroup } from './Utils/groupUtils';
@@ -15,20 +15,29 @@ interface IUseGroups {
 interface UseGroupsResponse {
     groupsRef: MutableRefObject<CategoryGroup[]>;
     creator: UseCreatorResponse;
-    shape: UseShapeResponse;
-    keypoints: UseKeypointsResponse;
+    shapeEditor: UseShapeEditorResponse;
+    keypointsEditor: UseKeypointsEditorResponse;
 }
 interface UseCreatorResponse {
     add: (categoryId: number, annotation: Annotation) => void;
     remove: (categoryId: number, annotationId: number) => void;
 }
-interface UseShapeResponse {
+interface UseShapeEditorResponse {
     unite: (toAdd: paper.Path) => void;
     subtract: (toRemove: paper.Path) => void;
     simplify: () => void;
     uniteBBOX: (toAdd: paper.Path) => void;
+    getPaperItem: (
+        categoryId: number,
+        annotationId: number,
+    ) => Maybe<paper.Item>;
+    replacePaperItem: (
+        categoryId: number,
+        annotationId: number,
+        paperItem: paper.Item,
+    ) => void;
 }
-interface UseKeypointsResponse {
+interface UseKeypointsEditorResponse {
     add: (point: paper.Point) => void;
     remove: (id: number) => void;
 }
@@ -36,8 +45,8 @@ interface UseKeypointsResponse {
 const useGroups: IUseGroups = (categories, selected) => {
     const groupsRef = useRef<CategoryGroup[]>([]);
     const creator = useCreator(groupsRef);
-    const shape = useShape(groupsRef, selected);
-    const keypoints = useKeypoints(groupsRef, selected);
+    const shapeEditor = useShapeEditor(groupsRef, selected);
+    const keypointsEditor = useKeypointsEditor(groupsRef, selected);
 
     // refresh Group
     useEffect(() => {
@@ -80,8 +89,8 @@ const useGroups: IUseGroups = (categories, selected) => {
     return {
         groupsRef,
         creator,
-        shape,
-        keypoints,
+        shapeEditor,
+        keypointsEditor,
     };
 };
 
@@ -125,7 +134,7 @@ const useCreator = (groupsRef: MutableRefObject<CategoryGroup[]>) => {
 };
 
 // adjust Annotations Shapes
-const useShape = (
+const useShapeEditor = (
     groups: MutableRefObject<CategoryGroup[]>,
     selected: SelectedState,
 ) => {
@@ -182,16 +191,45 @@ const useShape = (
         [groups, selected.annotationId, selected.categoryId],
     );
 
+    const getPaperItem = useCallback(
+        (categoryId: number, annotationId: number) => {
+            const group = findAnnotationGroup(
+                groups.current,
+                categoryId,
+                annotationId,
+            );
+            if (!group) return null;
+
+            return group.getPaperItem();
+        },
+        [groups],
+    );
+    const replacePaperItem = useCallback(
+        (categoryId: number, annotationId: number, path: paper.Item) => {
+            const group = findAnnotationGroup(
+                groups.current,
+                categoryId,
+                annotationId,
+            );
+            if (!group) return;
+
+            group.replacePaperItem(path);
+        },
+        [groups],
+    );
+
     return {
         unite,
         subtract,
         simplify,
         uniteBBOX,
+        getPaperItem,
+        replacePaperItem,
     };
 };
 
 // adjust Annotations Keypoints
-const useKeypoints = (
+const useKeypointsEditor = (
     groups: MutableRefObject<CategoryGroup[]>,
     selected: SelectedState,
 ) => {

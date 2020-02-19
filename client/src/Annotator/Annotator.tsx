@@ -1,11 +1,17 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import clsx from 'clsx';
 import { useNavigation } from 'react-navi';
 import Box from '@material-ui/core/Box';
 import Divider from '@material-ui/core/Divider';
 import CircularProgress from '@material-ui/core/CircularProgress';
 
-import { Tool } from './annotator.types';
+import {
+    Tool,
+    ToolEvent,
+    UndoItemType,
+    UndoItemShape,
+    UndoItemTool,
+} from './annotator.types';
 
 import { useStyles } from './annotator.styles';
 import {
@@ -18,14 +24,26 @@ import {
     useKeyPress,
     useModals,
 } from './Info';
-import { useCanvas, useGroups, useTools, useTitle, Part } from './Paper';
+import {
+    useCanvas,
+    useGroups,
+    useTools,
+    useTitle,
+    useUndoStash,
+    Part,
+} from './Paper';
 
 import CustomModal from '../common/components/CustomDialog';
 import * as Menu from './Menu';
 import * as Panel from './Panel';
 import * as Modal from './Modal';
 
-import { createExportObj, findNextSelected } from './Annotator.utils';
+import {
+    createExportObj,
+    findNextSelected,
+    isUndoItemShape,
+    isUndoItemTool,
+} from './Annotator.utils';
 
 const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
     const classes = useStyles();
@@ -40,7 +58,7 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
         previous,
         next,
         toolPreferences,
-        saveAction,
+        saveDataset,
     } = useDataset(imageId);
     const {
         segmentMode: [segmentOn, setSegmentOn],
@@ -62,6 +80,7 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
         openCategoryModal,
         openAnnotationModal,
     } = useModals();
+    const undoStash = useUndoStash();
 
     // all Paper.js data & callbacks
     const {
@@ -73,6 +92,36 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
     } = useCanvas(`/api/image/${imageId}`);
 
     const groups = useGroups(categories, selected);
+
+    const stashShape = useCallback(() => {
+        const { categoryId, annotationId } = selected;
+        if (categoryId === null || annotationId === null) return;
+        if (categoryId === undefined || annotationId === undefined) return;
+
+        const paperItem = groups.shapeEditor.getPaperItem(
+            categoryId,
+            annotationId,
+        );
+        if (!paperItem) return;
+
+        const item: UndoItemShape = {
+            type: UndoItemType.SHAPE_CHANGED,
+            dispatch: { categoryId, annotationId, paperItem },
+        };
+        undoStash.add(item);
+    }, [selected, undoStash, groups.shapeEditor]);
+
+    const stashToolEvent = useCallback(
+        (toolEvent: ToolEvent) => {
+            const item: UndoItemTool = {
+                type: UndoItemType.TOOL_CHANGED,
+                dispatch: { toolEvent },
+            };
+            undoStash.add(item);
+        },
+        [undoStash],
+    );
+
     const tools = useTools(
         paperRef,
         toolPreferences,
@@ -82,15 +131,88 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
         imageInfo.scale,
         imageInfo.size,
         imageInfo.data,
-        groups.shape.unite,
-        groups.shape.subtract,
-        groups.shape.simplify,
-        groups.shape.uniteBBOX,
-        groups.keypoints.add,
+        (toAdd, isUndoable) => {
+            if (isUndoable) stashShape();
+            groups.shapeEditor.unite(toAdd);
+        },
+        (toRemove, isUndoable) => {
+            if (isUndoable) stashShape();
+            groups.shapeEditor.subtract(toRemove);
+        },
+        (toAdd, isUndoable) => {
+            if (isUndoable) stashShape();
+            groups.shapeEditor.uniteBBOX(toAdd);
+        },
+        groups.shapeEditor.simplify,
+        groups.keypointsEditor.add,
+        stashToolEvent,
     );
     useTitle(imageInfo.size, filename);
 
-    // Keyboard actions ( mix of info & groups )
+    // re-usable complex callbacks
+    const saveAction = useCallback(() => {
+        const obj = createExportObj(
+            imageId,
+            dataset,
+            segmentOn,
+            activeTool,
+            selected,
+            tools.exportData,
+            info.data,
+            groups.groupsRef.current,
+        );
+        saveDataset(obj);
+    }, [
+        imageId,
+        dataset,
+        segmentOn,
+        activeTool,
+        selected,
+        groups.groupsRef,
+        tools.exportData,
+        info.data,
+        saveDataset,
+    ]);
+    const addAnnotationAction = useCallback(
+        async (categoryId: number) => {
+            if (categoryId === null || categoryId === undefined) return;
+
+            const newItem = await info.creator.create(imageId, categoryId);
+            if (!newItem) return;
+
+            groups.creator.add(categoryId, newItem);
+            setSelected(categoryId, newItem.id);
+        },
+        [imageId, info.creator, groups.creator, setSelected],
+    );
+    const removeAnnotationAction = useCallback(
+        (categoryId: number, annotationId: number) => {
+            info.creator.remove(categoryId, annotationId);
+            groups.creator.remove(categoryId, annotationId);
+            setSelected(categoryId, null);
+        },
+        [info.creator, groups.creator, setSelected],
+    );
+    const undoAction = useCallback(() => {
+        const undoItem = undoStash.pop();
+        if (!undoItem) return;
+
+        if (isUndoItemShape(undoItem)) {
+            const { categoryId, annotationId, paperItem } = undoItem.dispatch;
+            groups.shapeEditor.replacePaperItem(
+                categoryId,
+                annotationId,
+                paperItem,
+            );
+        } else if (isUndoItemTool(undoItem)) {
+            const { toolEvent } = undoItem.dispatch;
+            if (toolEvent === ToolEvent.POLYGON_ADD_POINT) {
+                tools.polygon.undoLastPoint();
+            }
+        }
+    }, [undoStash, groups.shapeEditor, tools.polygon]);
+
+    // keyboard actions ( mix of info & groups )
     useKeyPress(shortcuts.list_move_up, isModalOpen, () => {
         const item = findNextSelected(info.data, selected, -1);
         setSelected(item.categoryId, item.annotationId);
@@ -113,43 +235,19 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
             setSelected(categoryId, null);
         }
     });
-    useKeyPress(shortcuts.annotation_add, isModalOpen, async () => {
+    useKeyPress(shortcuts.annotation_add, isModalOpen, () => {
         const { categoryId } = selected;
-        if (categoryId != null) {
-            const newItem = await info.creator.create(imageId, categoryId);
-            if (newItem) {
-                groups.creator.add(categoryId, newItem);
-                setSelected(categoryId, newItem.id);
-            }
-        }
+        if (categoryId != null) addAnnotationAction(categoryId);
     });
     useKeyPress(shortcuts.annotation_remove, isModalOpen, () => {
         const { categoryId, annotationId } = selected;
         if (categoryId != null && annotationId != null) {
-            info.creator.remove(categoryId, annotationId);
-            groups.creator.remove(categoryId, annotationId);
-            setSelected(categoryId, null);
+            removeAnnotationAction(categoryId, annotationId);
         }
     });
-    useKeyPress(shortcuts.undo, isModalOpen, () => {
-        // TODO
-    });
-    useKeyPress(shortcuts.save, isModalOpen, () => {
-        const obj = createExportObj(
-            imageId,
-            dataset,
-            segmentOn,
-            activeTool,
-            selected,
-            tools.exportData,
-            info.data,
-            groups.groupsRef.current,
-        );
-        saveAction(obj);
-    });
-    useKeyPress(shortcuts.image_center, isModalOpen, () => {
-        centerImageAction();
-    });
+    useKeyPress(shortcuts.undo, isModalOpen, undoAction);
+    useKeyPress(shortcuts.save, isModalOpen, saveAction);
+    useKeyPress(shortcuts.image_center, isModalOpen, centerImageAction);
     useKeyPress(shortcuts.image_next, isModalOpen, () => {
         if (next) navigate(`/annotate/${next}`);
     });
@@ -177,30 +275,19 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
                             }}
                         />
                         <Divider className={classes.divider} />
+                        <Menu.Utils
+                            undoList={undoStash.list}
+                            centerImageAction={centerImageAction}
+                            undoAction={undoAction}
+                        />
+                        <Divider className={classes.divider} />
                     </Box>
                 )}
-                <Menu.Utils
-                    centerImageAction={centerImageAction}
-                    undoAction={() => {}}
-                />
-                <Divider className={classes.divider} />
                 <Menu.Settings
                     segmentOn={segmentOn}
                     setSegmentOn={setSegmentOn}
                     downloadImageAction={() => {}}
-                    saveImageAction={() => {
-                        const obj = createExportObj(
-                            imageId,
-                            dataset,
-                            segmentOn,
-                            activeTool,
-                            selected,
-                            tools.exportData,
-                            info.data,
-                            groups.groupsRef.current,
-                        );
-                        saveAction(obj);
-                    }}
+                    saveImageAction={saveAction}
                     openSettingsAction={openSettingsModal}
                     deleteImageAction={() => {}}
                 />
@@ -249,15 +336,9 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
                             editCategory={() => {
                                 openCategoryModal(categoryInfo.id);
                             }}
-                            addAnnotation={async (id: number) => {
-                                const newItem = await info.creator.create(
-                                    imageId,
-                                    id,
-                                );
-                                if (!newItem) return;
-
-                                groups.creator.add(categoryInfo.id, newItem);
-                                setSelected(categoryInfo.id, newItem.id);
+                            addAnnotation={(categoryId: number) => {
+                                if (categoryId != null)
+                                    addAnnotationAction(categoryId);
                             }}
                             renderExpandedList={() =>
                                 categoryInfo.annotations.map(annotationInfo => (
@@ -278,12 +359,7 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
                                             );
                                         }}
                                         remove={() => {
-                                            setSelected(null, null);
-                                            info.creator.remove(
-                                                categoryInfo.id,
-                                                annotationInfo.id,
-                                            );
-                                            groups.creator.remove(
+                                            removeAnnotationAction(
                                                 categoryInfo.id,
                                                 annotationInfo.id,
                                             );

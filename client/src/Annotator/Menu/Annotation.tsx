@@ -13,7 +13,7 @@ interface Props {
     setCategoriesEnabled: (isOn: boolean) => void;
 }
 
-export const Annotation: React.FC<Props> = ({
+const Annotation: React.FC<Props> = ({
     annotationAction,
     annotationCopyAction,
     setCategoriesEnabled,
@@ -23,7 +23,6 @@ export const Annotation: React.FC<Props> = ({
             name="Show All"
             icon={<VisibilityIcon />}
             enabled={true}
-            active={false}
             onClick={() => {
                 setCategoriesEnabled(true);
             }}
@@ -32,7 +31,6 @@ export const Annotation: React.FC<Props> = ({
             name="Hide All"
             icon={<VisibilityOffIcon />}
             enabled={true}
-            active={false}
             onClick={() => {
                 setCategoriesEnabled(false);
             }}
@@ -41,14 +39,12 @@ export const Annotation: React.FC<Props> = ({
             name="Annotate url"
             icon={<CloudDownloadIcon />}
             enabled={false}
-            active={false}
             onClick={annotationAction}
         />
         <ToolButton
             name="Copy Annotations"
             icon={<FileCopyIcon />}
             enabled={false}
-            active={false}
             onClick={annotationCopyAction}
         />
     </Fragment>

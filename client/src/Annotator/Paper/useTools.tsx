@@ -1,7 +1,13 @@
 import { useCallback, useMemo, MutableRefObject } from 'react';
 import paper from 'paper';
 
-import { Maybe, Tool, ImageSize, ToolPreferences } from '../annotator.types';
+import {
+    Maybe,
+    Tool,
+    ToolEvent,
+    ImageSize,
+    ToolPreferences,
+} from '../annotator.types';
 
 import useEmpty from './Tool/useEmpty';
 import { useSelect, ToolSelectResponse } from './Tool/useSelect';
@@ -22,11 +28,12 @@ interface IUseTools {
         imageScale: number,
         imageSize: Maybe<ImageSize>,
         imageData: Maybe<ImageData>,
-        unite: (toAdd: paper.Path) => void,
-        subtract: (toRemove: paper.Path) => void,
+        unite: (toAdd: paper.Path, isUndoable?: boolean) => void,
+        subtract: (toRemove: paper.Path, isUndoable?: boolean) => void,
+        uniteBBOX: (toAdd: paper.Path, isUndoable?: boolean) => void,
         simplify: () => void,
-        uniteBBOX: (toAdd: paper.Path) => void,
         addKeypoint: (point: paper.Point) => void,
+        stashToolEvent: (toolEvent: ToolEvent) => void,
     ): {
         empty: null;
         select: ToolSelectResponse;
@@ -52,9 +59,10 @@ const useTools: IUseTools = (
     imageData,
     unite,
     subtract,
-    simplify,
     uniteBBOX,
+    simplify,
     addKeypoint,
+    stashToolEvent,
 ) => {
     const isDisabled: boolean = useMemo(() => {
         return activeTool === null || selectedAnnotation === null;
@@ -80,6 +88,7 @@ const useTools: IUseTools = (
         imageScale,
         preferences.polygon,
         unite,
+        stashToolEvent,
     );
     const wand = useWand(
         activeTool === Tool.WAND && selectedAnnotation != null,

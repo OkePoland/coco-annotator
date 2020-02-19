@@ -16,7 +16,7 @@ interface IToolDextr {
         isActive: boolean,
         imageId: number,
         imageSize: Maybe<ImageSize>,
-        unite: (a: paper.Path) => void,
+        unite: (a: paper.Path, isUndoable?: boolean) => void,
     ): ToolDextrResponse;
 }
 export interface ToolDextrResponse {
@@ -79,7 +79,7 @@ export const useDextr: IToolDextr = (isActive, imageId, imageSize, unite) => {
                 path.closePath();
                 cPath.addChild(path);
             }
-            unite(cPath);
+            unite(cPath, true);
         } finally {
             cache.current.points.forEach(point => point.remove());
             cache.current.points = [];

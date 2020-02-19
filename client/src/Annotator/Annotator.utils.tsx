@@ -14,11 +14,16 @@ import {
     SelectedState,
     ExportObjCategory,
     ExportObjAnnotation,
+    UndoItemType,
+    UndoItemShape,
+    UndoItemTool,
 } from './annotator.types';
 
 import { CategoryGroup, AnnotationGroup } from './Paper/Shape';
 
-// Export
+/*
+ * Export helpers
+ */
 export const createExportObj = (
     imageId: number,
     dataset: Maybe<Dataset>,
@@ -122,7 +127,7 @@ const parseAnnotation = (
 
     const metadata = {
         name: annotationInfo.name || '',
-    }
+    };
     const obj: ExportObjAnnotation = {
         id: annotationInfo.id,
         name: annotationInfo.name,
@@ -218,3 +223,13 @@ const findNextAnnotationId = (
     }
     return null;
 };
+
+/**
+ * Undo Helpers
+ */
+export function isUndoItemShape(object: any): object is UndoItemShape {
+    return object.type === UndoItemType.SHAPE_CHANGED;
+}
+export function isUndoItemTool(object: any): object is UndoItemTool {
+    return object.type === UndoItemType.TOOL_CHANGED;
+}

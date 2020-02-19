@@ -6,7 +6,8 @@ interface Props {
     name: string;
     icon: JSX.Element;
     enabled: boolean;
-    active: boolean;
+    active?: boolean;
+    tooltipText?: string;
     onClick: () => void;
 }
 
@@ -15,16 +16,10 @@ const ToolButton: React.FC<Props> = ({
     icon,
     enabled,
     active,
+    tooltipText,
     onClick,
 }) => (
-    <Tooltip
-        title={
-            enabled
-                ? `${name}`
-                : `${name} (select an annotation to activate tool)`
-        }
-        placement="right"
-    >
+    <Tooltip title={tooltipText || name} placement="right">
         <div>
             <IconButton
                 size="small"

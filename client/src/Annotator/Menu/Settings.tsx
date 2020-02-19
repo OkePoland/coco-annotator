@@ -21,7 +21,7 @@ interface Props {
     setSegmentOn: Dispatch<SetStateAction<boolean>>;
 }
 
-export const Settings: React.FC<Props> = ({
+const Settings: React.FC<Props> = ({
     downloadImageAction,
     saveImageAction,
     openSettingsAction,
@@ -30,6 +30,16 @@ export const Settings: React.FC<Props> = ({
     setSegmentOn,
 }) => (
     <Fragment>
+        <ToolButton
+            name={`Mode: ${segmentOn ? 'segment' : 'label'}`}
+            icon={segmentOn ? <ImageSearchIcon /> : <LabelOutlinedIcon />}
+            enabled={true}
+            active={false}
+            onClick={() => {
+                setSegmentOn(c => !c);
+            }}
+        />
+
         <ToolButton
             name="Save"
             icon={<SaveIcon />}
@@ -43,15 +53,6 @@ export const Settings: React.FC<Props> = ({
             enabled={false}
             active={false}
             onClick={downloadImageAction}
-        />
-        <ToolButton
-            name={`Mode: ${segmentOn ? 'segment' : 'label'}`}
-            icon={segmentOn ? <ImageSearchIcon /> : <LabelOutlinedIcon />}
-            enabled={true}
-            active={false}
-            onClick={() => {
-                setSegmentOn(c => !c);
-            }}
         />
         <ToolButton
             name="Settings"
