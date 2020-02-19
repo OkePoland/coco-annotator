@@ -63,4 +63,8 @@ export const useStyles = makeStyles((theme: AugmentedTheme) => ({
         padding: '0 5px 5px 5px',
         overflow: 'auto',
     },
+
+    modal: {
+        height: '220px',
+    },
 }));

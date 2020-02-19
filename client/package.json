@@ -16,6 +16,7 @@
     "clsx": "^1.0.4",
     "formik": "^2.0.6",
     "magic-wand-tool": "^1.1.4",
+    "material-ui-color-picker": "^3.4.0",
     "material-ui-flat-pagination": "^4.0.0",
     "navi": "^0.13.6",
     "notistack": "^0.9.7",

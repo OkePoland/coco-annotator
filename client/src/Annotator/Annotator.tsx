@@ -7,16 +7,25 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 
 import { Tool } from './annotator.types';
 
-import * as CONFIG from './annotator.config';
-
 import { useStyles } from './annotator.styles';
-import { useChoices, useDataset, useInfo, useFilter, useCursor } from './Info';
+import {
+    useChoices,
+    useDataset,
+    useInfo,
+    useFilter,
+    useCursor,
+    useShortcuts,
+    useKeyPress,
+    useModals,
+} from './Info';
 import { useCanvas, useGroups, useTools, useTitle, Part } from './Paper';
 
+import CustomModal from '../common/components/CustomDialog';
 import * as Menu from './Menu';
 import * as Panel from './Panel';
+import * as Modal from './Modal';
 
-import { createExportObj } from './Annotator.utils';
+import { createExportObj, findNextSelected } from './Annotator.utils';
 
 const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
     const classes = useStyles();
@@ -30,7 +39,6 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
         filename,
         previous,
         next,
-        isLoading,
         toolPreferences,
         saveAction,
     } = useDataset(imageId);
@@ -44,6 +52,16 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
     const info = useInfo(categories);
     const filter = useFilter(categories);
     const cursor = useCursor(activeTool, selected.annotationId);
+    const { shortcuts, setShortcuts } = useShortcuts();
+    const {
+        modalOpen,
+        modalState,
+        isModalOpen,
+        closeAllModals,
+        openSettingsModal,
+        openCategoryModal,
+        openAnnotationModal,
+    } = useModals();
 
     // all Paper.js data & callbacks
     const {
@@ -70,8 +88,74 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
         groups.shape.uniteBBOX,
         groups.keypoints.add,
     );
-
     useTitle(imageInfo.size, filename);
+
+    // Keyboard actions ( mix of info & groups )
+    useKeyPress(shortcuts.list_move_up, isModalOpen, () => {
+        const item = findNextSelected(info.data, selected, -1);
+        setSelected(item.categoryId, item.annotationId);
+    });
+    useKeyPress(shortcuts.list_move_down, isModalOpen, () => {
+        const item = findNextSelected(info.data, selected, 1);
+        setSelected(item.categoryId, item.annotationId);
+    });
+    useKeyPress(shortcuts.list_expand, isModalOpen, () => {
+        const { categoryId, annotationId } = selected;
+        if (categoryId != null && annotationId === null) {
+            info.editor.setCategoryExpanded(categoryId, true);
+            setSelected(categoryId, null);
+        }
+    });
+    useKeyPress(shortcuts.list_collapse, isModalOpen, () => {
+        const { categoryId } = selected;
+        if (categoryId != null) {
+            info.editor.setCategoryExpanded(categoryId, false);
+            setSelected(categoryId, null);
+        }
+    });
+    useKeyPress(shortcuts.annotation_add, isModalOpen, async () => {
+        const { categoryId } = selected;
+        if (categoryId != null) {
+            const newItem = await info.creator.create(imageId, categoryId);
+            if (newItem) {
+                groups.creator.add(categoryId, newItem);
+                setSelected(categoryId, newItem.id);
+            }
+        }
+    });
+    useKeyPress(shortcuts.annotation_remove, isModalOpen, () => {
+        const { categoryId, annotationId } = selected;
+        if (categoryId != null && annotationId != null) {
+            info.creator.remove(categoryId, annotationId);
+            groups.creator.remove(categoryId, annotationId);
+            setSelected(categoryId, null);
+        }
+    });
+    useKeyPress(shortcuts.undo, isModalOpen, () => {
+        // TODO
+    });
+    useKeyPress(shortcuts.save, isModalOpen, () => {
+        const obj = createExportObj(
+            imageId,
+            dataset,
+            segmentOn,
+            activeTool,
+            selected,
+            tools.exportData,
+            info.data,
+            groups.groupsRef.current,
+        );
+        saveAction(obj);
+    });
+    useKeyPress(shortcuts.image_center, isModalOpen, () => {
+        centerImageAction();
+    });
+    useKeyPress(shortcuts.image_next, isModalOpen, () => {
+        if (next) navigate(`/annotate/${next}`);
+    });
+    useKeyPress(shortcuts.image_prev, isModalOpen, () => {
+        if (previous) navigate(`/annotate/${previous}`);
+    });
 
     return (
         <div className={classes.root}>
@@ -88,7 +172,7 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
                             annotationAction={() => {}}
                             annotationCopyAction={() => {}}
                             setCategoriesEnabled={(isOn: boolean) => {
-                                info.enabler.setCategoriesEnabled(isOn);
+                                info.editor.setCategoriesEnabled(isOn);
                                 setSelected(null, null);
                             }}
                         />
@@ -117,7 +201,7 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
                         );
                         saveAction(obj);
                     }}
-                    openImageAction={() => {}}
+                    openSettingsAction={openSettingsModal}
                     deleteImageAction={() => {}}
                 />
             </Box>
@@ -147,7 +231,9 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
                     info.data.map(categoryInfo => (
                         <Panel.CategoryCard
                             key={categoryInfo.id}
-                            data={categoryInfo.data}
+                            id={categoryInfo.id}
+                            name={categoryInfo.name}
+                            color={categoryInfo.color}
                             isVisible={
                                 filter.filterObj[categoryInfo.id] != null
                             }
@@ -158,57 +244,60 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
                             setSelected={() => {
                                 setSelected(categoryInfo.id, null);
                             }}
-                            setEnabled={info.enabler.setCategoryEnabled}
-                            setExpanded={info.enabler.setCategoryExpanded}
-                            editCategory={(id: number) => {
-                                // TODO
+                            setEnabled={info.editor.setCategoryEnabled}
+                            setExpanded={info.editor.setCategoryExpanded}
+                            editCategory={() => {
+                                openCategoryModal(categoryInfo.id);
                             }}
                             addAnnotation={async (id: number) => {
                                 const newItem = await info.creator.create(
                                     imageId,
                                     id,
                                 );
-                                if (newItem) {
-                                    groups.creator.add(
-                                        categoryInfo.id,
-                                        newItem,
-                                    );
-                                    setSelected(categoryInfo.id, newItem.id);
-                                }
+                                if (!newItem) return;
+
+                                groups.creator.add(categoryInfo.id, newItem);
+                                setSelected(categoryInfo.id, newItem.id);
                             }}
                             renderExpandedList={() =>
-                                categoryInfo.annotations.map(item => (
+                                categoryInfo.annotations.map(annotationInfo => (
                                     <Panel.AnnotationCard
-                                        key={item.id}
-                                        data={item.data}
+                                        key={annotationInfo.id}
+                                        id={annotationInfo.id}
+                                        name={annotationInfo.name}
+                                        color={annotationInfo.color}
                                         isSelected={
-                                            item.id === selected.annotationId
+                                            annotationInfo.id ===
+                                            selected.annotationId
                                         }
-                                        isEnabled={item.enabled}
+                                        isEnabled={annotationInfo.enabled}
                                         edit={() => {
-                                            // TODO
+                                            openAnnotationModal(
+                                                categoryInfo.id,
+                                                annotationInfo.id,
+                                            );
                                         }}
                                         remove={() => {
                                             setSelected(null, null);
                                             info.creator.remove(
                                                 categoryInfo.id,
-                                                item.id,
+                                                annotationInfo.id,
                                             );
                                             groups.creator.remove(
                                                 categoryInfo.id,
-                                                item.id,
+                                                annotationInfo.id,
                                             );
                                         }}
                                         setSelected={() => {
                                             setSelected(
                                                 categoryInfo.id,
-                                                item.id,
+                                                annotationInfo.id,
                                             );
                                         }}
                                         setEnabled={() => {
-                                            info.enabler.setAnnotationEnabled(
+                                            info.editor.setAnnotationEnabled(
                                                 categoryInfo.id,
-                                                item.id,
+                                                annotationInfo.id,
                                             );
                                         }}
                                     />
@@ -220,11 +309,6 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
                 {info.data.length === 0 && (
                     <Box textAlign="center">
                         <CircularProgress />
-                        {!isLoading && categories.length === 0 && (
-                            <div>
-                                No categories have been enabled for this image
-                            </div>
-                        )}
                     </Box>
                 )}
 
@@ -348,20 +432,6 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
                         })()}
                     </Box>
                 )}
-
-                {CONFIG.DEBUGGING_ON && paperRef.current != null && (
-                    <div style={{ height: 700, overflow: 'auto' }}>
-                        <pre>
-                            {JSON.stringify(
-                                paperRef.current.project.layers[0].children.filter(
-                                    o => o.data.hasOwnProperty('categoryId'),
-                                ),
-                                null,
-                                2,
-                            )}
-                        </pre>
-                    </div>
-                )}
             </Box>
 
             <div className={clsx(classes.middlePanel, cursor)}>
@@ -375,40 +445,133 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
                 </div>
             </div>
 
-            {canvasRef.current != null &&
-                info.data.map(categoryInfo => (
-                    <React.Fragment key={categoryInfo.id}>
-                        <Part.CategoryInfo
-                            key={categoryInfo.id}
-                            id={categoryInfo.id}
-                            enabled={categoryInfo.enabled}
-                            color={
-                                categoryInfo.enabled && !categoryInfo.expanded
-                                    ? categoryInfo.data.color
-                                    : null
-                            }
-                            groupsRef={groups.groupsRef}
-                        />
-                        {categoryInfo.annotations.map(annotationInfo => (
-                            <Part.AnnotationInfo
-                                key={annotationInfo.id}
-                                id={annotationInfo.id}
-                                categoryId={categoryInfo.id}
-                                enabled={annotationInfo.enabled}
+            <React.Fragment>
+                {canvasRef.current &&
+                    info.data.map(categoryInfo => (
+                        <React.Fragment key={categoryInfo.id}>
+                            <Part.CategoryInfo
+                                key={categoryInfo.id}
+                                id={categoryInfo.id}
+                                enabled={categoryInfo.enabled}
                                 color={
                                     categoryInfo.enabled &&
-                                    categoryInfo.expanded
-                                        ? annotationInfo.data.color
+                                    !categoryInfo.expanded
+                                        ? categoryInfo.color
                                         : null
-                                }
-                                isSelected={
-                                    annotationInfo.id === selected.annotationId
                                 }
                                 groupsRef={groups.groupsRef}
                             />
-                        ))}
-                    </React.Fragment>
-                ))}
+                            {categoryInfo.annotations.map(annotationInfo => (
+                                <Part.AnnotationInfo
+                                    key={annotationInfo.id}
+                                    id={annotationInfo.id}
+                                    categoryId={categoryInfo.id}
+                                    enabled={annotationInfo.enabled}
+                                    color={
+                                        categoryInfo.enabled &&
+                                        categoryInfo.expanded
+                                            ? annotationInfo.color
+                                            : null
+                                    }
+                                    isSelected={
+                                        annotationInfo.id ===
+                                        selected.annotationId
+                                    }
+                                    groupsRef={groups.groupsRef}
+                                />
+                            ))}
+                        </React.Fragment>
+                    ))}
+            </React.Fragment>
+
+            <React.Fragment>
+                <CustomModal
+                    title="Settings"
+                    open={modalOpen.settings}
+                    setClose={closeAllModals}
+                    renderContent={() => (
+                        <Modal.Settings
+                            shortcuts={shortcuts}
+                            setShortcuts={setShortcuts}
+                        />
+                    )}
+                />
+                <CustomModal
+                    title={
+                        modalState.categoryId != null
+                            ? `Editing Category: [${modalState.categoryId}]`
+                            : ''
+                    }
+                    open={modalOpen.category}
+                    setClose={closeAllModals}
+                    renderContent={() => {
+                        if (!modalOpen.category) return <div />;
+
+                        const categoryInfo = info.data.find(
+                            o => o.id === modalState.categoryId,
+                        );
+                        if (!categoryInfo) return <div />;
+
+                        return (
+                            <Modal.Category
+                                className={classes.modal}
+                                name={categoryInfo.name}
+                                color={categoryInfo.color}
+                                setColor={(color: string) => {
+                                    info.editor.setCategoryColor(
+                                        categoryInfo.id,
+                                        color,
+                                    );
+                                }}
+                            />
+                        );
+                    }}
+                />
+                <CustomModal
+                    title={
+                        modalState.annotationId != null
+                            ? `Editing Annotation: [${modalState.annotationId}]`
+                            : ''
+                    }
+                    open={modalOpen.annotation}
+                    setClose={closeAllModals}
+                    renderContent={() => {
+                        const { categoryId, annotationId } = modalState;
+
+                        const categoryInfo = info.data.find(
+                            o => o.id === categoryId,
+                        );
+                        if (!categoryInfo) return <CircularProgress />;
+
+                        const annotationInfo = categoryInfo.annotations.find(
+                            o => o.id === annotationId,
+                        );
+                        if (!annotationInfo) return <CircularProgress />;
+
+                        return (
+                            <Modal.Annotation
+                                className={classes.modal}
+                                name={annotationInfo.name}
+                                color={annotationInfo.color}
+                                setName={(newName: string) => {
+                                    info.editor.setAnnotationName(
+                                        categoryInfo.id,
+                                        annotationInfo.id,
+                                        newName,
+                                    );
+                                }}
+                                setColor={(color: string) => {
+                                    info.editor.setAnnotationColor(
+                                        categoryInfo.id,
+                                        annotationInfo.id,
+                                        color,
+                                    );
+                                }}
+                            />
+                        );
+                    }}
+                />
+            </React.Fragment>
         </div>
     );
 };

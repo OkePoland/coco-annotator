@@ -3,12 +3,17 @@ import useDataset from './useDataset';
 import useFilter from './useFilter';
 import useInfo from './useInfo';
 import useCursor from './useCursor';
+import useShortcuts from './useShortcuts';
+import useKeyPress from './useKeyPress';
+import useModals from './useModals';
 
-// tslint:disable-next-line: prettier
 export {
     useChoices,
     useDataset,
     useFilter,
     useInfo,
     useCursor,
+    useShortcuts,
+    useKeyPress,
+    useModals,
 };
