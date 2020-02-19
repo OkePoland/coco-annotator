@@ -14,7 +14,7 @@ interface IToolBBox {
         enabled: boolean,
         scale: number,
         preferences: Maybe<ToolSettingsBBOX>,
-        uniteBBox: (a: paper.Path) => void,
+        uniteBBox: (a: paper.Path, isUndoable?: boolean) => void,
     ): ToolBBoxResponse;
 }
 export interface ToolBBoxResponse {
@@ -96,7 +96,7 @@ export const useBBox: IToolBBox = (isActive, scale, preferences, uniteBBox) => {
         cache.current.polygon.fillColor = new paper.Color('black');
         cache.current.polygon.closePath();
 
-        uniteBBox(cache.current.polygon);
+        uniteBBox(cache.current.polygon, true); // mark that action is undoable
 
         cache.current.polygon.remove();
         cache.current.polygon = null;
@@ -168,6 +168,14 @@ export const useBBox: IToolBBox = (isActive, scale, preferences, uniteBBox) => {
     useEffect(() => {
         if (toolRef.current != null && isActive) {
             toolRef.current.activate();
+        } else {
+            // clear cache
+            if (cache.current.polygon) {
+                cache.current.polygon.remove();
+                cache.current.polygon = null;
+            }
+            cache.current.point.p1 = null;
+            cache.current.point.p2 = null;
         }
     }, [isActive]);
 

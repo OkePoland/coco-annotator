@@ -1,3 +1,5 @@
+import paper from 'paper';
+
 import { Maybe } from '../../annotator.types';
 
 import * as CONFIG from '../../annotator.config';

@@ -79,3 +79,23 @@ export const simplify = (item: AnnotationShape) => {
     item.removeChildren();
     item.addChildren(newChildren);
 };
+
+export const replace = (item: AnnotationShape, itemToReplace: paper.Item) => {
+    const copy: paper.Item = item.clone({ insert: false, deep: true });
+
+    if (copy instanceof AnnotationShape) {
+        // use new geometry for new Compound path
+        const newItem = new AnnotationShape(itemToReplace);
+        newItem.remove();
+
+        // make sure that new object has the same important properties
+        newItem.name = item.name;
+        newItem.data = { ...item.data };
+
+        newItem.fillColor = item.fillColor;
+        newItem.opacity = CONFIG.ANNOTATION_SHAPE_OPACITY;
+
+        return newItem;
+    }
+    return item;
+};

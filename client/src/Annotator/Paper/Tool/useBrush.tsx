@@ -14,7 +14,7 @@ interface IToolBrush {
         isActive: boolean,
         scale: number,
         preferences: Maybe<ToolSettingsBrush>,
-        updatePath: (o: paper.Path.Circle) => void,
+        unite: (o: paper.Path.Circle, isUndoable?: boolean) => void,
         simplifyPath: () => void,
     ): ToolBrushResponse;
 }
@@ -36,7 +36,7 @@ export const useBrush: IToolBrush = (
     isActive,
     scale,
     preferences,
-    updatePath,
+    unite,
     simplifyPath,
 ) => {
     const toolRef = useRef<Maybe<paper.Tool>>(null);
@@ -77,14 +77,14 @@ export const useBrush: IToolBrush = (
         [_createBrush],
     );
 
-    const _update = useCallback(() => {
-        // Undo action, will be handled on mouse down
-        // Simplify, will be handled on mouse up
-        //this.$parent.currentAnnotation.subtract(this.eraser.brush, false, false);
-        if (cache.current.brush != null) {
-            updatePath(cache.current.brush);
-        }
-    }, [updatePath]);
+    const _update = useCallback(
+        (isUndoable?: boolean) => {
+            if (cache.current.brush != null) {
+                unite(cache.current.brush, isUndoable || false);
+            }
+        },
+        [unite],
+    );
 
     // settings methods
     const setColor = useCallback((color: string) => {
@@ -110,6 +110,13 @@ export const useBrush: IToolBrush = (
     );
 
     // mouse Events
+    const onMouseDown = useCallback(
+        (ev: MouseEvent) => {
+            _update(true); // mark that action is undoable
+        },
+        [_update],
+    );
+
     const onMouseMove = useCallback(
         (ev: MouseEvent) => {
             _moveBrush(ev.point);
@@ -123,13 +130,6 @@ export const useBrush: IToolBrush = (
             _update();
         },
         [_update, _moveBrush],
-    );
-
-    const onMouseDown = useCallback(
-        (ev: MouseEvent) => {
-            _update();
-        },
-        [_update],
     );
 
     const onMouseUp = useCallback(

@@ -3,6 +3,7 @@ import useGroups from './useGroups';
 import useTools from './useTools';
 
 import useTitle from './Various/useTitle';
+import useUndoStash from './Various/useUndoStash';
 import * as Part from './Part';
 
 // tslint:disable-next-line: prettier
@@ -11,5 +12,6 @@ export {
     useGroups,
     useTools,
     useTitle,
+    useUndoStash,
     Part,
 };

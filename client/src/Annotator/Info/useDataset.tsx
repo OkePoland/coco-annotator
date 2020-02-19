@@ -22,7 +22,7 @@ interface IUseDatasetResponse {
     previous: Maybe<number>;
     toolPreferences: ToolPreferences;
     isLoading: boolean;
-    saveAction: (obj: Object) => Promise<void>;
+    saveDataset: (obj: Object) => Promise<void>;
 }
 
 const useDataset: IUseDataset = imageId => {
@@ -49,7 +49,7 @@ const useDataset: IUseDataset = imageId => {
         wand: null,
     });
 
-    const saveAction = useCallback(
+    const saveDataset = useCallback(
         async (obj: Object) => {
             await AnnotatorApi.saveDataset(obj);
             enqueueSnackbar('Image save', { variant: 'success' });
@@ -94,7 +94,7 @@ const useDataset: IUseDataset = imageId => {
         previous,
         toolPreferences,
         isLoading,
-        saveAction,
+        saveDataset,
     };
 };
 export default useDataset;

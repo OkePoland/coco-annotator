@@ -5,7 +5,12 @@
 import { useRef, useState, useEffect, useCallback } from 'react';
 import paper from 'paper';
 
-import { Maybe, MouseEvent, ToolSettingsPolygon } from '../../annotator.types';
+import {
+    Maybe,
+    MouseEvent,
+    ToolSettingsPolygon,
+    ToolEvent,
+} from '../../annotator.types';
 
 import * as CONFIG from '../../annotator.config';
 
@@ -15,7 +20,8 @@ interface IToolPolygon {
         isActive: boolean,
         scale: number,
         preferences: Maybe<ToolSettingsPolygon>,
-        update: (a: paper.Path) => void,
+        unite: (a: paper.Path, isUndoable?: boolean) => void,
+        stashToolEvent: (toolEvent: ToolEvent) => void,
     ): ToolPolygonResponse;
 }
 export interface ToolPolygonResponse {
@@ -24,6 +30,7 @@ export interface ToolPolygonResponse {
     setStrokeColor: (color: string) => void;
     setMinDistance: (value: number) => void;
     setCompleteDistance: (value: number) => void;
+    undoLastPoint: () => void;
 }
 interface Cache {
     polygon: Maybe<paper.Path>;
@@ -35,7 +42,8 @@ export const usePolygon: IToolPolygon = (
     isActive,
     scale,
     preferences,
-    update,
+    unite,
+    stashToolEvent,
 ) => {
     const toolRef = useRef<Maybe<paper.Tool>>(null);
     const cache = useRef<Cache>({
@@ -88,7 +96,7 @@ export const usePolygon: IToolPolygon = (
         cache.current.polygon.fillColor = new paper.Color('black');
         cache.current.polygon.closePath();
 
-        update(cache.current.polygon);
+        unite(cache.current.polygon, true); // mark that action is undoable
 
         cache.current.polygon.remove();
         cache.current.polygon = null;
@@ -96,10 +104,8 @@ export const usePolygon: IToolPolygon = (
             cache.current.circle.remove();
             cache.current.circle = null;
         }
-        // TODO add removeUndos action
-        //this.removeUndos(this.actionTypes.ADD_POINTS);
         return true;
-    }, [update, _removeLastPoint]);
+    }, [_removeLastPoint, unite]);
 
     const _autoComplete = useCallback(
         (minCompleteLength: number) => {
@@ -127,16 +133,6 @@ export const usePolygon: IToolPolygon = (
             if (!settings.colorAuto) return;
 
             cache.current.circle.position = point;
-
-            // TODO parent raster & invert color
-            // let raster = this.$parent.image.raster;
-            // let color = raster.getAverageColor(cache.current.circle);
-            // if (color) {
-            //     optionsRef.current.strokeColor = invertColor(
-            //         color.toCSS(true),
-            //         this.color.blackOrWhite
-            //    );
-            // },
         },
         [settings.colorAuto],
     );
@@ -165,6 +161,15 @@ export const usePolygon: IToolPolygon = (
 
     const setCompleteDistance = useCallback((value: number) => {
         _setSettings(oldState => ({ ...oldState, completeDistance: value }));
+    }, []);
+
+    const undoLastPoint = useCallback(() => {
+        if (!cache.current.polygon) return;
+
+        const length = cache.current.polygon.segments.length;
+        if (length === 0) return;
+
+        cache.current.polygon.removeSegments(length - 1, length);
     }, []);
 
     // mouse events
@@ -212,19 +217,14 @@ export const usePolygon: IToolPolygon = (
         [_autoComplete, _autoStrokeColor],
     );
 
-    const onMouseUp = useCallback((event: MouseEvent) => {
-        if (!cache.current.polygon) return;
-        // TODO add undo action
-        // let action = new UndoAction({
-        //   name: this.name,
-        //   action: this.actionTypes.ADD_POINTS,
-        //   func: this.undoPoints,
-        //   args: {
-        //     points: cache.current.actionPoints
-        //   }
-        // });
-        // this.addUndo(action);
-    }, []);
+    const onMouseUp = useCallback(
+        (event: MouseEvent) => {
+            if (!cache.current.polygon) return;
+
+            stashToolEvent(ToolEvent.POLYGON_ADD_POINT);
+        },
+        [stashToolEvent],
+    );
 
     // adjust preferences
     useEffect(() => {
@@ -264,6 +264,17 @@ export const usePolygon: IToolPolygon = (
     useEffect(() => {
         if (toolRef.current != null && isActive) {
             toolRef.current.activate();
+        } else {
+            // clear cache
+            if (cache.current.polygon) {
+                cache.current.polygon.remove();
+                cache.current.polygon = null;
+            }
+            if (cache.current.circle) {
+                cache.current.circle.remove();
+                cache.current.circle = null;
+            }
+            cache.current.actionPoints = 0;
         }
     }, [isActive]);
 
@@ -285,5 +296,6 @@ export const usePolygon: IToolPolygon = (
         setStrokeColor,
         setMinDistance,
         setCompleteDistance,
+        undoLastPoint,
     };
 };
