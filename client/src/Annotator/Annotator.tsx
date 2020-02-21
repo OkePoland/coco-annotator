@@ -175,8 +175,6 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
     ]);
     const addAnnotationAction = useCallback(
         async (categoryId: number) => {
-            if (categoryId === null || categoryId === undefined) return;
-
             const newItem = await info.creator.create(imageId, categoryId);
             if (!newItem) return;
 

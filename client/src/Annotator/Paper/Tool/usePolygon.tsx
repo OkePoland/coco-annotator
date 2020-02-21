@@ -20,7 +20,7 @@ interface IToolPolygon {
         isActive: boolean,
         scale: number,
         preferences: Maybe<ToolSettingsPolygon>,
-        unite: (a: paper.Path, isUndoable?: boolean) => void,
+        unite: (path: paper.Path, isUndoable?: boolean) => void,
         stashToolEvent: (toolEvent: ToolEvent) => void,
     ): ToolPolygonResponse;
 }
@@ -217,14 +217,11 @@ export const usePolygon: IToolPolygon = (
         [_autoComplete, _autoStrokeColor],
     );
 
-    const onMouseUp = useCallback(
-        (event: MouseEvent) => {
-            if (!cache.current.polygon) return;
+    const onMouseUp = useCallback(() => {
+        if (!cache.current.polygon) return;
 
-            stashToolEvent(ToolEvent.POLYGON_ADD_POINT);
-        },
-        [stashToolEvent],
-    );
+        stashToolEvent(ToolEvent.POLYGON_ADD_POINT);
+    }, [stashToolEvent]);
 
     // adjust preferences
     useEffect(() => {
