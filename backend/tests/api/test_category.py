@@ -22,8 +22,7 @@ class TestCategory:
         assert isinstance(data, list)
         assert len(data) == 0
 
-    def test_p
-    t_no_data(self, client, category_url):
+    def test_post_no_data(self, client, category_url):
         response = client.post(category_url)
         assert response.status_code == 400
 
