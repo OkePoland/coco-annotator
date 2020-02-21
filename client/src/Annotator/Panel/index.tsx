@@ -2,8 +2,7 @@ import FileTile from './FileTile';
 import SearchInput from './SearchInput';
 import CategoryCard from './CategoryCard';
 import AnnotationCard from './AnnotationCard';
-import CLabel from './CLabel';
-import BBox from './Tool/BBox';
+import BBoxPanel from './Tool/BBoxPanel';
 import Brush from './Tool/Brush';
 import Dextr from './Tool/Dextr';
 import Keypoints from './Tool/Keypoints';
@@ -16,8 +15,7 @@ export {
     SearchInput,
     CategoryCard,
     AnnotationCard,
-    CLabel,
-    BBox,
+    BBoxPanel,
     Brush,
     Dextr,
     Keypoints,

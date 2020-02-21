@@ -26,6 +26,7 @@ export const unite = (
         // make sure that new object has the same important properties
         newItem.name = item.name;
         newItem.data = { ...item.data };
+        newItem.selected = item.selected;
 
         newItem.fillColor = item.fillColor;
         newItem.opacity = CONFIG.ANNOTATION_SHAPE_OPACITY;
@@ -51,6 +52,7 @@ export const subtract = (item: AnnotationShape, toRemove: paper.Path) => {
         // make sure that new object has the same important properties
         newItem.name = item.name;
         newItem.data = { ...item.data };
+        newItem.selected = item.selected;
 
         newItem.fillColor = item.fillColor;
         newItem.opacity = CONFIG.ANNOTATION_SHAPE_OPACITY;
@@ -91,6 +93,7 @@ export const replace = (item: AnnotationShape, itemToReplace: paper.Item) => {
         // make sure that new object has the same important properties
         newItem.name = item.name;
         newItem.data = { ...item.data };
+        newItem.selected = item.selected;
 
         newItem.fillColor = item.fillColor;
         newItem.opacity = CONFIG.ANNOTATION_SHAPE_OPACITY;

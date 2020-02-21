@@ -12,11 +12,7 @@ class CategoryGroup extends paper.Group {
     set fillColor(color: paper.Color | null) {
         this.children.forEach(child => {
             child.fillColor = color;
-        })
-    }
-
-    public exportData() {
-        return ''; // TODO
+        });
     }
 }
 export default CategoryGroup;

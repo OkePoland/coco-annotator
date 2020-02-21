@@ -9,9 +9,12 @@ import {
     ExportObj,
     CategoryInfo,
     AnnotationInfo,
+    MetadataInfo,
+    TooltipMetadata,
     Tool,
-    ToolPreferences,
+    ToolSettings,
     SelectedState,
+    ShortcutsSettings,
     ExportObjCategory,
     ExportObjAnnotation,
     UndoItemType,
@@ -30,7 +33,8 @@ export const createExportObj = (
     segmentOn: boolean,
     activeTool: Maybe<Tool>,
     selected: SelectedState,
-    exportTools: () => ToolPreferences,
+    shortcuts: ShortcutsSettings,
+    exportTools: () => ToolSettings,
     infoArr: CategoryInfo[],
     groupsArr: CategoryGroup[],
 ) => {
@@ -39,7 +43,10 @@ export const createExportObj = (
 
     const obj: ExportObj = {
         mode: segmentOn ? 'segment' : 'label',
-        user: toolsData,
+        user: {
+            tools: toolsData,
+            shortcuts: shortcuts,
+        },
         dataset,
         image: {
             id: imageId,
@@ -125,9 +132,15 @@ const parseAnnotation = (
     const isBBOX = annotationGroup.shape.isBBOX;
     const { shape, keypoints } = annotationGroup.exportData();
 
-    const metadata = {
-        name: annotationInfo.name || '',
-    };
+    const metadata = annotationInfo.metadata.reduce(
+        (prevObj: { [key: string]: string }, item: MetadataInfo) => {
+            prevObj[item.key] = item.value;
+            return prevObj;
+        },
+        {},
+    );
+    metadata['name'] = annotationInfo.name || '';
+
     const obj: ExportObjAnnotation = {
         id: annotationInfo.id,
         name: annotationInfo.name,
@@ -230,6 +243,20 @@ const findNextAnnotationId = (
 export function isUndoItemShape(object: any): object is UndoItemShape {
     return object.type === UndoItemType.SHAPE_CHANGED;
 }
+
 export function isUndoItemTool(object: any): object is UndoItemTool {
     return object.type === UndoItemType.TOOL_CHANGED;
 }
+
+export const getTooltipMetadata = (infoArr: CategoryInfo[]) => {
+    const metadata: TooltipMetadata = infoArr.reduce(
+        (prevObj: TooltipMetadata, categoryInfo: CategoryInfo) => {
+            categoryInfo.annotations.forEach(annotationInfo => {
+                prevObj[annotationInfo.id] = annotationInfo.metadata;
+            });
+            return prevObj;
+        },
+        {},
+    );
+    return metadata;
+};

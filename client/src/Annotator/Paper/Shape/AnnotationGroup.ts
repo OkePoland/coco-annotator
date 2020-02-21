@@ -21,6 +21,7 @@ class AnnotationGroup extends paper.Group {
         // create keypoints
         this.keypoints = new KeypointsGroup();
         this.keypoints.name = CONFIG.ANNOTATION_KEYPOINTS_PREFIX + annotationId;
+        this.keypoints.data = { categoryId, annotationId };
 
         // create shape
         const shape = new AnnotationShape({});
@@ -38,6 +39,12 @@ class AnnotationGroup extends paper.Group {
     set fillColor(color: paper.Color | null) {
         this.shape.fillColor = color;
         this.keypoints.color = color;
+    }
+
+    public bringToFront() {
+        super.bringToFront();
+        this.shape.bringToFront();
+        this.keypoints.bringToFront();
     }
 
     // shape methods

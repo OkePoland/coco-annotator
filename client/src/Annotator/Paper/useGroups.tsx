@@ -1,4 +1,4 @@
-import { useRef, useEffect, useCallback } from 'react';
+import { useRef, useState, useEffect, useCallback } from 'react';
 import { MutableRefObject } from 'react';
 import paper from 'paper';
 
@@ -17,6 +17,7 @@ interface UseGroupsResponse {
     creator: UseCreatorResponse;
     shapeEditor: UseShapeEditorResponse;
     keypointsEditor: UseKeypointsEditorResponse;
+    generation: number;
 }
 interface UseCreatorResponse {
     add: (categoryId: number, annotation: Annotation) => void;
@@ -47,6 +48,7 @@ const useGroups: IUseGroups = (categories, selected) => {
     const creator = useCreator(groupsRef);
     const shapeEditor = useShapeEditor(groupsRef, selected);
     const keypointsEditor = useKeypointsEditor(groupsRef, selected);
+    const [generation, _setGeneration] = useState<number>(0);
 
     // refresh Group
     useEffect(() => {
@@ -84,6 +86,7 @@ const useGroups: IUseGroups = (categories, selected) => {
             return group;
         });
         groupsRef.current = initialGroups;
+        _setGeneration(c => c + 1);
     }, [categories]);
 
     return {
@@ -91,6 +94,7 @@ const useGroups: IUseGroups = (categories, selected) => {
         creator,
         shapeEditor,
         keypointsEditor,
+        generation,
     };
 };
 
@@ -126,7 +130,7 @@ const useCreator = (groupsRef: MutableRefObject<CategoryGroup[]>) => {
             );
             if (aIdx === -1) return;
 
-            categoryGroup.removeChildren(aIdx);
+            categoryGroup.removeChildren(aIdx, aIdx + 1);
         },
         [groupsRef],
     );

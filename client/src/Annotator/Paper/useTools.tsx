@@ -6,7 +6,8 @@ import {
     Tool,
     ToolEvent,
     ImageSize,
-    ToolPreferences,
+    ToolSettings,
+    TooltipMetadata,
 } from '../annotator.types';
 
 import useEmpty from './Tool/useEmpty';
@@ -21,13 +22,14 @@ import { useDextr, ToolDextrResponse } from './Tool/useDextr';
 interface IUseTools {
     (
         paperRef: MutableRefObject<Maybe<paper.PaperScope>>,
-        preferences: ToolPreferences,
+        preferences: ToolSettings,
         activeTool: Maybe<Tool>,
         selectedAnnotation: Maybe<number>,
         imageId: number,
         imageScale: number,
         imageSize: Maybe<ImageSize>,
         imageData: Maybe<ImageData>,
+        tooltipMetadata: TooltipMetadata,
         unite: (toAdd: paper.Path, isUndoable?: boolean) => void,
         subtract: (toRemove: paper.Path, isUndoable?: boolean) => void,
         uniteBBOX: (toAdd: paper.Path, isUndoable?: boolean) => void,
@@ -44,7 +46,7 @@ interface IUseTools {
         eraser: ToolBrushResponse;
         keypoint: ToolKeypointResponse;
         dextr: ToolDextrResponse;
-        exportData: () => ToolPreferences;
+        exportData: () => ToolSettings;
     };
 }
 
@@ -57,6 +59,7 @@ const useTools: IUseTools = (
     imageScale,
     imageSize,
     imageData,
+    tooltipMetadata,
     unite,
     subtract,
     uniteBBOX,
@@ -75,6 +78,7 @@ const useTools: IUseTools = (
         paperRef,
         activeTool === Tool.SELECT && selectedAnnotation != null,
         imageScale,
+        tooltipMetadata,
         preferences.select,
     );
     const bbox = useBBox(
@@ -124,7 +128,7 @@ const useTools: IUseTools = (
     );
 
     const exportData = useCallback(() => {
-        const obj: ToolPreferences = {
+        const obj: ToolSettings = {
             select: select.settings,
             bbox: bbox.settings,
             polygon: polygon.settings,

@@ -13,7 +13,7 @@ class KeypointShape extends paper.Path {
         // Copy segments from Path.Circle into new paper.Path
         // Keypoint has to inherit from paper.Path
         // because is no such class as paper.Path.Circle... only constructor :-(
-        const circle = new paper.Path.Circle(point, 5);
+        const circle = new paper.Path.Circle(point, 1);
         circle.remove();
         this.addSegments(circle.segments);
         this.closed = true;

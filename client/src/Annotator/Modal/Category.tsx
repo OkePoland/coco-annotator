@@ -1,7 +1,6 @@
 import React from 'react';
 import Box from '@material-ui/core/Box';
 import Grid from '@material-ui/core/Grid';
-import Typography from '@material-ui/core/Typography';
 import TextField from '@material-ui/core/TextField';
 import ColorPicker from 'material-ui-color-picker';
 
@@ -21,17 +20,21 @@ const CategoryModal: React.FC<Props> = ({
     <Box className={className}>
         <Grid container justify="center" alignItems="center" spacing={3}>
             <Grid item xs={6}>
-                <Typography display="inline">Name: </Typography>
                 <TextField
                     disabled
+                    fullWidth
+                    variant="outlined"
+                    margin="dense"
                     placeholder="Name"
                     inputProps={{ style: { textAlign: 'center' } }}
                     value={name}
                 />
             </Grid>
             <Grid item xs={6}>
-                <Typography display="inline">Color: </Typography>
                 <ColorPicker
+                    fullWidth
+                    variant="outlined"
+                    margin="dense"
                     defaultValue={color}
                     value={color}
                     onChange={setColor}

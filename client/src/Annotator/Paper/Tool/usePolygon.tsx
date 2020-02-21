@@ -31,6 +31,7 @@ export interface ToolPolygonResponse {
     setMinDistance: (value: number) => void;
     setCompleteDistance: (value: number) => void;
     undoLastPoint: () => void;
+    closePath: () => void;
 }
 interface Cache {
     polygon: Maybe<paper.Path>;
@@ -93,7 +94,6 @@ export const usePolygon: IToolPolygon = (
 
         _removeLastPoint();
 
-        cache.current.polygon.fillColor = new paper.Color('black');
         cache.current.polygon.closePath();
 
         unite(cache.current.polygon, true); // mark that action is undoable
@@ -171,6 +171,8 @@ export const usePolygon: IToolPolygon = (
 
         cache.current.polygon.removeSegments(length - 1, length);
     }, []);
+
+    const closePath = useCallback(() => _complete(), [_complete])
 
     // mouse events
     const onMouseDown = useCallback(
@@ -294,5 +296,6 @@ export const usePolygon: IToolPolygon = (
         setMinDistance,
         setCompleteDistance,
         undoLastPoint,
+        closePath,
     };
 };

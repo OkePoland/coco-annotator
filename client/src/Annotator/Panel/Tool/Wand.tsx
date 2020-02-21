@@ -1,7 +1,8 @@
 import React from 'react';
-import { ChangeEvent } from 'react';
 import Box from '@material-ui/core/Box';
-import TextField from '@material-ui/core/TextField';
+import BorderColorIcon from '@material-ui/icons/BorderColor';
+
+import ToolFieldNumber from './ToolFieldNumber';
 
 interface Props {
     className: string;
@@ -18,24 +19,15 @@ const Wand: React.FC<Props> = ({
     setBlur,
 }) => (
     <Box className={className}>
-        <TextField
+        <BorderColorIcon />
+
+        <ToolFieldNumber
             label="Threshold"
-            inputProps={{ style: { textAlign: 'center' } }}
             value={threshold}
-            onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                const val = parseInt(e.target.value);
-                setThreshold(val ? val : 1);
-            }}
+            onChange={setThreshold}
         />
-        <TextField
-            label="Blur"
-            inputProps={{ style: { textAlign: 'center' } }}
-            value={blur}
-            onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                const val = parseInt(e.target.value);
-                setBlur(val ? val : 1);
-            }}
-        />
+
+        <ToolFieldNumber label="Blur" value={blur} onChange={setBlur} />
     </Box>
 );
 export default Wand;

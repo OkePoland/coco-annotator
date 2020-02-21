@@ -7,12 +7,6 @@ import { createIndicator } from '../Utils/typeGuards';
 
 type Edge = [number, number]; // edge between two keypoints
 
-interface KeypointData {
-    pointId: number;
-    x: number;
-    y: number;
-}
-
 class KeypointsGroup extends paper.Group {
     private _usedIds: number[]; // array of used ids ( sorted ) - ids start from 1
     private _keypoints: KeypointShape[];
@@ -35,7 +29,7 @@ class KeypointsGroup extends paper.Group {
         this._lines = {};
 
         this._color = null;
-        this._lineWidth = 4;
+        this._lineWidth = 1;
     }
 
     set color(color: paper.Color | null) {
@@ -48,11 +42,17 @@ class KeypointsGroup extends paper.Group {
         });
     }
 
+    public bringToFront() {
+        Object.values(this._lines).forEach(l => l.bringToFront());
+        this._keypoints.forEach(k => k.bringToFront());
+    }
+
     // public
     public addKeypoint(point: paper.Point, id?: number) {
         const newId = this._getNextId(id);
 
         const keypoint: KeypointShape = new KeypointShape(newId, point);
+        keypoint.fillColor = this._color;
 
         this._keypoints.push(keypoint);
 
@@ -233,7 +233,7 @@ class KeypointsGroup extends paper.Group {
         else newId = this._usedIds[count - 1] + 1; // highestId + 1
 
         this._usedIds.push(newId);
-        this._usedIds.sort();
+        this._usedIds.sort((a, b) => a - b);
 
         return newId;
     }

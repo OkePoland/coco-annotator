@@ -5,7 +5,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useSnackbar } from 'notistack';
 
 import { Dataset, Category } from '../../common/types';
-import { Maybe, ToolPreferences } from '../annotator.types';
+import { Maybe, ImportObj, Settings } from '../annotator.types';
 
 import * as AnnotatorApi from '../annotator.api';
 import useGlobalContext from '../../common/hooks/useGlobalContext';
@@ -20,9 +20,13 @@ interface IUseDatasetResponse {
     filename: string;
     next: Maybe<number>;
     previous: Maybe<number>;
-    toolPreferences: ToolPreferences;
-    isLoading: boolean;
+    initSettings: Settings;
     saveDataset: (obj: Object) => Promise<void>;
+    copyAnnotations: (
+        imageId: number,
+        id: number,
+        categoriesIds: number[],
+    ) => void;
 }
 
 const useDataset: IUseDataset = imageId => {
@@ -34,19 +38,21 @@ const useDataset: IUseDataset = imageId => {
     // datasetdata
     const [dataset, setDataset] = useState<Maybe<Dataset>>(null);
     const [categories, setCategories] = useState<Array<Category>>([]);
-    const [isLoading, _setIsLoading] = useState<boolean>(false);
 
     // image data
     const [filename, setFilename] = useState<string>('');
     const [next, setNext] = useState<Maybe<number>>(null);
     const [previous, setPrevious] = useState<Maybe<number>>(null);
-    const [toolPreferences, setToolPreferences] = useState<ToolPreferences>({
-        select: null,
-        bbox: null,
-        polygon: null,
-        brush: null,
-        eraser: null,
-        wand: null,
+    const [initSettings, setInitSettings] = useState<Settings>({
+        tools: {
+            select: null,
+            bbox: null,
+            polygon: null,
+            brush: null,
+            eraser: null,
+            wand: null,
+        },
+        shortcuts: {},
     });
 
     const saveDataset = useCallback(
@@ -58,11 +64,29 @@ const useDataset: IUseDataset = imageId => {
         [enqueueSnackbar],
     );
 
+    const copyAnnotations = useCallback(
+        async (imageId: number, id: number, categoriesIds: number[]) => {
+            const { success, message } = await AnnotatorApi.copyAnnotations(
+                imageId,
+                id,
+                categoriesIds,
+            );
+            if (success) {
+                enqueueSnackbar('Copy success', { variant: 'success' });
+                moveGeneration(c => c + 1);
+            } else {
+                const msg = `Copy error (${message != null ? message : ''})`;
+                enqueueSnackbar(msg, { variant: 'error' });
+            }
+        },
+        [enqueueSnackbar],
+    );
+
     useEffect(() => {
         const process = 'Loading annotation data';
 
         const update = async () => {
-            const data = await AnnotatorApi.getDataset(imageId);
+            const data: ImportObj = await AnnotatorApi.getDataset(imageId);
             console.log('Info: Dataset loaded');
 
             setDataset(data.dataset);
@@ -71,17 +95,17 @@ const useDataset: IUseDataset = imageId => {
             setNext(data.image.next !== undefined ? data.image.next : null);
             setPrevious(data.image.previous || null);
 
-            setToolPreferences(data.preferences);
+            if (data.preferences) {
+                setInitSettings(data.preferences);
+            }
         };
 
         try {
-            _setIsLoading(true);
             addProcess(dispatch, process);
             update();
         } catch (error) {
             enqueueSnackbar('Loading error', { variant: 'error' });
         } finally {
-            _setIsLoading(false);
             removeProcess(dispatch, process);
         }
     }, [imageId, generation, dispatch, enqueueSnackbar]);
@@ -92,9 +116,9 @@ const useDataset: IUseDataset = imageId => {
         filename,
         next,
         previous,
-        toolPreferences,
-        isLoading,
+        initSettings,
         saveDataset,
+        copyAnnotations,
     };
 };
 export default useDataset;

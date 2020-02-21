@@ -4,15 +4,21 @@ import Grid from '@material-ui/core/Grid';
 import TextField from '@material-ui/core/TextField';
 import Typography from '@material-ui/core/Typography';
 import KeyboardOutlinedIcon from '@material-ui/icons/KeyboardOutlined';
+import Button from '@material-ui/core/Button';
 
-import { Shortcuts } from '../annotator.types';
+import { ShortcutsSettings } from '../annotator.types';
 
 interface Props {
-    shortcuts: Shortcuts;
-    setShortcuts: Dispatch<SetStateAction<Shortcuts>>;
+    shortcuts: ShortcutsSettings;
+    setShortcuts: Dispatch<SetStateAction<ShortcutsSettings>>;
+    restoreDefaultShortcuts: () => void;
 }
 
-const SettingsModal: React.FC<Props> = ({ shortcuts, setShortcuts }) => (
+const SettingsModal: React.FC<Props> = ({
+    shortcuts,
+    setShortcuts,
+    restoreDefaultShortcuts,
+}) => (
     <Box p={2}>
         <Box mb={1}>
             <KeyboardOutlinedIcon color="primary" />
@@ -32,11 +38,13 @@ const SettingsModal: React.FC<Props> = ({ shortcuts, setShortcuts }) => (
                     <TextField
                         fullWidth
                         label={key.replace(/_/g, ' ').toUpperCase()}
+                        variant="outlined"
                         inputProps={{ style: { textAlign: 'center' } }}
+                        margin="dense"
                         value={value}
                         onKeyDown={event => {
                             // prevent from catching ArrowUp, ArrowDown, Enter etc...
-                            event.preventDefault(); 
+                            event.preventDefault();
                             const keyName: string = event.key;
                             setShortcuts(oldState => ({
                                 ...oldState,
@@ -47,6 +55,15 @@ const SettingsModal: React.FC<Props> = ({ shortcuts, setShortcuts }) => (
                 </Grid>
             ))}
         </Grid>
+        <Box mt={1}>
+            <Button
+                variant="contained"
+                color="primary"
+                onClick={restoreDefaultShortcuts}
+            >
+                Restore Default Shortcuts
+            </Button>
+        </Box>
     </Box>
 );
 

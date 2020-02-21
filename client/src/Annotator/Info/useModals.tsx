@@ -12,6 +12,7 @@ interface ModalOpenState {
     settings: boolean;
     category: boolean;
     annotation: boolean;
+    copy: boolean;
 }
 interface ModalState {
     categoryId: Maybe<number>;
@@ -23,6 +24,7 @@ const useModals = () => {
         settings: false,
         category: false,
         annotation: false,
+        copy: false,
     });
     const [modalState, _setModalState] = useState<ModalState>({
         categoryId: null,
@@ -36,7 +38,8 @@ const useModals = () => {
         () =>
             modalOpen.settings === true ||
             modalOpen.category === true ||
-            modalOpen.annotation === true,
+            modalOpen.annotation === true ||
+            modalOpen.copy === true,
         [modalOpen],
     );
 
@@ -46,6 +49,7 @@ const useModals = () => {
             settings: false,
             category: false,
             annotation: false,
+            copy: false,
         });
         _setModalState({ categoryId: null, annotationId: null });
     }, []);
@@ -55,6 +59,7 @@ const useModals = () => {
             settings: true,
             category: false,
             annotation: false,
+            copy: false,
         });
         _setModalState({ categoryId: null, annotationId: null });
     }, []);
@@ -64,6 +69,7 @@ const useModals = () => {
             settings: false,
             category: true,
             annotation: false,
+            copy: false,
         });
         _setModalState({ categoryId, annotationId: null });
     }, []);
@@ -74,11 +80,22 @@ const useModals = () => {
                 settings: false,
                 category: false,
                 annotation: true,
+                copy: false,
             });
             _setModalState({ categoryId, annotationId });
         },
         [],
     );
+
+    const openCopyModal = useCallback(() => {
+        _setOpenState({
+            settings: false,
+            category: false,
+            annotation: false,
+            copy: true,
+        });
+        _setModalState({ categoryId: null, annotationId: null });
+    }, []);
 
     return {
         modalOpen,
@@ -88,6 +105,7 @@ const useModals = () => {
         openSettingsModal,
         openCategoryModal,
         openAnnotationModal,
+        openCopyModal,
     };
 };
 export default useModals;

@@ -4,7 +4,7 @@
 
 import { useState, useCallback } from 'react';
 
-import { Maybe, UndoItem } from '../../annotator.types';
+import { Maybe, UndoItem, UndoItemType } from '../../annotator.types';
 
 import * as CONFIG from '../../annotator.config';
 
@@ -20,8 +20,13 @@ export const useUndoStash: () => IUseUndoStashResponse = () => {
 
     const add = useCallback(
         (item: UndoItem) => {
-            const arr = [...list];
+            let arr = [...list];
             arr.push(item);
+            // In case we unite some change
+            // clear stash from all events related to tools ( like 'polygon add line' )
+            if (item.type === UndoItemType.SHAPE_CHANGED) {
+                arr = arr.filter(o => o.type === UndoItemType.SHAPE_CHANGED);
+            }
             if (arr.length > CONFIG.UNDO_MAX_ITEMS) arr.shift();
             _setList(arr);
         },

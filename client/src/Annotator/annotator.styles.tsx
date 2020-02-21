@@ -11,7 +11,8 @@ export const useStyles = makeStyles((theme: AugmentedTheme) => ({
         height: '100vh',
         paddingTop: theme.spacing(2),
         textAlign: 'center',
-        backgroundColor: '#4b5162',
+        backgroundColor: theme.annotator.panel,
+        color: theme.annotator.panelIcon,
     },
     divider: {
         marginTop: theme.spacing(2),
@@ -22,7 +23,7 @@ export const useStyles = makeStyles((theme: AugmentedTheme) => ({
         height: '100vh',
         float: 'right',
         padding: theme.spacing(1),
-        backgroundColor: '#4b5162',
+        backgroundColor: theme.annotator.panel,
     },
     fileTitle: {
         marginTop: theme.spacing(1),
@@ -39,7 +40,7 @@ export const useStyles = makeStyles((theme: AugmentedTheme) => ({
         height: 'inherit',
         overflow: 'hidden',
         position: 'relative',
-        backgroundColor: '#7c818c',
+        backgroundColor: theme.annotator.canvas,
     },
     frame: {
         margin: '0',
@@ -55,16 +56,19 @@ export const useStyles = makeStyles((theme: AugmentedTheme) => ({
             position: 'absolute',
         },
     },
+    toolPanel: {
+        padding: theme.spacing(2),
+        border: '1px solid rgba(0,0,0,.125)',
+        backgroundColor: 'rgba(0,0,0,.04)',
 
-    bboxPanel: {
-        margin: '5px',
-        borderRadius: '5px',
-        backgroundColor: '#383c4a',
-        padding: '0 5px 5px 5px',
-        overflow: 'auto',
+        '& label': {
+            color: theme.palette.common.white,
+        },
+        '& input': {
+            color: theme.palette.common.white,
+        },
     },
-
     modal: {
-        height: '220px',
+        height: '320px',
     },
 }));

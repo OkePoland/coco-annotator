@@ -1,5 +1,5 @@
 import paper from 'paper';
-import { Dataset, Category, Annotation } from '../common/types';
+import { Dataset, Category, Annotation, Image } from '../common/types';
 
 export type Maybe<T> = T | null | undefined;
 
@@ -33,15 +33,19 @@ export interface AnnotationInfo {
     name: string;
     color: string;
     enabled: boolean;
+    metadata: Array<MetadataInfo>;
     _data: Annotation;
 }
 
-// Shortcuts types
-export interface Shortcuts {
-    [key: string]: string;
+export interface MetadataInfo {
+    key: string;
+    value: string;
 }
 
-// Tool Types
+export interface TooltipMetadata {
+    [key: number]: MetadataInfo[];
+}
+
 export enum Tool {
     SELECT = 'SELECT',
     BBOX = 'BBOX',
@@ -53,7 +57,17 @@ export enum Tool {
     DEXTR = 'DEXTR',
 }
 
-export interface ToolPreferences {
+// Settings Types
+export interface Settings {
+    shortcuts: ShortcutsSettings;
+    tools: ToolSettings;
+}
+
+export interface ShortcutsSettings {
+    [key: string]: string;
+}
+
+export interface ToolSettings {
     select: Maybe<ToolSettingsSelect>;
     bbox: Maybe<ToolSettingsBBOX>;
     polygon: Maybe<ToolSettingsPolygon>;
@@ -112,10 +126,46 @@ export interface DataIndicator {
     type: DataType.INDICATOR;
 }
 
+// paper undo types
+export enum ToolEvent {
+    POLYGON_ADD_POINT = 'POLYGON_ADD_POINT',
+}
+
+export type UndoItem = UndoItemShape | UndoItemTool;
+
+export enum UndoItemType {
+    SHAPE_CHANGED = 'SHAPE_CHANGED',
+    TOOL_CHANGED = 'TOOL_CHANGED',
+}
+
+export interface UndoItemShape {
+    type: UndoItemType.SHAPE_CHANGED;
+    dispatch: {
+        categoryId: number;
+        annotationId: number;
+        paperItem: paper.Item;
+    };
+}
+
+export interface UndoItemTool {
+    type: UndoItemType.TOOL_CHANGED;
+    dispatch: {
+        toolEvent: ToolEvent;
+    };
+}
+
+// Import types
+export interface ImportObj {
+    categories: Category[];
+    dataset: Dataset;
+    preferences: Settings;
+    image: Image;
+}
+
 // Export types
 export interface ExportObj {
     mode: string;
-    user: ToolPreferences;
+    user: Settings;
     dataset: Maybe<Dataset>;
     image: {
         id: number;
@@ -146,7 +196,7 @@ export interface ExportObjAnnotation {
     compoundPath: Object; // Paper.Item
     keypoints: ExportObjKeypointGroup;
     metadata?: {
-        name?: string;
+        [key: string]: string;
     };
 }
 
@@ -157,32 +207,4 @@ export interface ExportObjKeypointGroup {
         y: number;
     }[];
     edges: [number, number][];
-}
-
-// paper undo types
-export enum ToolEvent {
-    POLYGON_ADD_POINT = 'POLYGON_ADD_POINT',
-}
-
-export type UndoItem = UndoItemShape | UndoItemTool;
-
-export enum UndoItemType {
-    SHAPE_CHANGED = 'SHAPE_CHANGED',
-    TOOL_CHANGED = 'TOOL_CHANGED',
-}
-
-export interface UndoItemShape {
-    type: UndoItemType.SHAPE_CHANGED;
-    dispatch: {
-        categoryId: number;
-        annotationId: number;
-        paperItem: paper.Item;
-    };
-}
-
-export interface UndoItemTool {
-    type: UndoItemType.TOOL_CHANGED;
-    dispatch: {
-        toolEvent: ToolEvent;
-    };
 }
