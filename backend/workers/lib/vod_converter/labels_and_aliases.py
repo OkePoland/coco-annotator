@@ -28,7 +28,7 @@ output_labels = {
     "bus": ["8", "9"],
     "train": [],
     "tram": [],
-    "truck": ["4", "5", "6"],
+    "truck": ["4", "5", "6", "big-truck"],
     "boat": [],
     "traffic light": [],
     "fire hydrant": [],

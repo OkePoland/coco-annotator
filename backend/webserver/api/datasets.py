@@ -157,10 +157,8 @@ class DatasetCleanMeta(Resource):
         if dataset is None:
             return {"message": "Invalid dataset id"}, 400
 
-        AnnotationModel.objects(dataset_id=dataset.id) \
-            .update(metadata=dataset.default_annotation_metadata)
-        ImageModel.objects(dataset_id=dataset.id) \
-            .update(metadata={})
+        AnnotationModel.objects(dataset_id=dataset.id).update(metadata=dataset.default_annotation_metadata)
+        ImageModel.objects(dataset_id=dataset.id).update(metadata={})
 
         return {'success': True}
 

@@ -43,7 +43,7 @@ def scan_dataset(task_id, dataset_id):
                 db_image = ImageModel.objects(path=path).first()
 
                 if db_image is not None:
-                    if db_image.get_datasetid() != dataset_id:
+                    if db_image.get_dataset_id() != dataset_id:
                         db_image.delete()
                     else:
                         continue

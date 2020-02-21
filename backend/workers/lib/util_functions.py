@@ -2,7 +2,7 @@ import json
 import os
 import sys
 from contextlib import redirect_stdout
-
+from .messenger import messenger
 from .vod_converter import converter
 
 INGESTORS = [
@@ -17,20 +17,6 @@ INGESTORS = [
     "detrac",  # tested and working
     "caltech",  # tested and working
     "town-centre"]  # tested and working
-
-
-class RedirectStream:
-    task_stream = None
-
-    def __init__(self, task):
-        self.task_stream = task
-
-    def write(self, message):
-        if message != "\n":
-            self.task_stream.info(message)
-
-    def flush(self):
-        pass
 
 
 def check_coco(ann_file):
@@ -51,21 +37,21 @@ def check_coco(ann_file):
 def convert_to_coco(ann_file, current_task):
     to_key = "coco"
     success = False
-    with redirect_stdout(RedirectStream(current_task)):
-        for from_key in INGESTORS:
-            print(f"\nConverting from {from_key} to {to_key}.")
-            try:
-                success, encoded_labels = converter.convert(from_path=ann_file, to_path=None, ingestor_key=from_key,
-                                                            egestor_key=to_key,
-                                                            select_only_known_labels=False,
-                                                            filter_images_without_labels=True, folder_names=None)
-            except:
-                success = False
-            if success:
-                print(f"Successfully converted from {from_key} to {to_key}.")
-                coco = encoded_labels
-                return coco, True
-            else:
-                print(f"Failed to convert from {from_key} to {to_key}")
+    messenger.connect_task(current_task)
+    for from_key in INGESTORS:
+        messenger.message(f"\nConverting from {from_key} to {to_key}.")
+        try:
+            success, encoded_labels = converter.convert(from_path=ann_file, to_path=None, ingestor_key=from_key,
+                                                        egestor_key=to_key,
+                                                        select_only_known_labels=False,
+                                                        filter_images_without_labels=True, folder_names=None)
+        except:
+            success = False
+        if success:
+            messenger.message(f"Successfully converted from {from_key} to {to_key}.")
+            coco = encoded_labels
+            return coco, True
+        else:
+            messenger.message(f"Failed to convert from {from_key} to {to_key}")
 
-        return None, False
+    return None, False

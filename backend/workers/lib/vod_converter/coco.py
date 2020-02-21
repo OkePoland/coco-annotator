@@ -23,6 +23,7 @@ import os
 
 from PIL import Image
 from pycocotools import mask
+from workers.lib.messenger import message
 
 from .abstract import Ingestor, Egestor
 from .labels_and_aliases import output_labels
@@ -65,7 +66,7 @@ class COCOIngestor(Ingestor):
         annotations_base = self._create_annotations_base(data["annotations"])
         for i, image_dict in enumerate(data["images"]):
             if i % 1000 == 0:
-                print(f"Ingested {i} images")
+                message(f"Ingested {i} images")
 
             single_img_detection = get_blank_image_detection_schema()
             single_img_detection["image"]["id"] = image_dict["id"]
@@ -101,7 +102,7 @@ class COCOIngestor(Ingestor):
 
                 detections.append(curr_detection)
             except ValueError as ve:
-                print(f"Cannot find selected key: {annotation} - {ve}")
+                message(f"Cannot find selected key: {annotation} - {ve}")
         return detections
 
     @staticmethod
@@ -126,20 +127,22 @@ class COCOEgestor(Egestor):
 
     def egest(self, *, image_detections, root, folder_names):
 
-        print("Processing data by COCO Egestor...")
+        message("Processing data by COCO Egestor...")
         labels = {"images": [], "categories": self.generate_categories(), "annotations": []}
         detection_counter = 0
 
         for i, image_detection in enumerate(image_detections):
             if i % 100 == 0:
-                print(f"Processed {i} image detections")
+                message(f"Processed {i} image detections")
             image = image_detection["image"]
-            new_image = {"id": i,
-                         "dataset_id": None,
-                         "path": image["path"],
-                         "width": image["width"],
-                         "height": image["height"],
-                         "file_name": image["path"].split("/")[-1]}
+            new_image = {
+                "id": i,
+                "dataset_id": None,
+                "path": image["path"],
+                "width": image["width"],
+                "height": image["height"],
+                "file_name": os.path.basename(image["path"])
+            }
 
             labels["images"].append(new_image)
 
@@ -147,7 +150,7 @@ class COCOEgestor(Egestor):
                 category_id = next((category["id"] for category in labels["categories"]
                                     if category["name"] == detection["label"]), None)
                 if category_id is None:
-                    print(f"No available category found: detection label = {detection['label']}")
+                    message(f"No available category found: detection label = {detection['label']}")
                     continue
                 new_detection = {"id": detection_counter}
                 detection_counter += 1
@@ -174,14 +177,14 @@ class COCOEgestor(Egestor):
                         new_detection["area"] = int(sum(mask.area(mask.frPyObjects(
                             new_detection["segmentation"], new_image["height"], new_image["width"]))))
                     except Exception as e:
-                        print(f"Unable to automatically calculate area from segmentation: {e}")
+                        message(f"Unable to automatically calculate area from segmentation: {e}")
                         new_detection["area"] = 0
 
                 new_detection["keypoints"] = detection["keypoints"]
                 labels["annotations"].append(new_detection)
-        print("Saving json file...")
+        message("Saving json file...")
         encoded_labels = json.dumps(labels)
-        print("Finished egesting COCO")
+        message("Finished egesting COCO")
         return encoded_labels
 
     def generate_categories(self):

@@ -46,6 +46,7 @@ import json
 import os
 
 from PIL import Image
+from workers.lib.messenger import message
 
 from .abstract import Ingestor
 from .validation_schemas import get_blank_image_detection_schema, get_blank_detection_schema
@@ -93,20 +94,20 @@ class CaltechIngestor(Ingestor):
                             single_img_detection["image"]["segmented_path"] = None
                             single_img_detection["image"]["width"] = image_width
                             single_img_detection["image"]["height"] = image_height
-                            single_img_detection["image"]["file_name"] = image_path.split("/")[-1]
+                            single_img_detection["image"]["file_name"] = os.path.basename(image_path)
 
                             single_img_detection["detections"] = detections
                             annotations.append(single_img_detection)
 
                         except Exception as e:
-                            print(e)
+                            message(e)
                             failed_loads += 1
 
                     video_processed += 1
-                    print(f"Processed {video_processed} videos in current set")
+                    message(f"Processed {video_processed} videos in current set")
                 sets_processed += 1
-                print(f"Loaded {sets_processed} sets on {total_sets}...")
-        print(f"Unable to load {failed_loads} images")
+                message(f"Loaded {sets_processed} sets on {total_sets}...")
+        message(f"Unable to load {failed_loads} images")
         return annotations
 
     def _get_detections(self, frame, img_id, image_width, image_height):
@@ -130,7 +131,7 @@ class CaltechIngestor(Ingestor):
 
                 detections.append(curr_detection)
             except Exception as e:
-                print(e)
+                message(e)
         return detections
 
     @staticmethod
