@@ -33,3 +33,18 @@ def client():
     create(test_client)
     login(test_client)
     return test_client
+
+
+@pytest.fixture
+def dataset_url():
+    return "/api/dataset/"
+
+
+@pytest.fixture
+def image_url():
+    return "/api/image/"
+
+
+@pytest.fixture
+def category_url():
+    return "/api/category/"

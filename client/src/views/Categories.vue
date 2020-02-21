@@ -121,7 +121,7 @@
           </div>
           <div class="modal-body">
             More information can be found in the
-            <a href="https://github.com/jsbroks/coco-annotator/wiki/Usage#creating-categories">
+            <a href="https://github.com/tantael/multi-annotator/wiki/Usage#creating-categories">
               getting started section
             </a>.
             <hr />

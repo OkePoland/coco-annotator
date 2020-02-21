@@ -59,7 +59,7 @@
         <li class="nav-item d-none d-xl-block">
           <a
             class="nav-link"
-            href="https://github.com/jsbroks/coco-annotator/wiki"
+            href="https://github.com/tantael/multi-annotator/wiki"
             >Help</a
           >
         </li>

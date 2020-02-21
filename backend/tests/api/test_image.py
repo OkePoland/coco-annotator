@@ -1,17 +1,18 @@
 import json
+import os
 
 
 class TestImage:
 
-    def test_get_empty(self, client):
-        response = client.get("/api/image/")
+    def test_get_empty(self, client, image_url):
+        response = client.get(image_url)
         data = json.loads(response.data)
 
         assert isinstance(data, dict)
         assert data['total'] == 0
 
-    def test_post_no_data(self, client):
-        response = client.post("/api/image/")
+    def test_post_no_data(self, client, image_url):
+        response = client.post(image_url)
         assert response.status_code == 400
 
     def test_post_images(self, client):
@@ -22,18 +23,21 @@ class TestImage:
 
 
 class TestImageId:
-    def test_get_invalid_id(self, client):
-        response = client.get("/api/image/1000")
+    def test_get_invalid_id(self, client, image_url):
+        url = os.path.join(image_url, "1000")
+        response = client.get(url)
         assert response.status_code == 400
 
-    def test_delete_invalid_id(self, client):
-        response = client.delete("/api/image/1000")
+    def test_delete_invalid_id(self, client, image_url):
+        url = os.path.join(image_url, "1000")
+        response = client.delete(url)
         assert response.status_code == 400
 
 
 class TestImageCoco:
-    def test_get_invalid_id(self, client):
-        response = client.get("/api/image/1000/coco")
+    def test_get_invalid_id(self, client, image_url):
+        url = os.path.join(image_url, "1000", "coco")
+        response = client.get(url)
         assert response.status_code == 400
 
 
