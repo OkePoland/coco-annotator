@@ -55,6 +55,8 @@ interface IGetDetailsParams {
     page?: number;
     folder?: string;
     order?: string;
+    file_name__icontains?: string;
+    annotated: boolean | string | null;
 }
 interface IGetDetailsResponse {
     total: number;
@@ -65,7 +67,12 @@ interface IGetDetailsResponse {
     folder: string;
     directory: string;
     dataset: Dataset;
-    categories: string[];
+    categories: [
+        {
+            id: number;
+            name: string;
+        },
+    ];
     subdirectories: string[];
     time_ms: number;
 }
@@ -74,6 +81,8 @@ export const getDetails = async ({
     page,
     folder,
     order,
+    file_name__icontains,
+    annotated,
 }: IGetDetailsParams): Promise<IGetDetailsResponse> => {
     const url = `${baseURL}/${id}/data`;
 
@@ -81,6 +90,8 @@ export const getDetails = async ({
         page,
         folder,
         order,
+        file_name__icontains,
+        annotated,
         limit: 52,
     };
 
@@ -89,7 +100,7 @@ export const getDetails = async ({
     return data;
 };
 
-export const generate = async (id: number, keyword: string, limit: number) => {
+export const generate = async (id: number, keyword: string, limit: string) => {
     const url = `${baseURL}/${id}/generate`;
     const body = {
         keywords: [keyword],
@@ -129,15 +140,33 @@ export const getExports = async (id: number) => {
     return response;
 };
 
-export const getMetadata = async (id: number) => {
+export const resetMetadata = async (id: number) => {
     const url = `${baseURL}/${id}/reset/metadata`;
     const response = await Api.get(url);
     return response;
 };
 
-// TODO
-// uploadCoco
-// exportingCOCO
+export const uploadCoco = async (id: number, file: string) => {
+    const form = new FormData();
+    form.append('coco', file);
+
+    const url = `${baseURL}/${id}/coco`;
+    const { data } = await Api.post(url, form, {
+        headers: {
+            'Content-Type': 'multipart/form-data',
+        },
+    });
+    return data;
+};
+
+export const exportingCOCO = async (id: number, categories?: string) => {
+    const url = `${baseURL}/${id}/export`;
+    const params = {
+        categories,
+    };
+    const response = await Api.get(url, { params });
+    return response;
+};
 
 export const getCoco = async (id: number) => {
     const url = `${baseURL}/${id}/coco`;
@@ -152,6 +181,8 @@ export const deleteImage = async (id: number) => {
     return response;
 };
 
-export const downloadImage = async () => {
-    // TODO
+export const downloadImage = async (id: number) => {
+    const url = `/image/${id}/coco`;
+    const response = await Api.get(url);
+    return response;
 };

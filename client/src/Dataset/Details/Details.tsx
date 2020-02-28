@@ -3,6 +3,10 @@ import Box from '@material-ui/core/Box';
 import Container from '@material-ui/core/Container';
 import Paper from '@material-ui/core/Paper';
 import Grid from '@material-ui/core/Grid';
+import Divider from '@material-ui/core/Divider';
+import Drawer from '@material-ui/core/Drawer';
+import Toolbar from '@material-ui/core/Toolbar';
+import AppBar from '@material-ui/core/AppBar';
 import CircularProgress from '@material-ui/core/CircularProgress';
 
 import { useStyles } from './details.styles';
@@ -22,31 +26,33 @@ import Members from './Members/Members';
 import Statistics from './Statistics/Statistics';
 
 const Details: React.FC<{ id: number }> = ({ id }) => {
-    const classes = useStyles();
     const {
         tabs: [tabId, setTabId],
         filters,
-        folder: [folder, setFolder],
+        folders,
+        setFolders,
         details: {
+            offset: [offset, setOffset],
             dataset,
+            categoryTags,
+            categories,
             subdirectories,
             imagesCount,
             images,
-            page,
             pagesCount,
             setPage,
         },
+        sidebar: { width, sidebarRef, handleMouseDown },
+        dialogs,
         actions: {
-            generateAction,
-            scanAction,
-            importAction,
-            exportAction,
             deleteImageAction,
             annotateImageAction,
-            downloadImageAction,
             resetMetadataAction,
+            removeFolder,
         },
     } = usePage(id);
+
+    const classes = useStyles({ width });
 
     if (dataset == null) {
         return (
@@ -56,53 +62,86 @@ const Details: React.FC<{ id: number }> = ({ id }) => {
         );
     }
     return (
-        <Grid container>
-            <Grid item xs={3} sm={2}>
-                <Paper className={classes.panel}>
-                    <TitleBar
-                        title={dataset.name}
-                        imagesCount={imagesCount}
-                        pagesCount={pagesCount}
-                    />
-                    <ButtonsBar
-                        generateAction={generateAction}
-                        scanAction={scanAction}
-                        importAction={importAction}
-                        exportAction={exportAction}
-                        resetMetadataAction={resetMetadataAction}
-                    />
-
-                    <SubdirForm
-                        folder={folder}
-                        setFolder={setFolder}
-                        subdirectories={subdirectories}
-                    />
-
-                    <Paper>
-                        <Box p={1}>
-                            <FilterForm filters={filters} />
-                        </Box>
-                    </Paper>
-                </Paper>
+        <Grid container className={classes.root}>
+            <Grid item lg={2} md={3} sm={5} xs={6}>
+                <div ref={sidebarRef}>
+                    <Drawer
+                        className={classes.drawer}
+                        variant="permanent"
+                        classes={{
+                            paper: classes.drawerPaper,
+                        }}
+                        anchor="left"
+                    >
+                        <div
+                            id="dragger"
+                            onMouseDown={(event: React.MouseEvent) => {
+                                handleMouseDown(event);
+                            }}
+                            className={classes.dragger}
+                        />
+                        <Toolbar />
+                        <TitleBar
+                            title={dataset.name}
+                            imagesCount={imagesCount}
+                            pagesCount={pagesCount}
+                        />
+                        <ButtonsBar
+                            id={id}
+                            categories={categories}
+                            tags={categoryTags}
+                            dialogs={dialogs}
+                            resetMetadataAction={resetMetadataAction}
+                        />
+                        <Divider className={classes.divider} />
+                        <SubdirForm
+                            folders={folders}
+                            setFolders={setFolders}
+                            subdirectories={subdirectories}
+                        />
+                        <Divider className={classes.divider} />
+                        <Paper>
+                            <Box p={1}>
+                                <FilterForm filters={filters} />
+                            </Box>
+                        </Paper>
+                        <Box mb={5} />
+                    </Drawer>
+                </div>
             </Grid>
-            <Grid item xs={9} sm={10}>
-                <Tabs tabId={tabId} setTabId={setTabId} />
-
+            <Grid
+                item
+                className={classes.container}
+                lg={10}
+                md={9}
+                sm={7}
+                xs={6}
+            >
+                <AppBar className={classes.appBar}>
+                    <Toolbar />
+                    <Tabs tabId={tabId} setTabId={setTabId} />
+                </AppBar>
                 <Container>
                     <TabPanel activeTab={tabId} index={0}>
-                        <Breadcrumb />
+                        <Breadcrumb
+                            classes={classes.breadcrumbs}
+                            name={dataset.name}
+                            folders={folders}
+                            setFolders={setFolders}
+                            removeFolder={removeFolder}
+                        />
                         <Images
                             images={images}
-                            page={page}
+                            offset={offset}
                             pagesCount={pagesCount}
+                            setOffset={setOffset}
                             setPage={setPage}
                             deleteImageAction={deleteImageAction}
                             annotateImageAction={annotateImageAction}
-                            downloadImageAction={downloadImageAction}
                         />
                     </TabPanel>
                     <TabPanel activeTab={tabId} index={1}>
-                        <Exports id={id} />
+                        <Exports id={id} name={dataset.name} />
                     </TabPanel>
                     <TabPanel activeTab={tabId} index={2}>
                         <Members id={id} />

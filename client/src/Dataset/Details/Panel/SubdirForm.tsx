@@ -1,37 +1,56 @@
-import React, { Dispatch, SetStateAction, ChangeEvent } from 'react';
+import React from 'react';
 import clsx from 'clsx';
-import InputLabel from '@material-ui/core/InputLabel';
+
+import Typography from '@material-ui/core/Typography';
 import FormControl from '@material-ui/core/FormControl';
-import Select from '@material-ui/core/Select';
-import MenuItem from '@material-ui/core/MenuItem';
+import Grid from '@material-ui/core/Grid';
+import Chip from '@material-ui/core/Chip';
 
 import { useStyles } from './panel.styles';
 
 interface Props {
-    folder: string;
-    setFolder: Dispatch<SetStateAction<string>>;
+    folders: string[];
+    setFolders: React.Dispatch<React.SetStateAction<string[]>>;
     subdirectories: string[];
 }
 
-const SubdirForm: React.FC<Props> = ({ folder, setFolder, subdirectories }) => {
+const SubdirForm: React.FC<Props> = ({
+    folders,
+    setFolders,
+    subdirectories,
+}) => {
     const classes = useStyles();
 
     return (
         <FormControl className={clsx(classes.subdirForm, classes.formControl)}>
-            <InputLabel>Subdirectories</InputLabel>
-            <Select
-                className={clsx(classes.formControl)}
-                value={folder}
-                onChange={(e: ChangeEvent<{ value: unknown }>) => {
-                    setFolder(e.target.value as string);
-                }}
+            <Typography gutterBottom>Subdirectories</Typography>
+            <Grid
+                container
+                item
+                spacing={1}
+                justify="center"
+                className={classes.subdirectories}
             >
-                {subdirectories.map(name => (
-                    <MenuItem key={name} value={name}>
-                        {name}
-                    </MenuItem>
-                ))}
-            </Select>
+                {subdirectories.length > 0 ? (
+                    subdirectories.map(subdirectory => (
+                        <Grid key={subdirectory} item>
+                            <Chip
+                                clickable
+                                component="li"
+                                size="small"
+                                label={subdirectory}
+                                onClick={() =>
+                                    setFolders([...folders, subdirectory])
+                                }
+                            />
+                        </Grid>
+                    ))
+                ) : (
+                    <Typography variant="body2">
+                        No subdirectory found.
+                    </Typography>
+                )}
+            </Grid>
         </FormControl>
     );
 };
