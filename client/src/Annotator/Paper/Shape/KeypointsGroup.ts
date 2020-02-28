@@ -2,6 +2,8 @@ import paper from 'paper';
 
 import { ExportObjKeypointGroup } from '../../annotator.types';
 
+import * as CONFIG from '../../annotator.config';
+
 import KeypointShape from './KeypointShape';
 import { createIndicator } from '../Utils/typeGuards';
 
@@ -29,7 +31,7 @@ class KeypointsGroup extends paper.Group {
         this._lines = {};
 
         this._color = null;
-        this._lineWidth = 1;
+        this._lineWidth = CONFIG.KEYPOINT_LINE_SIZE;
     }
 
     set color(color: paper.Color | null) {
@@ -57,6 +59,7 @@ class KeypointsGroup extends paper.Group {
         this._keypoints.push(keypoint);
 
         this.addChild(keypoint);
+        if (this.selected) keypoint.fullySelected = true;
         keypoint.bringToFront();
     }
 
@@ -164,6 +167,7 @@ class KeypointsGroup extends paper.Group {
         this._keypointsEdges[k2.pointId].push(edgeHash);
 
         const line = this._createLine(k1.point, k2.point);
+        if (this.selected) line.selected = true;
         this._lines[edgeHash] = line;
         line.insertAbove(k2);
     }

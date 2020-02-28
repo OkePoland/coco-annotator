@@ -22,11 +22,11 @@ interface IUseDatasetResponse {
     previous: Maybe<number>;
     initSettings: Settings;
     saveDataset: (obj: Object) => Promise<void>;
-    copyAnnotations: (
-        imageId: number,
-        id: number,
-        categoriesIds: number[],
-    ) => void;
+    copyAnnotations: (params: {
+        imageId: number;
+        id: number;
+        categoriesIds: number[];
+    }) => void;
 }
 
 const useDataset: IUseDataset = imageId => {
@@ -65,7 +65,13 @@ const useDataset: IUseDataset = imageId => {
     );
 
     const copyAnnotations = useCallback(
-        async (imageId: number, id: number, categoriesIds: number[]) => {
+        async (params: {
+            imageId: number;
+            id: number;
+            categoriesIds: number[];
+        }) => {
+            const { imageId, id, categoriesIds } = params;
+
             const { success, message } = await AnnotatorApi.copyAnnotations(
                 imageId,
                 id,

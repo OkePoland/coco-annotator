@@ -89,7 +89,7 @@ export const usePolygon: IToolPolygon = (
         }
     }, []);
 
-    const _complete = useCallback(() => {
+    const closePath = useCallback(() => {
         if (!cache.current.polygon) return false;
 
         _removeLastPoint();
@@ -118,11 +118,11 @@ export const usePolygon: IToolPolygon = (
 
             let completeDist: number = settings.completeDistance;
             if (last.isClose(first, completeDist)) {
-                return _complete();
+                return closePath();
             }
             return false;
         },
-        [_complete, settings],
+        [closePath, settings],
     );
 
     const _autoStrokeColor = useCallback(
@@ -171,8 +171,6 @@ export const usePolygon: IToolPolygon = (
 
         cache.current.polygon.removeSegments(length - 1, length);
     }, []);
-
-    const closePath = useCallback(() => _complete(), [_complete])
 
     // mouse events
     const onMouseDown = useCallback(

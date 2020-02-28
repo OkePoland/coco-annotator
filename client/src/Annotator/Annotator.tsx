@@ -249,7 +249,7 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
         async (id: number, categoriesIds: number[]) => {
             closeAllModals();
             await saveAction();
-            await copyAnnotations(imageId, id, categoriesIds);
+            await copyAnnotations({ imageId, id, categoriesIds });
         },
         [imageId, saveAction, copyAnnotations, closeAllModals],
     );
@@ -397,7 +397,13 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
                                 setSelected(categoryInfo.id, null);
                             }}
                             setEnabled={info.editor.setCategoryEnabled}
-                            setExpanded={info.editor.setCategoryExpanded}
+                            setExpanded={() => {
+                                info.editor.setCategoryExpanded(
+                                    categoryInfo.id,
+                                );
+                                if (categoryInfo.expanded)
+                                    setSelected(categoryInfo.id, null);
+                            }}
                             editCategory={() => {
                                 openCategoryModal(categoryInfo.id);
                             }}
@@ -721,12 +727,12 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
                                     );
                                 }}
                                 editMetdata={(index, item) => {
-                                    info.editor.editAnnotationMetadata(
-                                        categoryInfo.id,
-                                        annotationInfo.id,
+                                    info.editor.editAnnotationMetadata({
+                                        categoryId: categoryInfo.id,
+                                        annotationId: annotationInfo.id,
                                         index,
-                                        item,
-                                    );
+                                        obj: item,
+                                    });
                                 }}
                             />
                         );

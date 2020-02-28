@@ -1,6 +1,6 @@
 /**
- * Fake component which observe changes in info layer
- * and react for them in a form of changes in paper.js scope object
+ * Fake component which observes changes in info layer
+ * and reacts to them in a form of changes in paper.js scope object
  */
 import React from 'react';
 import { useEffect } from 'react';

@@ -46,12 +46,12 @@ interface UseEditorResponse {
         color: string,
     ) => void;
     addAnnotationMetadata: (categoryId: number, annotationId: number) => void;
-    editAnnotationMetadata: (
-        categoryId: number,
-        annotationId: number,
-        index: number,
-        obj: { key: string; value: string },
-    ) => void;
+    editAnnotationMetadata: (params: {
+        categoryId: number;
+        annotationId: number;
+        index: number;
+        obj: { key: string; value: string };
+    }) => void;
 }
 interface ISubHook<T> {
     (
@@ -309,12 +309,14 @@ const useEditor: ISubHook<UseEditorResponse> = (data, setData) => {
     );
 
     const editAnnotationMetadata = useCallback(
-        (
-            categoryId: number,
-            annotationId: number,
-            index: number,
-            obj: MetadataInfo,
-        ) => {
+        (params: {
+            categoryId: number;
+            annotationId: number;
+            index: number;
+            obj: MetadataInfo;
+        }) => {
+            const { categoryId, annotationId, index, obj } = params;
+
             const idx = data.findIndex(o => o.id === categoryId);
             if (idx === -1) return;
 
