@@ -1,6 +1,6 @@
 import paper from 'paper';
 
-import { Maybe } from '../../annotator.types';
+import { Maybe, TooltipMetadata } from '../../annotator.types';
 
 import * as CONFIG from '../../annotator.config';
 
@@ -9,11 +9,11 @@ import { isIndicator, createIndicator } from './typeGuards';
 
 export const hitOptions = {
     segments: true,
-    stroke: true,
+    stroke: false,
     fill: false,
     tolerance: CONFIG.TOOLS_SELECT_INITIAL_HIT_TOLERANCE,
-    match: (hit: { item: { data: Object } }) => {
-        return !isIndicator(hit.item.data);
+    match: (hit: paper.HitResult) => {
+        return !isIndicator(hit.item.data) && hit.item.parent.selected;
     },
 };
 
@@ -22,6 +22,7 @@ export const hitOptionsFill = {
     stroke: false,
     fill: true,
     tolerance: CONFIG.TOOLS_SELECT_INITIAL_HIT_TOLERANCE,
+    selected: true,
     match: (hit: { item: { data: Object } }) => {
         return !isIndicator(hit.item.data);
     },
@@ -47,6 +48,7 @@ export const createTooltip = (
     keypoint: Maybe<KeypointShape>,
     categoryId: Maybe<number>,
     annotationId: Maybe<number>,
+    tooltipMetadata: TooltipMetadata,
 ) => {
     // Create tooltip paper object
     const text = new paper.PointText(position);
@@ -54,7 +56,7 @@ export const createTooltip = (
     text.fillColor = new paper.Color('black');
     text.content = keypoint
         ? createKeypointText(keypoint)
-        : createShapeText(categoryId, annotationId);
+        : createShapeText(categoryId, annotationId, tooltipMetadata);
     text.fontSize = fontSize;
     text.data = createIndicator();
 
@@ -73,25 +75,20 @@ export const createTooltip = (
 const createShapeText = (
     categoryId: Maybe<number>,
     annotationId: Maybe<number>,
+    tooltipMetadata: TooltipMetadata,
 ) => {
-    // info text
-    const msg = `CategoryId: ${categoryId}\nAnnotationId: ${annotationId}`.replace(
-        /\n/g,
-        ' \n ',
-    );
-
-    // metadataData text
-    const metadata: Array<{ key: string; value: string }> = []; // TODO get
+    const msg = `CategoryId: ${categoryId}\nAnnotationId: ${annotationId}`;
     let metaMsg = '';
-    if (metadata && metadata.length > 0) {
-        metaMsg += 'Metadata \n';
-        metadata.forEach(e => {
-            if (e.key.length !== 0) {
-                metaMsg += ' ' + e.key + ' = ' + e.value + ' \n';
-            }
+    if (
+        annotationId != null &&
+        tooltipMetadata[annotationId] != null &&
+        tooltipMetadata[annotationId].length > 0
+    ) {
+        metaMsg += 'Metadata: \n';
+        tooltipMetadata[annotationId].forEach(meta => {
+            metaMsg += ' ' + meta.key + ' = ' + meta.value + ' \n';
         });
     } else metaMsg += 'No Metadata \n';
-
     metaMsg.replace(/\n/g, ' \n ').slice(0, -2);
 
     return msg + '\n' + metaMsg;

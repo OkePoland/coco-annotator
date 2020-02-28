@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useMemo, useCallback } from 'react';
 import clsx from 'clsx';
 import { useNavigation } from 'react-navi';
 import Box from '@material-ui/core/Box';
@@ -12,6 +12,8 @@ import {
     UndoItemShape,
     UndoItemTool,
 } from './annotator.types';
+
+import * as AnnotatorApi from './annotator.api';
 
 import { useStyles } from './annotator.styles';
 import {
@@ -30,7 +32,8 @@ import {
     useTools,
     useTitle,
     useUndoStash,
-    Part,
+    CategoryGroupComponent,
+    AnnotationGroupComponent,
 } from './Paper';
 
 import CustomModal from '../common/components/CustomDialog';
@@ -43,6 +46,7 @@ import {
     findNextSelected,
     isUndoItemShape,
     isUndoItemTool,
+    getTooltipMetadata,
 } from './Annotator.utils';
 
 const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
@@ -57,12 +61,13 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
         filename,
         previous,
         next,
-        toolPreferences,
+        initSettings,
         saveDataset,
+        copyAnnotations,
     } = useDataset(imageId);
     const {
         segmentMode: [segmentOn, setSegmentOn],
-        toolState: [activeTool, toggleTool],
+        toolState: [activeTool, setTool],
         selected,
         setSelected,
     } = useChoices();
@@ -70,7 +75,11 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
     const info = useInfo(categories);
     const filter = useFilter(categories);
     const cursor = useCursor(activeTool, selected.annotationId);
-    const { shortcuts, setShortcuts } = useShortcuts();
+    const {
+        shortcuts, // array
+        setShortcuts,
+        restoreDefaultShortcuts,
+    } = useShortcuts(initSettings.shortcuts);
     const {
         modalOpen,
         modalState,
@@ -79,8 +88,12 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
         openSettingsModal,
         openCategoryModal,
         openAnnotationModal,
+        openCopyModal,
     } = useModals();
     const undoStash = useUndoStash();
+    const tooltipMetadata = useMemo(() => getTooltipMetadata(info.data), [
+        info.data,
+    ]);
 
     // all Paper.js data & callbacks
     const {
@@ -124,13 +137,14 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
 
     const tools = useTools(
         paperRef,
-        toolPreferences,
+        initSettings.tools,
         activeTool,
         selected.annotationId,
         imageId,
         imageInfo.scale,
         imageInfo.size,
         imageInfo.data,
+        tooltipMetadata,
         (toAdd, isUndoable) => {
             if (isUndoable) stashShape();
             groups.shapeEditor.unite(toAdd);
@@ -150,24 +164,28 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
     useTitle(imageInfo.size, filename);
 
     // re-usable complex callbacks
-    const saveAction = useCallback(() => {
+    const saveAction = useCallback(async () => {
+        undoStash.clear();
         const obj = createExportObj(
             imageId,
             dataset,
             segmentOn,
             activeTool,
             selected,
+            shortcuts,
             tools.exportData,
             info.data,
             groups.groupsRef.current,
         );
-        saveDataset(obj);
+        await saveDataset(obj);
     }, [
+        undoStash,
         imageId,
         dataset,
         segmentOn,
         activeTool,
         selected,
+        shortcuts,
         groups.groupsRef,
         tools.exportData,
         info.data,
@@ -185,6 +203,9 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
     );
     const removeAnnotationAction = useCallback(
         (categoryId: number, annotationId: number) => {
+            const isOk = window.confirm('Remove Annotation ?');
+            if (!isOk) return;
+
             info.creator.remove(categoryId, annotationId);
             groups.creator.remove(categoryId, annotationId);
             setSelected(categoryId, null);
@@ -209,6 +230,29 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
             }
         }
     }, [undoStash, groups.shapeEditor, tools.polygon]);
+
+    const downloadCocoAction = useCallback(async () => {
+        await saveAction();
+
+        const url = `/api/image/${imageId}?asAttachment=true`;
+        AnnotatorApi.downloadURI(url, filename);
+
+        const data = await AnnotatorApi.downloadCoco(imageId);
+        const dataUrl =
+            'data:text/json;charset=utf-8,' +
+            encodeURIComponent(JSON.stringify(data));
+        const fileName2 = filename.replace(/\.[^/.]+$/, '') + '.json';
+        AnnotatorApi.downloadURI(dataUrl, fileName2);
+    }, [imageId, filename, saveAction]);
+
+    const copyAction = useCallback(
+        async (id: number, categoriesIds: number[]) => {
+            closeAllModals();
+            await saveAction();
+            await copyAnnotations({ imageId, id, categoriesIds });
+        },
+        [imageId, saveAction, copyAnnotations, closeAllModals],
+    );
 
     // keyboard actions ( mix of info & groups )
     useKeyPress(shortcuts.list_move_up, isModalOpen, () => {
@@ -252,6 +296,29 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
     useKeyPress(shortcuts.image_prev, isModalOpen, () => {
         if (previous) navigate(`/annotate/${previous}`);
     });
+    useKeyPress(shortcuts.tool_select, isModalOpen, () => setTool(Tool.SELECT));
+    useKeyPress(shortcuts.tool_bbox, isModalOpen, () => setTool(Tool.BBOX));
+    useKeyPress(shortcuts.tool_polygon, isModalOpen, () =>
+        setTool(Tool.POLYGON),
+    );
+    useKeyPress(shortcuts.tool_wand, isModalOpen, () => setTool(Tool.WAND));
+    useKeyPress(shortcuts.tool_brush, isModalOpen, () => setTool(Tool.BRUSH));
+    useKeyPress(shortcuts.tool_eraser, isModalOpen, () => setTool(Tool.ERASER));
+    useKeyPress(shortcuts.tool_keypoint, isModalOpen, () =>
+        setTool(Tool.KEYPOINT),
+    );
+    useKeyPress(shortcuts.tool_dextr, isModalOpen, () => setTool(Tool.DEXTR));
+    useKeyPress(shortcuts.brush_decrease, isModalOpen, () => {
+        tools.brush.setRadius(tools.brush.settings.radius - 1);
+        tools.eraser.setRadius(tools.eraser.settings.radius - 1);
+    });
+    useKeyPress(shortcuts.brush_increase, isModalOpen, () => {
+        tools.brush.setRadius(tools.brush.settings.radius + 1);
+        tools.eraser.setRadius(tools.eraser.settings.radius + 1);
+    });
+    useKeyPress(shortcuts.polygon_close, isModalOpen, () => {
+        if (activeTool === Tool.POLYGON) tools.polygon.closePath();
+    });
 
     return (
         <div className={classes.root}>
@@ -261,12 +328,12 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
                         <Menu.Tools
                             enabled={selected.annotationId != null}
                             activeTool={activeTool}
-                            toggleTool={toggleTool}
+                            setTool={setTool}
                         />
                         <Divider className={classes.divider} />
                         <Menu.Annotation
                             annotationAction={() => {}}
-                            annotationCopyAction={() => {}}
+                            annotationCopyAction={openCopyModal}
                             setCategoriesEnabled={(isOn: boolean) => {
                                 info.editor.setCategoriesEnabled(isOn);
                                 setSelected(null, null);
@@ -284,7 +351,7 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
                 <Menu.Settings
                     segmentOn={segmentOn}
                     setSegmentOn={setSegmentOn}
-                    downloadImageAction={() => {}}
+                    downloadImageAction={downloadCocoAction}
                     saveImageAction={saveAction}
                     openSettingsAction={openSettingsModal}
                     deleteImageAction={() => {}}
@@ -330,7 +397,13 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
                                 setSelected(categoryInfo.id, null);
                             }}
                             setEnabled={info.editor.setCategoryEnabled}
-                            setExpanded={info.editor.setCategoryExpanded}
+                            setExpanded={() => {
+                                info.editor.setCategoryExpanded(
+                                    categoryInfo.id,
+                                );
+                                if (categoryInfo.expanded)
+                                    setSelected(categoryInfo.id, null);
+                            }}
                             editCategory={() => {
                                 openCategoryModal(categoryInfo.id);
                             }}
@@ -386,19 +459,16 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
                     </Box>
                 )}
 
-                {!segmentOn && <Panel.CLabel />}
-
                 <Divider className={classes.divider} />
 
-                {selected.annotationId != null && (
+                {segmentOn && selected.annotationId != null && (
                     <Box textAlign="center">
-                        <Box>{activeTool}</Box>
                         {(() => {
                             switch (activeTool) {
                                 case Tool.SELECT:
                                     return (
                                         <Panel.Select
-                                            className={classes.bboxPanel}
+                                            className={classes.toolPanel}
                                             tooltipOn={
                                                 tools.select.settings.tooltipOn
                                             }
@@ -409,8 +479,8 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
                                     );
                                 case Tool.BBOX:
                                     return (
-                                        <Panel.BBox
-                                            className={classes.bboxPanel}
+                                        <Panel.BBoxPanel
+                                            className={classes.toolPanel}
                                             color={tools.bbox.settings.color}
                                             setColor={tools.bbox.setColor}
                                         />
@@ -418,7 +488,7 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
                                 case Tool.POLYGON:
                                     return (
                                         <Panel.Polygon
-                                            className={classes.bboxPanel}
+                                            className={classes.toolPanel}
                                             guidanceOn={
                                                 tools.polygon.settings
                                                     .guidanceOn
@@ -453,7 +523,7 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
                                 case Tool.WAND:
                                     return (
                                         <Panel.Wand
-                                            className={classes.bboxPanel}
+                                            className={classes.toolPanel}
                                             threshold={
                                                 tools.wand.settings.threshold
                                             }
@@ -467,7 +537,7 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
                                 case Tool.BRUSH:
                                     return (
                                         <Panel.Brush
-                                            className={classes.bboxPanel}
+                                            className={classes.toolPanel}
                                             radius={tools.brush.settings.radius}
                                             color={tools.brush.settings.color}
                                             setColor={tools.brush.setColor}
@@ -477,7 +547,7 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
                                 case Tool.ERASER:
                                     return (
                                         <Panel.Brush
-                                            className={classes.bboxPanel}
+                                            className={classes.toolPanel}
                                             radius={
                                                 tools.eraser.settings.radius
                                             }
@@ -491,7 +561,7 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
                                 case Tool.DEXTR:
                                     return (
                                         <Panel.Dextr
-                                            className={classes.bboxPanel}
+                                            className={classes.toolPanel}
                                             padding={tools.dextr.padding}
                                             threshold={tools.dextr.threshold}
                                             setPadding={tools.dextr.setPadding}
@@ -519,13 +589,13 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
                 </div>
             </div>
 
-            <React.Fragment>
+            <React.Fragment key={groups.generation}>
                 {canvasRef.current &&
                     info.data.map(categoryInfo => (
                         <React.Fragment key={categoryInfo.id}>
-                            <Part.CategoryInfo
+                            <CategoryGroupComponent
                                 key={categoryInfo.id}
-                                id={categoryInfo.id}
+                                categoryId={categoryInfo.id}
                                 enabled={categoryInfo.enabled}
                                 color={
                                     categoryInfo.enabled &&
@@ -536,10 +606,10 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
                                 groupsRef={groups.groupsRef}
                             />
                             {categoryInfo.annotations.map(annotationInfo => (
-                                <Part.AnnotationInfo
+                                <AnnotationGroupComponent
                                     key={annotationInfo.id}
-                                    id={annotationInfo.id}
                                     categoryId={categoryInfo.id}
+                                    annotationId={annotationInfo.id}
                                     enabled={annotationInfo.enabled}
                                     color={
                                         categoryInfo.enabled &&
@@ -563,12 +633,18 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
                     title="Settings"
                     open={modalOpen.settings}
                     setClose={closeAllModals}
-                    renderContent={() => (
-                        <Modal.Settings
-                            shortcuts={shortcuts}
-                            setShortcuts={setShortcuts}
-                        />
-                    )}
+                    renderContent={() => {
+                        if (!modalOpen.settings) return <div />;
+                        return (
+                            <Modal.Settings
+                                shortcuts={shortcuts}
+                                setShortcuts={setShortcuts}
+                                restoreDefaultShortcuts={
+                                    restoreDefaultShortcuts
+                                }
+                            />
+                        );
+                    }}
                 />
                 <CustomModal
                     title={
@@ -610,23 +686,26 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
                     open={modalOpen.annotation}
                     setClose={closeAllModals}
                     renderContent={() => {
+                        if (!modalOpen.annotation) return <div />;
+
                         const { categoryId, annotationId } = modalState;
 
                         const categoryInfo = info.data.find(
                             o => o.id === categoryId,
                         );
-                        if (!categoryInfo) return <CircularProgress />;
+                        if (!categoryInfo) return <div />;
 
                         const annotationInfo = categoryInfo.annotations.find(
                             o => o.id === annotationId,
                         );
-                        if (!annotationInfo) return <CircularProgress />;
+                        if (!annotationInfo) return <div />;
 
                         return (
                             <Modal.Annotation
                                 className={classes.modal}
                                 name={annotationInfo.name}
                                 color={annotationInfo.color}
+                                metadata={annotationInfo.metadata}
                                 setName={(newName: string) => {
                                     info.editor.setAnnotationName(
                                         categoryInfo.id,
@@ -641,6 +720,35 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
                                         color,
                                     );
                                 }}
+                                addMetadata={() => {
+                                    info.editor.addAnnotationMetadata(
+                                        categoryInfo.id,
+                                        annotationInfo.id,
+                                    );
+                                }}
+                                editMetdata={(index, item) => {
+                                    info.editor.editAnnotationMetadata({
+                                        categoryId: categoryInfo.id,
+                                        annotationId: annotationInfo.id,
+                                        index,
+                                        obj: item,
+                                    });
+                                }}
+                            />
+                        );
+                    }}
+                />
+                <CustomModal
+                    title="Copy annotations from Image"
+                    open={modalOpen.copy}
+                    setClose={closeAllModals}
+                    renderContent={() => {
+                        if (!modalOpen.copy) return <div />;
+
+                        return (
+                            <Modal.Copy
+                                infoData={info.data}
+                                onSave={copyAction}
                             />
                         );
                     }}

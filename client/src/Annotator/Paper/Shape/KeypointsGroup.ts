@@ -2,16 +2,12 @@ import paper from 'paper';
 
 import { ExportObjKeypointGroup } from '../../annotator.types';
 
+import * as CONFIG from '../../annotator.config';
+
 import KeypointShape from './KeypointShape';
 import { createIndicator } from '../Utils/typeGuards';
 
 type Edge = [number, number]; // edge between two keypoints
-
-interface KeypointData {
-    pointId: number;
-    x: number;
-    y: number;
-}
 
 class KeypointsGroup extends paper.Group {
     private _usedIds: number[]; // array of used ids ( sorted ) - ids start from 1
@@ -35,7 +31,7 @@ class KeypointsGroup extends paper.Group {
         this._lines = {};
 
         this._color = null;
-        this._lineWidth = 4;
+        this._lineWidth = CONFIG.KEYPOINT_LINE_SIZE;
     }
 
     set color(color: paper.Color | null) {
@@ -48,15 +44,22 @@ class KeypointsGroup extends paper.Group {
         });
     }
 
+    public bringToFront() {
+        Object.values(this._lines).forEach(l => l.bringToFront());
+        this._keypoints.forEach(k => k.bringToFront());
+    }
+
     // public
     public addKeypoint(point: paper.Point, id?: number) {
         const newId = this._getNextId(id);
 
         const keypoint: KeypointShape = new KeypointShape(newId, point);
+        keypoint.fillColor = this._color;
 
         this._keypoints.push(keypoint);
 
         this.addChild(keypoint);
+        if (this.selected) keypoint.fullySelected = true;
         keypoint.bringToFront();
     }
 
@@ -164,6 +167,7 @@ class KeypointsGroup extends paper.Group {
         this._keypointsEdges[k2.pointId].push(edgeHash);
 
         const line = this._createLine(k1.point, k2.point);
+        if (this.selected) line.selected = true;
         this._lines[edgeHash] = line;
         line.insertAbove(k2);
     }
@@ -233,7 +237,7 @@ class KeypointsGroup extends paper.Group {
         else newId = this._usedIds[count - 1] + 1; // highestId + 1
 
         this._usedIds.push(newId);
-        this._usedIds.sort();
+        this._usedIds.sort((a, b) => a - b);
 
         return newId;
     }

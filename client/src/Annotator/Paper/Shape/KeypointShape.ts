@@ -1,5 +1,7 @@
 import paper from 'paper';
 
+import * as CONFIG from '../../annotator.config';
+
 class KeypointShape extends paper.Path {
     public pointId: number; // id is reserverd for paper.Path object
     private _point: paper.Point;
@@ -12,8 +14,8 @@ class KeypointShape extends paper.Path {
 
         // Copy segments from Path.Circle into new paper.Path
         // Keypoint has to inherit from paper.Path
-        // because is no such class as paper.Path.Circle... only constructor :-(
-        const circle = new paper.Path.Circle(point, 5);
+        // because there is no such class as paper.Path.Circle... only constructor :-(
+        const circle = new paper.Path.Circle(point, CONFIG.KEYPOINT_SHAPE_SIZE);
         circle.remove();
         this.addSegments(circle.segments);
         this.closed = true;

@@ -26,6 +26,9 @@ const ToolButton: React.FC<Props> = ({
                 color={active ? 'primary' : 'inherit'}
                 disabled={!enabled}
                 onClick={onClick}
+                onKeyDown={event => {
+                    event.preventDefault();
+                }}
             >
                 {icon}
             </IconButton>

@@ -16,7 +16,7 @@ export const useStyles = makeStyles((theme: AugmentedTheme) => ({
         fontSize: 18,
     },
     selected: {
-        backgroundColor: 'rgb(75, 98, 76)',
+        backgroundColor: theme.annotator.cardSelected,
     },
     disabledEye: {
         color: 'grey',

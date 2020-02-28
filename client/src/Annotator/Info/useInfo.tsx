@@ -6,7 +6,12 @@ import { useState, useEffect, useCallback } from 'react';
 import { Dispatch, SetStateAction } from 'react';
 
 import { Category, Annotation } from '../../common/types';
-import { CategoryInfo, AnnotationInfo, Maybe } from '../annotator.types';
+import {
+    CategoryInfo,
+    AnnotationInfo,
+    MetadataInfo,
+    Maybe,
+} from '../annotator.types';
 
 import * as CONFIG from '../annotator.config';
 
@@ -40,6 +45,13 @@ interface UseEditorResponse {
         annotationId: number,
         color: string,
     ) => void;
+    addAnnotationMetadata: (categoryId: number, annotationId: number) => void;
+    editAnnotationMetadata: (params: {
+        categoryId: number;
+        annotationId: number;
+        index: number;
+        obj: { key: string; value: string };
+    }) => void;
 }
 interface ISubHook<T> {
     (
@@ -63,6 +75,16 @@ const useInfo: IUseInfo = categories => {
                     name: a.metadata && a.metadata.name ? a.metadata.name : '',
                     color: a.color,
                     enabled: true,
+                    metadata: Object.entries(a.metadata || []).reduce(
+                        (
+                            prevArr: MetadataInfo[],
+                            [key, value]: [string, string],
+                        ) => {
+                            if (key !== 'name') prevArr.push({ key, value });
+                            return prevArr;
+                        },
+                        [],
+                    ),
                     _data: a,
                 }));
             }
@@ -105,10 +127,13 @@ const useCreator: ISubHook<UseCreatorResponse> = (data, setData) => {
                 name: '',
                 color: item.color,
                 enabled: true,
+                metadata: [],
                 _data: item,
             };
 
             const newArr = [...data];
+            if (newArr[idx].annotations.length === 0)
+                newArr[idx].enabled = true;
             newArr[idx].annotations.push(newInfo);
             setData(newArr);
 
@@ -131,6 +156,8 @@ const useCreator: ISubHook<UseCreatorResponse> = (data, setData) => {
 
             const newArr = [...data];
             newArr[idx].annotations.splice(aIdx, 1);
+            if (newArr[idx].annotations.length === 0)
+                newArr[idx].enabled = false;
             setData(newArr);
         },
         [data, setData],
@@ -264,6 +291,48 @@ const useEditor: ISubHook<UseEditorResponse> = (data, setData) => {
         [data, setData],
     );
 
+    const addAnnotationMetadata = useCallback(
+        (categoryId: number, annotationId: number) => {
+            const idx = data.findIndex(o => o.id === categoryId);
+            if (idx === -1) return;
+
+            const aIdx = data[idx].annotations.findIndex(
+                o => o.id === annotationId,
+            );
+            if (aIdx === -1) return;
+
+            const newArr = [...data];
+            newArr[idx].annotations[aIdx].metadata.push({ key: '', value: '' });
+            setData(newArr);
+        },
+        [data, setData],
+    );
+
+    const editAnnotationMetadata = useCallback(
+        (params: {
+            categoryId: number;
+            annotationId: number;
+            index: number;
+            obj: MetadataInfo;
+        }) => {
+            const { categoryId, annotationId, index, obj } = params;
+
+            const idx = data.findIndex(o => o.id === categoryId);
+            if (idx === -1) return;
+
+            const aIdx = data[idx].annotations.findIndex(
+                o => o.id === annotationId,
+            );
+            if (aIdx === -1) return;
+
+            const newArr = [...data];
+            newArr[idx].annotations[aIdx].metadata[index] = obj;
+
+            setData(newArr);
+        },
+        [data, setData],
+    );
+
     return {
         setCategoriesEnabled,
         setCategoryEnabled,
@@ -272,6 +341,8 @@ const useEditor: ISubHook<UseEditorResponse> = (data, setData) => {
         setAnnotationEnabled,
         setAnnotationName,
         setAnnotationColor,
+        addAnnotationMetadata,
+        editAnnotationMetadata,
     };
 };
 

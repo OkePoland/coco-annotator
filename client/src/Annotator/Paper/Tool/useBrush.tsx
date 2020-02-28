@@ -88,23 +88,23 @@ export const useBrush: IToolBrush = (
 
     // settings methods
     const setColor = useCallback((color: string) => {
-        if (cache.current.brush != null) {
-            _setSettings(oldState => ({ ...oldState, color }));
-            cache.current.path.strokeColor = color;
-            cache.current.brush.strokeColor = new paper.Color(color);
-        }
+        if (!cache.current.brush) return;
+
+        _setSettings(oldState => ({ ...oldState, color }));
+        cache.current.path.strokeColor = color;
+        cache.current.brush.strokeColor = new paper.Color(color);
     }, []);
 
     const setRadius = useCallback(
         (radius: number) => {
-            if (cache.current.brush != null) {
-                _setSettings(oldState => ({ ...oldState, radius }));
-                cache.current.path.radius = radius;
+            if (!cache.current.brush) return;
 
-                const position = cache.current.brush.position;
-                cache.current.brush.remove();
-                cache.current.brush = _createBrush(position);
-            }
+            _setSettings(oldState => ({ ...oldState, radius }));
+            cache.current.path.radius = radius;
+
+            const position = cache.current.brush.position;
+            cache.current.brush.remove();
+            cache.current.brush = _createBrush(position);
         },
         [_createBrush],
     );

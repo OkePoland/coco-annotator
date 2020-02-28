@@ -9,7 +9,24 @@ const useTitle = (imageSize: Maybe<ImageSize>, leftTitleMsg: string) => {
     const leftTitleRef = useRef<Maybe<paper.PointText>>(null);
     const rightTitleRef = useRef<Maybe<paper.PointText>>(null);
 
-    // init left and right title
+    useEffect(() => {
+        if (groupRef.current === null) {
+            const leftTitle = new paper.PointText(new paper.Point(0, 0));
+            const rightTitle = new paper.PointText(new paper.Point(0, 0));
+
+            const group = new paper.Group([
+                leftTitleRef.current,
+                rightTitleRef.current,
+            ]);
+            group.name = CONFIG.TITLE_GROUP_PREFIX;
+            group.locked = true; // disable interactions with the mouse
+            groupRef.current = group;
+
+            leftTitleRef.current = leftTitle;
+            rightTitleRef.current = rightTitle;
+        }
+    }, []);
+
     useEffect(() => {
         if (imageSize != null) {
             const { width, height } = imageSize;
@@ -25,38 +42,26 @@ const useTitle = (imageSize: Maybe<ImageSize>, leftTitleMsg: string) => {
             );
 
             const leftTitle = new paper.PointText(positionTopLeft);
-            leftTitle.remove();
             leftTitle.fontSize = fontSize;
             leftTitle.fillColor = new paper.Color('white');
+            leftTitle.content = leftTitleMsg;
 
             const rightTitle = new paper.PointText(positionTopRight);
-            rightTitle.remove();
             rightTitle.justification = 'right';
             rightTitle.fontSize = fontSize;
             rightTitle.fillColor = new paper.Color('white');
             rightTitle.content = width + 'x' + height;
 
-            leftTitleRef.current = leftTitle;
-            rightTitleRef.current = rightTitle;
-
-            if (groupRef.current === null) {
-                const group = new paper.Group([
-                    leftTitleRef.current,
-                    rightTitleRef.current,
-                ]);
-                group.name = CONFIG.TITLE_GROUP_PREFIX;
-                group.locked = true; // disable interactions with the mouse
-                groupRef.current = group;
-            }
+            if (leftTitleRef.current)
+                leftTitleRef.current.replaceWith(leftTitle);
+            if (rightTitleRef.current)
+                rightTitleRef.current.replaceWith(rightTitle);
         }
-    }, [imageSize]);
+    }, [imageSize, leftTitleMsg]);
 
-    // update right title on incoming data
     useEffect(() => {
         if (leftTitleRef.current != null) {
             leftTitleRef.current.content = leftTitleMsg;
-
-            // this.$nextTick(() => this.showAll());    // TODO
         }
     }, [groupRef, leftTitleMsg]);
 

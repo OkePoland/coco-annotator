@@ -1,6 +1,5 @@
 import React, { Fragment } from 'react';
 
-import CloudDownloadIcon from '@material-ui/icons/CloudDownload';
 import FileCopyIcon from '@material-ui/icons/FileCopy';
 import VisibilityIcon from '@material-ui/icons/Visibility';
 import VisibilityOffIcon from '@material-ui/icons/VisibilityOff';
@@ -14,7 +13,6 @@ interface Props {
 }
 
 const Annotation: React.FC<Props> = ({
-    annotationAction,
     annotationCopyAction,
     setCategoriesEnabled,
 }) => (
@@ -36,15 +34,9 @@ const Annotation: React.FC<Props> = ({
             }}
         />
         <ToolButton
-            name="Annotate url"
-            icon={<CloudDownloadIcon />}
-            enabled={false}
-            onClick={annotationAction}
-        />
-        <ToolButton
             name="Copy Annotations"
             icon={<FileCopyIcon />}
-            enabled={false}
+            enabled={true}
             onClick={annotationCopyAction}
         />
     </Fragment>

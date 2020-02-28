@@ -9,6 +9,13 @@ declare module '@material-ui/core/styles/createMuiTheme' {
         warning?: string;
         header?: string;
         indicator?: string;
+        annotator: {
+            panel: string;
+            panelIcon: string;
+            canvas: string;
+            card: string;
+            cardSelected: string;
+        };
     }
 
     // allow configuration using `createMuiTheme`
@@ -20,6 +27,13 @@ declare module '@material-ui/core/styles/createMuiTheme' {
         warning?: string;
         header?: string;
         indicator?: string;
+        annotator: {
+            panel: string;
+            panelIcon: string;
+            canvas: string;
+            card: string;
+            cardSelected: string;
+        };
     }
 }
 export const theme = createMuiTheme({
@@ -39,5 +53,12 @@ export const theme = createMuiTheme({
         button: {
             textTransform: 'none',
         },
+    },
+    annotator: {
+        panel: '#4b5162',
+        panelIcon: '#fff',
+        canvas: '#7c818c',
+        card: '#4b5162',
+        cardSelected: '#4b624c',
     },
 });

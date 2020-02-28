@@ -67,7 +67,7 @@ export const useDextr: IToolDextr = (isActive, imageId, imageSize, unite) => {
             );
             if (data.disabled || !data.segmentaiton) return;
 
-            const cPath = new paper.Path({}); // TODO check if compoundPath
+            const cPath = new paper.Path({});
             for (let i = 0; i < data.segmentaiton.length; i++) {
                 const polygon = data.segmentaiton[i];
                 const path = new paper.Path();
@@ -89,7 +89,7 @@ export const useDextr: IToolDextr = (isActive, imageId, imageSize, unite) => {
     const _createPoint = useCallback(
         (point: paper.Point) => {
             const pt = new paper.Path.Circle(point, 5);
-            pt.fillColor = new paper.Color('black'); // TODO
+            pt.fillColor = new paper.Color('black');
             pt.data.point = point;
             cache.current.points.push(pt);
             if (cache.current.points.length >= 4) {

@@ -4,7 +4,12 @@
 import { useRef, useState, useEffect, useCallback } from 'react';
 import paper from 'paper';
 
-import { Maybe, MouseEvent, ToolSettingsSelect } from '../../annotator.types';
+import {
+    Maybe,
+    MouseEvent,
+    ToolSettingsSelect,
+    TooltipMetadata,
+} from '../../annotator.types';
 
 import * as CONFIG from '../../annotator.config';
 
@@ -27,6 +32,7 @@ interface IToolSelect {
         paperRef: React.MutableRefObject<Maybe<paper.PaperScope>>,
         isActive: boolean,
         scale: number,
+        tooltipMetadata: TooltipMetadata,
         preferences: Maybe<ToolSettingsSelect>,
     ): ToolSelectResponse;
 }
@@ -49,7 +55,6 @@ interface Cache {
         position: paper.Point; // hovered position
         keypoint: Maybe<KeypointShape>; // reference for HOVERED keypoint
         shape: {
-            obj: Maybe<paper.Path>; // reference for HOVERED AnnotationShape
             categoryId: Maybe<number>; // hovered annotation CategoryId
             annotationId: Maybe<number>; // hovered annotation Id
         };
@@ -76,6 +81,7 @@ export const useSelect: IToolSelect = (
     paperRef,
     isActive,
     scale,
+    tooltipMetadata,
     preferences,
 ) => {
     const toolRef = useRef<Maybe<paper.Tool>>(null);
@@ -94,7 +100,6 @@ export const useSelect: IToolSelect = (
             position: new paper.Point(0, 0),
             keypoint: null,
             shape: {
-                obj: null,
                 categoryId: null,
                 annotationId: null,
             },
@@ -171,6 +176,7 @@ export const useSelect: IToolSelect = (
                 keypoint,
                 shape.categoryId,
                 shape.annotationId,
+                tooltipMetadata,
             );
             cache.current.tooltip.text = ttip.text;
             cache.current.tooltip.box = ttip.box;
@@ -195,7 +201,7 @@ export const useSelect: IToolSelect = (
             );
             cache.current.tooltip.text.bringToFront();
         }
-    }, [settings.tooltipOn]);
+    }, [settings.tooltipOn, tooltipMetadata]);
 
     const _clear = useCallback(() => {
         cache.current.hover.shape.categoryId = null;
@@ -252,9 +258,6 @@ export const useSelect: IToolSelect = (
                 // remove KeypointShape onClick
                 if (modifiers && modifiers.shift) {
                     if (item && isKeypointGroup(item.parent)) {
-                        if (cache.current.keypoint.obj) {
-                            cache.current.keypoint.obj.selected = false;
-                        }
                         cache.current.keypoint.obj = null;
                         item.parent.removeKeypoint(item);
                     }
@@ -262,25 +265,28 @@ export const useSelect: IToolSelect = (
                 }
                 // unselect point if the same point was clicked
                 if (cache.current.keypoint.obj === item) {
-                    cache.current.keypoint.obj.selected = false;
                     cache.current.keypoint.obj = null;
                     return;
                 }
                 // select point if there was nothing selected previously
                 if (cache.current.keypoint.obj === null) {
                     cache.current.keypoint.obj = item;
-                    cache.current.keypoint.obj.selected = true;
                     return;
                 }
                 // link / unlink selected keypoint with another
                 if (cache.current.keypoint.obj) {
                     const keypoint = cache.current.keypoint.obj;
                     const parent = keypoint.parent;
+                    const itemParent = item.parent;
 
-                    if (isKeypointGroup(parent)) {
+                    if (
+                        isKeypointGroup(parent) &&
+                        isKeypointGroup(itemParent) &&
+                        parent.data.annotationId ===
+                            itemParent.data.annotationId
+                    ) {
                         parent.linkKeypoints(keypoint, item);
                     }
-                    cache.current.keypoint.obj.selected = false;
                     cache.current.keypoint.obj = null;
                     return;
                 }
@@ -347,8 +353,6 @@ export const useSelect: IToolSelect = (
             };
             drawCircle();
 
-            project.activeLayer.selected = false;
-
             // Display / Hide Tooltip
             cache.current.hover.keypoint = null;
 
@@ -360,7 +364,6 @@ export const useSelect: IToolSelect = (
                     cache.current.hover.shape.categoryId = categoryId;
                     cache.current.hover.shape.annotationId = annotationId;
                     if (cache.current.hover.shape.categoryId != null) {
-                        groupHit.item.selected = true;
                         _adjustTooltip();
                     }
                 } else if (isKeypointShape(groupHit.item)) {
@@ -443,7 +446,6 @@ export const useSelect: IToolSelect = (
         (event: MouseEvent) => {
             if (cache.current.keypoint.obj && cache.current.keypoint.isMoving) {
                 cache.current.keypoint.isMoving = false;
-                cache.current.keypoint.obj.selected = false;
                 cache.current.keypoint.obj = null;
             } else _clear();
         },
@@ -518,21 +520,18 @@ export const useSelect: IToolSelect = (
             cache.current.shape.initPoint = null;
 
             if (cache.current.keypoint.obj) {
-                cache.current.keypoint.obj.selected = false;
                 cache.current.keypoint.obj = null;
             }
             cache.current.keypoint.isMoving = false;
 
             cache.current.hover.position = new paper.Point(0, 0);
             cache.current.hover.keypoint = null;
-            cache.current.hover.shape.obj = null;
             cache.current.hover.shape.categoryId = null;
             cache.current.hover.shape.annotationId = null;
 
             if (cache.current.circle.obj) {
                 cache.current.circle.obj.remove();
                 cache.current.circle.obj = null;
-                cache.current.shape.segment = null;
             }
             if (cache.current.tooltip.text) {
                 cache.current.tooltip.text.remove();

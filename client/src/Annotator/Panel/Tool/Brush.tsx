@@ -1,7 +1,9 @@
 import React from 'react';
-import { ChangeEvent } from 'react';
 import Box from '@material-ui/core/Box';
-import TextField from '@material-ui/core/TextField';
+import BrushOutlinedIcon from '@material-ui/icons/BrushOutlined';
+
+import ToolFieldNumber from './ToolFieldNumber';
+import ToolFieldColor from './ToolFieldColor';
 
 interface Props {
     className: string;
@@ -19,24 +21,11 @@ const Brush: React.FC<Props> = ({
     setColor,
 }) => (
     <Box className={className}>
-        <TextField
-            label="Radius"
-            inputProps={{ style: { textAlign: 'center' } }}
-            value={radius}
-            onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                let val = parseInt(e.target.value);
-                if (!val) val = 1;
-                setRadius(val);
-            }}
-        />
-        <TextField
-            label="Current color"
-            inputProps={{ style: { textAlign: 'center' } }}
-            value={color}
-            onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                setColor(e.target.value as string);
-            }}
-        />
+        <BrushOutlinedIcon />
+
+        <ToolFieldNumber label="Radius" value={radius} onChange={setRadius} />
+
+        <ToolFieldColor value={color} onChange={setColor} />
     </Box>
 );
 export default Brush;

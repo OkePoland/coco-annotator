@@ -34,7 +34,6 @@ const Settings: React.FC<Props> = ({
             name={`Mode: ${segmentOn ? 'segment' : 'label'}`}
             icon={segmentOn ? <ImageSearchIcon /> : <LabelOutlinedIcon />}
             enabled={true}
-            active={false}
             onClick={() => {
                 setSegmentOn(c => !c);
             }}
@@ -44,21 +43,18 @@ const Settings: React.FC<Props> = ({
             name="Save"
             icon={<SaveIcon />}
             enabled={true}
-            active={false}
             onClick={saveImageAction}
         />
         <ToolButton
             name="Download COCO"
             icon={<SaveAltIcon />}
-            enabled={false}
-            active={false}
+            enabled={true}
             onClick={downloadImageAction}
         />
         <ToolButton
             name="Settings"
             icon={<SettingsIcon />}
             enabled={true}
-            active={false}
             onClick={openSettingsAction}
         />
 
@@ -70,7 +66,6 @@ const Settings: React.FC<Props> = ({
             name="Delete Image"
             icon={<DeleteIcon />}
             enabled={false}
-            active={false}
             onClick={deleteImageAction}
         />
     </Fragment>

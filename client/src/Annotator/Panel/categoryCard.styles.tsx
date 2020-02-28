@@ -12,7 +12,7 @@ export const useStyles = makeStyles((theme: AugmentedTheme) => ({
         backgroundColor: 'inherit',
     },
     row: {
-        backgroundColor: 'rgba(0,0,0,.04)',
+        backgroundColor: theme.annotator.card,
     },
     iconCell: {
         textAlign: 'center',

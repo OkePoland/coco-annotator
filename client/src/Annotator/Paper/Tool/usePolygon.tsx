@@ -31,6 +31,7 @@ export interface ToolPolygonResponse {
     setMinDistance: (value: number) => void;
     setCompleteDistance: (value: number) => void;
     undoLastPoint: () => void;
+    closePath: () => void;
 }
 interface Cache {
     polygon: Maybe<paper.Path>;
@@ -88,12 +89,11 @@ export const usePolygon: IToolPolygon = (
         }
     }, []);
 
-    const _complete = useCallback(() => {
+    const closePath = useCallback(() => {
         if (!cache.current.polygon) return false;
 
         _removeLastPoint();
 
-        cache.current.polygon.fillColor = new paper.Color('black');
         cache.current.polygon.closePath();
 
         unite(cache.current.polygon, true); // mark that action is undoable
@@ -118,11 +118,11 @@ export const usePolygon: IToolPolygon = (
 
             let completeDist: number = settings.completeDistance;
             if (last.isClose(first, completeDist)) {
-                return _complete();
+                return closePath();
             }
             return false;
         },
-        [_complete, settings],
+        [closePath, settings],
     );
 
     const _autoStrokeColor = useCallback(
@@ -294,5 +294,6 @@ export const usePolygon: IToolPolygon = (
         setMinDistance,
         setCompleteDistance,
         undoLastPoint,
+        closePath,
     };
 };

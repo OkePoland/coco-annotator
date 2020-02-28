@@ -16,17 +16,17 @@ import ToolButton from './ToolButton';
 interface Props {
     enabled: boolean;
     activeTool: Maybe<Tool>;
-    toggleTool: (name: Tool) => void;
+    setTool: (name: Tool) => void;
 }
 
-const ToolBar: React.FC<Props> = ({ enabled, activeTool, toggleTool }) => (
+const ToolBar: React.FC<Props> = ({ enabled, activeTool, setTool }) => (
     <Fragment>
         <ToolButton
             name="Select"
             icon={<TouchAppOutlinedIcon />}
             active={activeTool === Tool.SELECT}
             enabled={enabled}
-            onClick={() => toggleTool(Tool.SELECT)}
+            onClick={() => setTool(Tool.SELECT)}
         />
 
         <Box mt={2} mb={2}>
@@ -38,49 +38,49 @@ const ToolBar: React.FC<Props> = ({ enabled, activeTool, toggleTool }) => (
             icon={<WallpaperOutlinedIcon />}
             active={activeTool === Tool.BBOX}
             enabled={enabled}
-            onClick={() => toggleTool(Tool.BBOX)}
+            onClick={() => setTool(Tool.BBOX)}
         />
         <ToolButton
             name="Polygon"
             icon={<CreateOutlinedIcon />}
             active={activeTool === Tool.POLYGON}
             enabled={enabled}
-            onClick={() => toggleTool(Tool.POLYGON)}
+            onClick={() => setTool(Tool.POLYGON)}
         />
         <ToolButton
             name="Magic Wand"
             icon={<BorderColorIcon />}
             active={activeTool === Tool.WAND}
             enabled={enabled}
-            onClick={() => toggleTool(Tool.WAND)}
+            onClick={() => setTool(Tool.WAND)}
         />
         <ToolButton
             name="Brush"
             icon={<BrushOutlinedIcon />}
             active={activeTool === Tool.BRUSH}
             enabled={enabled}
-            onClick={() => toggleTool(Tool.BRUSH)}
+            onClick={() => setTool(Tool.BRUSH)}
         />
         <ToolButton
             name="Eraser"
             icon={<TouchAppOutlinedIcon />}
             active={activeTool === Tool.ERASER}
             enabled={enabled}
-            onClick={() => toggleTool(Tool.ERASER)}
+            onClick={() => setTool(Tool.ERASER)}
         />
         <ToolButton
             name="Keypoints"
             icon={<RoomOutlinedIcon />}
             active={activeTool === Tool.KEYPOINT}
             enabled={enabled}
-            onClick={() => toggleTool(Tool.KEYPOINT)}
+            onClick={() => setTool(Tool.KEYPOINT)}
         />
         <ToolButton
             name="DEXTR"
             icon={<LocationSearchingOutlinedIcon />}
             active={activeTool === Tool.DEXTR}
             enabled={enabled}
-            onClick={() => toggleTool(Tool.DEXTR)}
+            onClick={() => setTool(Tool.DEXTR)}
         />
     </Fragment>
 );

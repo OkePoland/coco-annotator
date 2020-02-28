@@ -1,32 +1,11 @@
 import Api from '../common/api';
-import {
-    Dataset,
-    Category,
-    DatasetPermissions,
-    ImagePermissions,
-    Image,
-} from '../common/types';
-
-import { ToolPreferences } from './annotator.types';
+import { ImportObj } from './annotator.types';
 
 const annotationBaseUrl = `/annotation/`;
 
-interface IGetDatasetResponse {
-    categories: Category[];
-    dataset: Dataset;
-    preferences: ToolPreferences;
-    permissions?: {
-        dataset: DatasetPermissions;
-        image: ImagePermissions;
-    };
-    image: Image;
-}
-
-export const getDataset = async (
-    imageId: number,
-): Promise<IGetDatasetResponse> => {
+export const getDataset = async (imageId: number): Promise<ImportObj> => {
     const url = `/annotator/data/${imageId}`;
-    const { data } = await Api.get<IGetDatasetResponse>(url);
+    const { data } = await Api.get<ImportObj>(url);
     return data;
 };
 
@@ -49,11 +28,19 @@ export const deleteAnnotation = async (id: number) => {
     return response;
 };
 
-export const updateAnnotation = async (id: number, params: any) => {
-    //const url = `${annotationBaseUrl}${id}`;
-    //const response = await Api.put(url, params);
-    //return response;
-    return null;
+export const downloadCoco = async (imageId: number) => {
+    const url = `/image/${imageId}/coco`;
+    const { data } = await Api.get(url);
+    return data;
+};
+
+export const downloadURI = (uri: string, exportName: string) => {
+    const link = document.createElement('a');
+    link.href = uri;
+    link.download = exportName;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
 };
 
 export const dextr = async (
@@ -64,4 +51,15 @@ export const dextr = async (
     const url = `/model/dextr/${imageId}`;
     const { data: response } = await Api.post(url, { ...settings });
     return response;
+};
+
+export const copyAnnotations = async (
+    imageId: number,
+    imageIdToCopyFrom: number,
+    categoriesIds: number[],
+) => {
+    const url = `/image/copy/${imageIdToCopyFrom}/${imageId}/annotations`;
+    const body = { category_ids: categoriesIds };
+    const { data } = await Api.post(url, body);
+    return data;
 };

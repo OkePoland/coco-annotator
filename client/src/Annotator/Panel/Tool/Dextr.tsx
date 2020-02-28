@@ -1,7 +1,8 @@
 import React from 'react';
-import { ChangeEvent } from 'react';
 import Box from '@material-ui/core/Box';
-import TextField from '@material-ui/core/TextField';
+import LocationSearchingOutlinedIcon from '@material-ui/icons/LocationSearchingOutlined';
+
+import ToolFieldNumber from './ToolFieldNumber';
 
 interface Props {
     className: string;
@@ -18,23 +19,18 @@ const Dextr: React.FC<Props> = ({
     setThreshold,
 }) => (
     <Box className={className}>
-        <TextField
-            label="Threshold"
-            inputProps={{ style: { textAlign: 'center' } }}
+        <LocationSearchingOutlinedIcon />
+
+        <ToolFieldNumber
+            label="Padding"
             value={padding}
-            onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                const val = parseInt(e.target.value);
-                setPadding(val ? val : 1);
-            }}
+            onChange={setPadding}
         />
-        <TextField
-            label="Blur"
-            inputProps={{ style: { textAlign: 'center' } }}
+
+        <ToolFieldNumber
+            label="Threshold (Blur)"
             value={threshold}
-            onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                const val = parseInt(e.target.value);
-                setThreshold(val ? val : 1);
-            }}
+            onChange={setThreshold}
         />
     </Box>
 );
