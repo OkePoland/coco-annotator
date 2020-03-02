@@ -6,7 +6,9 @@ interface User {
     name: string;
     username: string;
     group: string;
-    last_seen: Date;
+    last_seen: {
+        $date: Date;
+    }
 }
 
 interface MembersPageState {

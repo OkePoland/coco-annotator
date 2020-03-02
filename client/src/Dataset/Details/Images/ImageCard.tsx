@@ -44,7 +44,7 @@ const ImageCard: React.FC<Props> = ({ item, onClick, renderMenuItems }) => {
                                 fontWeight="fontWeightBold"
                                 textOverflow="ellipsis"
                             >
-                                {item.file_name}
+                                {item.id}. {item.file_name}
                             </Box>
                         </Typography>
                     </Grid>

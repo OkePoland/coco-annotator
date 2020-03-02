@@ -4,6 +4,8 @@ export const useStyles = makeStyles((theme: AugmentedTheme) => ({
     appbar: {
         height: 56,
         backgroundColor: theme.header,
+        zIndex: theme.zIndex.drawer + 1,
+        position: 'sticky',
     },
     toolbar: {
         height: 56,

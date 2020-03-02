@@ -27,7 +27,7 @@ const Header: React.FC = () => {
     } = useHeaderState();
 
     return (
-        <AppBar position="static" className={classes.appbar}>
+        <AppBar className={classes.appbar}>
             <Toolbar variant="dense" className={classes.toolbar}>
                 <Grid
                     container

@@ -6,25 +6,26 @@ import Pagination from 'material-ui-flat-pagination';
 
 import { Image } from '../../../common/types';
 import ImageCard from './ImageCard';
+import { downloadImageAction } from '../../datasets.utils';
 
 interface Props {
     images: Image[];
-    page: number;
+    offset: number;
     pagesCount: number;
-    setPage(offset: number): void;
+    setOffset(offset: number): void;
+    setPage(page: number): void;
     deleteImageAction(id: number): void;
     annotateImageAction(id: number): void;
-    downloadImageAction(id: number): void;
 }
 
 const Images: React.FC<Props> = ({
     images,
-    page,
+    offset,
     pagesCount,
+    setOffset,
     setPage,
     deleteImageAction,
     annotateImageAction,
-    downloadImageAction,
 }) => {
     if (images.length === 0) {
         return <Box textAlign="center">No images found in directory.</Box>;
@@ -37,9 +38,12 @@ const Images: React.FC<Props> = ({
                     reduced
                     size="large"
                     limit={1}
-                    offset={page}
+                    offset={offset}
                     total={pagesCount}
-                    onClick={(_, offset) => setPage(offset)}
+                    onClick={(_, offset, page) => {
+                        setPage(page);
+                        setOffset(offset);
+                    }}
                 />
             </Box>
 
@@ -65,7 +69,10 @@ const Images: React.FC<Props> = ({
                                     </MenuItem>
                                     <MenuItem
                                         onClick={() =>
-                                            downloadImageAction(o.id)
+                                            downloadImageAction({
+                                                id: o.id,
+                                                name: o.file_name,
+                                            })
                                         }
                                     >
                                         Download Image & COCO

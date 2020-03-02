@@ -1,17 +1,19 @@
 import React, { ChangeEvent } from 'react';
 import clsx from 'clsx';
+
 import Grid from '@material-ui/core/Grid';
 import InputLabel from '@material-ui/core/InputLabel';
 import FormControl from '@material-ui/core/FormControl';
 import FormGroup from '@material-ui/core/FormGroup';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import TextField from '@material-ui/core/TextField';
+import Typography from '@material-ui/core/Typography';
 import Select from '@material-ui/core/Select';
 import MenuItem from '@material-ui/core/MenuItem';
 import Switch from '@material-ui/core/Switch';
 
-import { FilterState } from '../details.hooks';
 import { useStyles } from './panel.styles';
+import { FilterState } from '../details.hooks';
 
 interface Props {
     filters: FilterState;
@@ -22,12 +24,15 @@ const FilterForm: React.FC<Props> = ({ filters }) => {
     const {
         contains: [contains, setContains],
         order: [order, setOrder],
-        annotatedOn: [annotatedOn, setAnnotatedOn],
-        notAnnotatedOn: [notAnnotatedOn, setNotAnnotatedOn],
+        annotatedOn,
+        notAnnotatedOn,
+        setAnnotatedOn,
+        setNotAnnotatedOn,
     } = filters;
 
     return (
         <Grid container direction="column" alignItems="stretch" spacing={1}>
+            <Typography align="center">Filtering Options</Typography>
             <Grid item xs>
                 <TextField
                     className={classes.formControl}
@@ -43,8 +48,8 @@ const FilterForm: React.FC<Props> = ({ filters }) => {
                 />
             </Grid>
             <Grid item xs>
+                <InputLabel>Order</InputLabel>
                 <FormControl className={classes.formControl}>
-                    <InputLabel>Order</InputLabel>
                     <Select
                         className={clsx(classes.formControl, classes.formInput)}
                         variant="outlined"
@@ -53,9 +58,9 @@ const FilterForm: React.FC<Props> = ({ filters }) => {
                             setOrder(e.target.value as string);
                         }}
                     >
-                        <MenuItem value="File Name">File Name</MenuItem>
-                        <MenuItem value="Id">Id</MenuItem>
-                        <MenuItem value="File Path">File Path</MenuItem>
+                        <MenuItem value="file_name">File Name</MenuItem>
+                        <MenuItem value="id">Id</MenuItem>
+                        <MenuItem value="path">File Path</MenuItem>
                     </Select>
                 </FormControl>
             </Grid>
