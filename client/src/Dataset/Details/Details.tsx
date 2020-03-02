@@ -75,9 +75,7 @@ const Details: React.FC<{ id: number }> = ({ id }) => {
                     >
                         <div
                             id="dragger"
-                            onMouseDown={(event: React.MouseEvent) => {
-                                handleMouseDown(event);
-                            }}
+                            onMouseDown={handleMouseDown}
                             className={classes.dragger}
                         />
                         <Toolbar />

@@ -69,10 +69,10 @@ const Images: React.FC<Props> = ({
                                     </MenuItem>
                                     <MenuItem
                                         onClick={() =>
-                                            downloadImageAction(
-                                                o.id,
-                                                o.file_name,
-                                            )
+                                            downloadImageAction({
+                                                id: o.id,
+                                                name: o.file_name,
+                                            })
                                         }
                                     >
                                         Download Image & COCO

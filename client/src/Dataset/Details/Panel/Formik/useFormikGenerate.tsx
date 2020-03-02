@@ -24,7 +24,7 @@ const useFormikGenerate = (id: number): FormikConfig<FormGenerateState> => {
         { resetForm }: FormikHelpers<FormGenerateState>,
     ) => {
         if (keyword.length === 0) return;
-        await DatasetApi.generate(id, keyword, limit);
+        await DatasetApi.generate({ id, keyword, limit });
         resetForm();
     };
     return {

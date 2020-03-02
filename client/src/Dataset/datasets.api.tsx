@@ -100,7 +100,13 @@ export const getDetails = async ({
     return data;
 };
 
-export const generate = async (id: number, keyword: string, limit: string) => {
+interface IGenerateParams {
+    id: number;
+    keyword: string;
+    limit: string;
+}
+
+export const generate = async ({ id, keyword, limit }: IGenerateParams) => {
     const url = `${baseURL}/${id}/generate`;
     const body = {
         keywords: [keyword],

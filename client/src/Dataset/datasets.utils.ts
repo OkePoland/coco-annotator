@@ -10,6 +10,11 @@ interface IDownloadCoco {
     removeCallback: () => void;
 }
 
+interface IDownloadImage {
+    id: number;
+    name: string;
+}
+
 export const downloadURI = (uri: string, exportName: string) => {
     let link = document.createElement('a');
     link.href = uri;
@@ -49,7 +54,7 @@ const getDownloadImageURL = () =>
         ? process.env.PROD_REACT_APP_API_BASE_URL
         : process.env.REACT_APP_API_BASE_URL;
 
-export const downloadImageAction = async (id: number, name: string) => {
+export const downloadImageAction = async ({ id, name }: IDownloadImage) => {
     const uri = `${getDownloadImageURL()}/image/${id}?asAttachment=true`;
     downloadURI(uri, name);
 
