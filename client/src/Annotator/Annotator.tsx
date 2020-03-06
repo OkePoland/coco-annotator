@@ -25,7 +25,7 @@ import {
     useShortcuts,
     useKeyPress,
     useModals,
-} from './Info';
+} from './Metadata';
 import {
     useCanvas,
     useGroups,
@@ -36,10 +36,10 @@ import {
     AnnotationGroupComponent,
 } from './Paper';
 
-import CustomModal from '../common/components/CustomDialog';
-import * as Menu from './Menu';
-import * as Panel from './Panel';
-import * as Modal from './Modal';
+import * as ToolBar from './Components/ToolBar';
+import * as InfoBar from './Components/InfoBar';
+import * as DetailsBar from './Components/DetailsBar';
+import * as Modal from './Components/Modal';
 
 import {
     createExportObj,
@@ -325,13 +325,13 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
             <Box className={classes.leftPanel}>
                 {segmentOn && (
                     <Box>
-                        <Menu.Tools
+                        <ToolBar.Tools
                             enabled={selected.annotationId != null}
                             activeTool={activeTool}
                             setTool={setTool}
                         />
                         <Divider className={classes.divider} />
-                        <Menu.Annotation
+                        <ToolBar.Annotation
                             annotationAction={() => {}}
                             annotationCopyAction={openCopyModal}
                             setCategoriesEnabled={(isOn: boolean) => {
@@ -340,7 +340,7 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
                             }}
                         />
                         <Divider className={classes.divider} />
-                        <Menu.Utils
+                        <ToolBar.Utils
                             undoList={undoStash.list}
                             centerImageAction={centerImageAction}
                             undoAction={undoAction}
@@ -348,7 +348,7 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
                         <Divider className={classes.divider} />
                     </Box>
                 )}
-                <Menu.Settings
+                <ToolBar.Settings
                     segmentOn={segmentOn}
                     setSegmentOn={setSegmentOn}
                     downloadImageAction={downloadCocoAction}
@@ -359,7 +359,7 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
             </Box>
 
             <Box className={classes.rightPanel}>
-                <Panel.FileTile
+                <InfoBar.FileTile
                     className={classes.fileTitle}
                     filename={filename}
                     prevImgId={previous}
@@ -372,7 +372,7 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
                 <Divider className={classes.divider} />
 
                 {info.data.length > 1 && (
-                    <Panel.SearchInput
+                    <InfoBar.SearchInput
                         className={classes.searchInput}
                         value={filter.searchText}
                         setValue={filter.setSearchText}
@@ -381,7 +381,7 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
 
                 {segmentOn &&
                     info.data.map(categoryInfo => (
-                        <Panel.CategoryCard
+                        <InfoBar.CategoryCard
                             key={categoryInfo.id}
                             id={categoryInfo.id}
                             name={categoryInfo.name}
@@ -413,7 +413,7 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
                             }}
                             renderExpandedList={() =>
                                 categoryInfo.annotations.map(annotationInfo => (
-                                    <Panel.AnnotationCard
+                                    <InfoBar.AnnotationCard
                                         key={annotationInfo.id}
                                         id={annotationInfo.id}
                                         name={annotationInfo.name}
@@ -467,7 +467,7 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
                             switch (activeTool) {
                                 case Tool.SELECT:
                                     return (
-                                        <Panel.Select
+                                        <DetailsBar.Select
                                             className={classes.toolPanel}
                                             tooltipOn={
                                                 tools.select.settings.tooltipOn
@@ -479,7 +479,7 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
                                     );
                                 case Tool.BBOX:
                                     return (
-                                        <Panel.BBoxPanel
+                                        <DetailsBar.BBoxPanel
                                             className={classes.toolPanel}
                                             color={tools.bbox.settings.color}
                                             setColor={tools.bbox.setColor}
@@ -487,7 +487,7 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
                                     );
                                 case Tool.POLYGON:
                                     return (
-                                        <Panel.Polygon
+                                        <DetailsBar.Polygon
                                             className={classes.toolPanel}
                                             guidanceOn={
                                                 tools.polygon.settings
@@ -522,7 +522,7 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
                                     );
                                 case Tool.WAND:
                                     return (
-                                        <Panel.Wand
+                                        <DetailsBar.Wand
                                             className={classes.toolPanel}
                                             threshold={
                                                 tools.wand.settings.threshold
@@ -536,7 +536,7 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
                                     );
                                 case Tool.BRUSH:
                                     return (
-                                        <Panel.Brush
+                                        <DetailsBar.Brush
                                             className={classes.toolPanel}
                                             radius={tools.brush.settings.radius}
                                             color={tools.brush.settings.color}
@@ -546,7 +546,7 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
                                     );
                                 case Tool.ERASER:
                                     return (
-                                        <Panel.Brush
+                                        <DetailsBar.Brush
                                             className={classes.toolPanel}
                                             radius={
                                                 tools.eraser.settings.radius
@@ -557,10 +557,10 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
                                         />
                                     );
                                 case Tool.KEYPOINT:
-                                    return <Panel.Keypoints />;
+                                    return <DetailsBar.Keypoints />;
                                 case Tool.DEXTR:
                                     return (
-                                        <Panel.Dextr
+                                        <DetailsBar.Dextr
                                             className={classes.toolPanel}
                                             padding={tools.dextr.padding}
                                             threshold={tools.dextr.threshold}
@@ -629,7 +629,7 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
             </React.Fragment>
 
             <React.Fragment>
-                <CustomModal
+                <Modal.Wrapper
                     title="Settings"
                     open={modalOpen.settings}
                     setClose={closeAllModals}
@@ -646,7 +646,7 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
                         );
                     }}
                 />
-                <CustomModal
+                <Modal.Wrapper
                     title={
                         modalState.categoryId != null
                             ? `Editing Category: [${modalState.categoryId}]`
@@ -677,7 +677,7 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
                         );
                     }}
                 />
-                <CustomModal
+                <Modal.Wrapper
                     title={
                         modalState.annotationId != null
                             ? `Editing Annotation: [${modalState.annotationId}]`
@@ -738,7 +738,7 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
                         );
                     }}
                 />
-                <CustomModal
+                <Modal.Wrapper
                     title="Copy annotations from Image"
                     open={modalOpen.copy}
                     setClose={closeAllModals}

@@ -3,7 +3,7 @@
  * In most cases there are methods which affect/ get data
  * AnnotationInfo & AnnotationGroups simultaneously
  */
-import { Dataset } from '../common/types';
+import { Dataset } from './annotator.common';
 import {
     Maybe,
     ExportObj,

@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback } from 'react';
 
-import { Category } from '../../common/types';
+import { Category } from '../annotator.common';
 
 interface IUseFilter {
     (categories: Category[]): UseFilterResponse;

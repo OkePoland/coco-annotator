@@ -3,11 +3,11 @@ import Badge from '@material-ui/core/Badge';
 import FormatAlignCenterIcon from '@material-ui/icons/FormatAlignCenter';
 import UndoIcon from '@material-ui/icons/Undo';
 
-import { UndoItem } from '../annotator.types';
+import { UndoItem } from '../../annotator.types';
 
 import ToolButton from './ToolButton';
 
-import { isUndoItemShape, isUndoItemTool } from '../Annotator.utils';
+import { isUndoItemShape, isUndoItemTool } from '../../Annotator.utils';
 
 interface Props {
     undoList: UndoItem[];

@@ -1,5 +1,5 @@
 import paper from 'paper';
-import { Dataset, Category, Annotation, Image } from '../common/types';
+import { Dataset, Category, Annotation, Image } from './annotator.common';
 
 export type Maybe<T> = T | null | undefined;
 

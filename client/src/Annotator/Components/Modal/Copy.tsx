@@ -9,7 +9,7 @@ import FormGroup from '@material-ui/core/FormGroup';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Button from '@material-ui/core/Button';
 
-import { CategoryInfo } from '../annotator.types';
+import { CategoryInfo } from '../../annotator.types';
 
 interface Props {
     infoData: CategoryInfo[];

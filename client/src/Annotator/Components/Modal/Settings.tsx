@@ -6,7 +6,7 @@ import Typography from '@material-ui/core/Typography';
 import KeyboardOutlinedIcon from '@material-ui/icons/KeyboardOutlined';
 import Button from '@material-ui/core/Button';
 
-import { ShortcutsSettings } from '../annotator.types';
+import { ShortcutsSettings } from '../../annotator.types';
 
 interface Props {
     shortcuts: ShortcutsSettings;

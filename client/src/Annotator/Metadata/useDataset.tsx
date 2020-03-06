@@ -4,7 +4,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSnackbar } from 'notistack';
 
-import { Dataset, Category } from '../../common/types';
+import { Dataset, Category } from '../annotator.common';
 import { Maybe, ImportObj, Settings } from '../annotator.types';
 
 import * as AnnotatorApi from '../annotator.api';

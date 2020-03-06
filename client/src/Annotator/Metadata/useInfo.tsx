@@ -5,7 +5,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Dispatch, SetStateAction } from 'react';
 
-import { Category, Annotation } from '../../common/types';
+import { Category, Annotation } from '../annotator.common';
 import {
     CategoryInfo,
     AnnotationInfo,

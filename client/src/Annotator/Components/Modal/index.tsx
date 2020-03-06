@@ -1,10 +1,11 @@
+import Wrapper from './Wrapper';
 import Category from './Category';
 import Annotation from './Annotation';
 import Settings from './Settings';
 import Copy from './Copy';
 
-// tslint:disable-next-line: prettier
 export {
+    Wrapper,
     Category,
     Annotation,
     Settings,

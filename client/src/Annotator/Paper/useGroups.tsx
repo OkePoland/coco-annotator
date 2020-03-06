@@ -2,7 +2,7 @@ import { useRef, useState, useEffect, useCallback } from 'react';
 import { MutableRefObject } from 'react';
 import paper from 'paper';
 
-import { Category, Annotation } from '../../common/types';
+import { Category, Annotation } from '../annotator.common';
 import { Maybe, SelectedState } from '../annotator.types';
 
 import { CategoryGroup, AnnotationGroup } from './Shape';

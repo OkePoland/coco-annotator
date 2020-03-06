@@ -10,7 +10,7 @@ import BrushOutlinedIcon from '@material-ui/icons/BrushOutlined';
 import RoomOutlinedIcon from '@material-ui/icons/RoomOutlined';
 import LocationSearchingOutlinedIcon from '@material-ui/icons/LocationSearchingOutlined';
 
-import { Maybe, Tool } from '../annotator.types';
+import { Maybe, Tool } from '../../annotator.types';
 import ToolButton from './ToolButton';
 
 interface Props {
