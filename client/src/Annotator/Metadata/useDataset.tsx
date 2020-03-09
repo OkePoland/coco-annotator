@@ -2,17 +2,17 @@
  * Manage dataset data
  */
 import { useState, useEffect, useCallback } from 'react';
-import { useSnackbar } from 'notistack';
 
 import { Dataset, Category } from '../annotator.common';
 import { Maybe, ImportObj, Settings } from '../annotator.types';
 
 import * as AnnotatorApi from '../annotator.api';
-import useGlobalContext from '../../common/hooks/useGlobalContext';
-import { addProcess, removeProcess } from '../../common/utils/globalActions';
 
 interface IUseDataset {
-    (imageId: number): IUseDatasetResponse;
+    (
+        imageId: number,
+        showDialogMsg?: (msg: string, isError?: boolean) => void,
+    ): IUseDatasetResponse;
 }
 interface IUseDatasetResponse {
     dataset: Maybe<Dataset>;
@@ -29,10 +29,7 @@ interface IUseDatasetResponse {
     }) => void;
 }
 
-const useDataset: IUseDataset = imageId => {
-    const [, dispatch] = useGlobalContext();
-    const { enqueueSnackbar } = useSnackbar();
-
+const useDataset: IUseDataset = (imageId, showDialogMsg) => {
     const [generation, moveGeneration] = useState(0);
 
     // datasetdata
@@ -58,10 +55,10 @@ const useDataset: IUseDataset = imageId => {
     const saveDataset = useCallback(
         async (obj: Object) => {
             await AnnotatorApi.saveDataset(obj);
-            enqueueSnackbar('Image save', { variant: 'success' });
+            if (showDialogMsg) showDialogMsg('Image save');
             moveGeneration(c => c + 1);
         },
-        [enqueueSnackbar],
+        [showDialogMsg],
     );
 
     const copyAnnotations = useCallback(
@@ -78,19 +75,16 @@ const useDataset: IUseDataset = imageId => {
                 categoriesIds,
             );
             if (success) {
-                enqueueSnackbar('Copy success', { variant: 'success' });
+                if (showDialogMsg) showDialogMsg('Copy success');
                 moveGeneration(c => c + 1);
-            } else {
-                const msg = `Copy error (${message != null ? message : ''})`;
-                enqueueSnackbar(msg, { variant: 'error' });
+            } else if (showDialogMsg) {
+                showDialogMsg(`Copy error (${message || ''})`, true);
             }
         },
-        [enqueueSnackbar],
+        [showDialogMsg],
     );
 
     useEffect(() => {
-        const process = 'Loading annotation data';
-
         const update = async () => {
             const data: ImportObj = await AnnotatorApi.getDataset(imageId);
             console.log('Info: Dataset loaded');
@@ -107,14 +101,11 @@ const useDataset: IUseDataset = imageId => {
         };
 
         try {
-            addProcess(dispatch, process);
             update();
         } catch (error) {
-            enqueueSnackbar('Loading error', { variant: 'error' });
-        } finally {
-            removeProcess(dispatch, process);
+            if (showDialogMsg) showDialogMsg('Loading error', true);
         }
-    }, [imageId, generation, dispatch, enqueueSnackbar]);
+    }, [showDialogMsg, imageId, generation]);
 
     return {
         dataset,

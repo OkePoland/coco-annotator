@@ -1,21 +1,32 @@
-import Api from '../common/api';
 import { ImportObj } from './annotator.types';
 
-const annotationBaseUrl = `/annotation/`;
+import AxiosHandler from '../common/AxiosHandler';
+
+export class Api {
+    public static handler: AxiosHandler;
+
+    static async init() {
+        this.handler = new AxiosHandler();
+        await this.handler.init({
+            baseURL: process.env.REACT_APP_API_BASE_URL,
+            withCredentials: true,
+        });
+    }
+}
 
 export const getDataset = async (imageId: number): Promise<ImportObj> => {
     const url = `/annotator/data/${imageId}`;
-    const { data } = await Api.get<ImportObj>(url);
+    const { data } = await Api.handler.get<ImportObj>(url);
     return data;
 };
 
 export const saveDataset = async (obj: Object) => {
     const url = `/annotator/data`;
-    await Api.post(url, JSON.stringify(obj));
+    await Api.handler.post(url, JSON.stringify(obj));
 };
 
 export const createAnnotation = async (imageId: number, categoryId: number) => {
-    const { data: response } = await Api.post(annotationBaseUrl, {
+    const { data: response } = await Api.handler.post(`/annotation/`, {
         image_id: imageId,
         category_id: categoryId,
     });
@@ -23,14 +34,14 @@ export const createAnnotation = async (imageId: number, categoryId: number) => {
 };
 
 export const deleteAnnotation = async (id: number) => {
-    const url = `${annotationBaseUrl}${id}`;
-    const response = await Api.delete(url);
+    const url = `/annotation/${id}`;
+    const response = await Api.handler.delete(url);
     return response;
 };
 
 export const downloadCoco = async (imageId: number) => {
     const url = `/image/${imageId}/coco`;
-    const { data } = await Api.get(url);
+    const { data } = await Api.handler.get(url);
     return data;
 };
 
@@ -49,7 +60,7 @@ export const dextr = async (
     settings: Object,
 ) => {
     const url = `/model/dextr/${imageId}`;
-    const { data: response } = await Api.post(url, { ...settings });
+    const { data: response } = await Api.handler.post(url, { ...settings });
     return response;
 };
 
@@ -60,6 +71,6 @@ export const copyAnnotations = async (
 ) => {
     const url = `/image/copy/${imageIdToCopyFrom}/${imageId}/annotations`;
     const body = { category_ids: categoriesIds };
-    const { data } = await Api.post(url, body);
+    const { data } = await Api.handler.post(url, body);
     return data;
 };

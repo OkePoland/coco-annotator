@@ -1,6 +1,5 @@
 import React, { useMemo, useCallback } from 'react';
 import clsx from 'clsx';
-import { useNavigation } from 'react-navi';
 import Box from '@material-ui/core/Box';
 import Divider from '@material-ui/core/Divider';
 import CircularProgress from '@material-ui/core/CircularProgress';
@@ -49,12 +48,15 @@ import {
     getTooltipMetadata,
 } from './Annotator.utils';
 
-const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
+interface Props {
+    imageId: number;
+    navigate?: (url: string) => void;
+    showDialogMsg?: (msg: string, isError?: boolean) => void;
+}
+
+const Annotator: React.FC<Props> = ({ imageId, navigate, showDialogMsg }) => {
     const classes = useStyles();
 
-    const { navigate } = useNavigation();
-
-    // all data & callbacks WITHOUT! Paper.js references
     const {
         dataset,
         categories,
@@ -64,7 +66,7 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
         initSettings,
         saveDataset,
         copyAnnotations,
-    } = useDataset(imageId);
+    } = useDataset(imageId, showDialogMsg);
     const {
         segmentMode: [segmentOn, setSegmentOn],
         toolState: [activeTool, setTool],
@@ -75,11 +77,9 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
     const info = useInfo(categories);
     const filter = useFilter(categories);
     const cursor = useCursor(activeTool, selected.annotationId);
-    const {
-        shortcuts, // array
-        setShortcuts,
-        restoreDefaultShortcuts,
-    } = useShortcuts(initSettings.shortcuts);
+    const { shortcuts, setShortcuts, restoreDefaultShortcuts } = useShortcuts(
+        initSettings.shortcuts,
+    );
     const {
         modalOpen,
         modalState,
@@ -291,10 +291,10 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
     useKeyPress(shortcuts.save, isModalOpen, saveAction);
     useKeyPress(shortcuts.image_center, isModalOpen, centerImageAction);
     useKeyPress(shortcuts.image_next, isModalOpen, () => {
-        if (next) navigate(`/annotate/${next}`);
+        if (next && navigate) navigate(`/annotate/${next}`);
     });
     useKeyPress(shortcuts.image_prev, isModalOpen, () => {
-        if (previous) navigate(`/annotate/${previous}`);
+        if (previous && navigate) navigate(`/annotate/${previous}`);
     });
     useKeyPress(shortcuts.tool_select, isModalOpen, () => setTool(Tool.SELECT));
     useKeyPress(shortcuts.tool_bbox, isModalOpen, () => setTool(Tool.BBOX));
@@ -365,7 +365,7 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
                     prevImgId={previous}
                     nextImgId={next}
                     changeImage={id => {
-                        navigate(`/annotate/${id}`);
+                        if (navigate) navigate(`/annotate/${id}`);
                     }}
                 />
 
