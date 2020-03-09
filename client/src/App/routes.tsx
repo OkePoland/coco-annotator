@@ -6,7 +6,7 @@ import Layout from './Layout';
 import Auth from '../Auth/Auth';
 import DatasetsList from '../Dataset/List/List';
 import DatasetDetails from '../Dataset/Details/Details';
-import Annotator from '../Annotator/Annotator';
+import AnnotatorPage from '../AnnotatorPage/AnnotatorPage';
 
 import {
     withAuthentication,
@@ -76,12 +76,7 @@ export default compose(
         '/annotate/:id': withAuthentication(
             route(async req => {
                 return {
-                    view: (
-                        <Annotator
-                            key={req.params.id}
-                            imageId={parseInt(req.params.id)}
-                        />
-                    ),
+                    view: <AnnotatorPage imageId={parseInt(req.params.id)} />,
                 };
             }),
         ),

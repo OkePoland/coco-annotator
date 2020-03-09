@@ -1,6 +1,5 @@
 import React, { useMemo, useCallback } from 'react';
 import clsx from 'clsx';
-import { useNavigation } from 'react-navi';
 import Box from '@material-ui/core/Box';
 import Divider from '@material-ui/core/Divider';
 import CircularProgress from '@material-ui/core/CircularProgress';
@@ -13,6 +12,7 @@ import {
     UndoItemTool,
 } from './annotator.types';
 
+import AxiosHandler from '../common/AxiosHandler';
 import * as AnnotatorApi from './annotator.api';
 
 import { useStyles } from './annotator.styles';
@@ -49,12 +49,21 @@ import {
     getTooltipMetadata,
 } from './Annotator.utils';
 
-const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
+interface Props {
+    imageId: number;
+    api: AxiosHandler;
+    navigate?: (url: string) => void;
+    showDialogMsg?: (msg: string, isError?: boolean) => void;
+}
+
+const Annotator: React.FC<Props> = ({
+    imageId,
+    api,
+    navigate,
+    showDialogMsg,
+}) => {
     const classes = useStyles();
 
-    const { navigate } = useNavigation();
-
-    // all data & callbacks WITHOUT! Paper.js references
     const {
         dataset,
         categories,
@@ -64,7 +73,7 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
         initSettings,
         saveDataset,
         copyAnnotations,
-    } = useDataset(imageId);
+    } = useDataset(api, imageId, showDialogMsg);
     const {
         segmentMode: [segmentOn, setSegmentOn],
         toolState: [activeTool, setTool],
@@ -72,14 +81,12 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
         setSelected,
     } = useChoices();
 
-    const info = useInfo(categories);
+    const info = useInfo(api, categories);
     const filter = useFilter(categories);
     const cursor = useCursor(activeTool, selected.annotationId);
-    const {
-        shortcuts, // array
-        setShortcuts,
-        restoreDefaultShortcuts,
-    } = useShortcuts(initSettings.shortcuts);
+    const { shortcuts, setShortcuts, restoreDefaultShortcuts } = useShortcuts(
+        initSettings.shortcuts,
+    );
     const {
         modalOpen,
         modalState,
@@ -160,6 +167,7 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
         groups.shapeEditor.simplify,
         groups.keypointsEditor.add,
         stashToolEvent,
+        api,
     );
     useTitle(imageInfo.size, filename);
 
@@ -237,13 +245,13 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
         const url = `/api/image/${imageId}?asAttachment=true`;
         AnnotatorApi.downloadURI(url, filename);
 
-        const data = await AnnotatorApi.downloadCoco(imageId);
+        const data = await AnnotatorApi.downloadCoco(api, imageId);
         const dataUrl =
             'data:text/json;charset=utf-8,' +
             encodeURIComponent(JSON.stringify(data));
         const fileName2 = filename.replace(/\.[^/.]+$/, '') + '.json';
         AnnotatorApi.downloadURI(dataUrl, fileName2);
-    }, [imageId, filename, saveAction]);
+    }, [api, imageId, filename, saveAction]);
 
     const copyAction = useCallback(
         async (id: number, categoriesIds: number[]) => {
@@ -291,10 +299,10 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
     useKeyPress(shortcuts.save, isModalOpen, saveAction);
     useKeyPress(shortcuts.image_center, isModalOpen, centerImageAction);
     useKeyPress(shortcuts.image_next, isModalOpen, () => {
-        if (next) navigate(`/annotate/${next}`);
+        if (next && navigate) navigate(`/annotate/${next}`);
     });
     useKeyPress(shortcuts.image_prev, isModalOpen, () => {
-        if (previous) navigate(`/annotate/${previous}`);
+        if (previous && navigate) navigate(`/annotate/${previous}`);
     });
     useKeyPress(shortcuts.tool_select, isModalOpen, () => setTool(Tool.SELECT));
     useKeyPress(shortcuts.tool_bbox, isModalOpen, () => setTool(Tool.BBOX));
@@ -365,7 +373,7 @@ const Annotator: React.FC<{ imageId: number }> = ({ imageId }) => {
                     prevImgId={previous}
                     nextImgId={next}
                     changeImage={id => {
-                        navigate(`/annotate/${id}`);
+                        if (navigate) navigate(`/annotate/${id}`);
                     }}
                 />
 

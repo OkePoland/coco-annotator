@@ -10,6 +10,8 @@ import {
     TooltipMetadata,
 } from '../annotator.types';
 
+import AxiosHandler from '../../common/AxiosHandler';
+
 import useEmpty from './Tool/useEmpty';
 import { useSelect, ToolSelectResponse } from './Tool/useSelect';
 import { useBBox, ToolBBoxResponse } from './Tool/useBBox';
@@ -36,6 +38,7 @@ interface IUseTools {
         simplify: () => void,
         addKeypoint: (point: paper.Point) => void,
         stashToolEvent: (toolEvent: ToolEvent) => void,
+        api: AxiosHandler,
     ): {
         empty: null;
         select: ToolSelectResponse;
@@ -66,6 +69,7 @@ const useTools: IUseTools = (
     simplify,
     addKeypoint,
     stashToolEvent,
+    api,
 ) => {
     const isDisabled: boolean = useMemo(() => {
         return activeTool === null || selectedAnnotation === null;
@@ -125,6 +129,7 @@ const useTools: IUseTools = (
         imageId,
         imageSize,
         unite,
+        api,
     );
 
     const exportData = useCallback(() => {
