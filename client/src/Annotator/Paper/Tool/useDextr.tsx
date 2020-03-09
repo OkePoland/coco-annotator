@@ -8,7 +8,6 @@ import { Maybe, MouseEvent, ImageSize } from '../../annotator.types';
 
 import * as CONFIG from '../../annotator.config';
 
-import AxiosHandler from '../../../common/AxiosHandler';
 import * as AnnotatorApi from '../../annotator.api';
 
 // interfaces
@@ -18,7 +17,6 @@ interface IToolDextr {
         imageId: number,
         imageSize: Maybe<ImageSize>,
         unite: (a: paper.Path, isUndoable?: boolean) => void,
-        api: AxiosHandler,
     ): ToolDextrResponse;
 }
 export interface ToolDextrResponse {
@@ -35,13 +33,7 @@ interface Settings {
     threshold: number;
 }
 
-export const useDextr: IToolDextr = (
-    isActive,
-    imageId,
-    imageSize,
-    unite,
-    api,
-) => {
+export const useDextr: IToolDextr = (isActive, imageId, imageSize, unite) => {
     const toolRef = useRef<Maybe<paper.Tool>>(null);
     const cache = useRef<Cache>({
         points: [],
@@ -69,7 +61,6 @@ export const useDextr: IToolDextr = (
         );
         try {
             const data = await AnnotatorApi.dextr(
-                api,
                 imageId,
                 pointsList,
                 settings,
@@ -93,7 +84,7 @@ export const useDextr: IToolDextr = (
             cache.current.points.forEach(point => point.remove());
             cache.current.points = [];
         }
-    }, [api, imageId, imageSize, settings, unite]);
+    }, [imageId, imageSize, settings, unite]);
 
     const _createPoint = useCallback(
         (point: paper.Point) => {

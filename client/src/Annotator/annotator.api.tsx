@@ -2,41 +2,46 @@ import { ImportObj } from './annotator.types';
 
 import AxiosHandler from '../common/AxiosHandler';
 
-export const getDataset = async (
-    api: AxiosHandler,
-    imageId: number,
-): Promise<ImportObj> => {
+export class Api {
+    public static handler: AxiosHandler;
+
+    static async init() {
+        this.handler = new AxiosHandler();
+        await this.handler.init({
+            baseURL: process.env.REACT_APP_API_BASE_URL,
+            withCredentials: true,
+        });
+    }
+}
+
+export const getDataset = async (imageId: number): Promise<ImportObj> => {
     const url = `/annotator/data/${imageId}`;
-    const { data } = await api.get<ImportObj>(url);
+    const { data } = await Api.handler.get<ImportObj>(url);
     return data;
 };
 
-export const saveDataset = async (api: AxiosHandler, obj: Object) => {
+export const saveDataset = async (obj: Object) => {
     const url = `/annotator/data`;
-    await api.post(url, JSON.stringify(obj));
+    await Api.handler.post(url, JSON.stringify(obj));
 };
 
-export const createAnnotation = async (
-    api: AxiosHandler,
-    imageId: number,
-    categoryId: number,
-) => {
-    const { data: response } = await api.post(`/annotation/`, {
+export const createAnnotation = async (imageId: number, categoryId: number) => {
+    const { data: response } = await Api.handler.post(`/annotation/`, {
         image_id: imageId,
         category_id: categoryId,
     });
     return response;
 };
 
-export const deleteAnnotation = async (api: AxiosHandler, id: number) => {
+export const deleteAnnotation = async (id: number) => {
     const url = `/annotation/${id}`;
-    const response = await api.delete(url);
+    const response = await Api.handler.delete(url);
     return response;
 };
 
-export const downloadCoco = async (api: AxiosHandler, imageId: number) => {
+export const downloadCoco = async (imageId: number) => {
     const url = `/image/${imageId}/coco`;
-    const { data } = await api.get(url);
+    const { data } = await Api.handler.get(url);
     return data;
 };
 
@@ -50,24 +55,22 @@ export const downloadURI = (uri: string, exportName: string) => {
 };
 
 export const dextr = async (
-    api: AxiosHandler,
     imageId: number,
     pointsList: Array<[number, number]>,
     settings: Object,
 ) => {
     const url = `/model/dextr/${imageId}`;
-    const { data: response } = await api.post(url, { ...settings });
+    const { data: response } = await Api.handler.post(url, { ...settings });
     return response;
 };
 
 export const copyAnnotations = async (
-    api: AxiosHandler,
     imageId: number,
     imageIdToCopyFrom: number,
     categoriesIds: number[],
 ) => {
     const url = `/image/copy/${imageIdToCopyFrom}/${imageId}/annotations`;
     const body = { category_ids: categoriesIds };
-    const { data } = await api.post(url, body);
+    const { data } = await Api.handler.post(url, body);
     return data;
 };

@@ -15,11 +15,10 @@ import {
 
 import * as CONFIG from '../annotator.config';
 
-import AxiosHandler from '../../common/AxiosHandler';
 import * as AnnotatorApi from '../annotator.api';
 
 interface IUseInfo {
-    (api: AxiosHandler, categories: Category[]): UseInfoResponse;
+    (categories: Category[]): UseInfoResponse;
 }
 interface UseInfoResponse {
     data: CategoryInfo[];
@@ -56,17 +55,16 @@ interface UseEditorResponse {
 }
 interface ISubHook<T> {
     (
-        api: AxiosHandler,
         data: CategoryInfo[],
         setData: Dispatch<SetStateAction<CategoryInfo[]>>,
     ): T;
 }
 
-const useInfo: IUseInfo = (api, categories) => {
+const useInfo: IUseInfo = categories => {
     const [data, _setData] = useState<CategoryInfo[]>([]);
 
-    const creator = useCreator(api, data, _setData);
-    const editor = useEditor(api, data, _setData);
+    const creator = useCreator(data, _setData);
+    const editor = useEditor(data, _setData);
 
     useEffect(() => {
         const initialData: CategoryInfo[] = categories.map(cat => {
@@ -111,7 +109,7 @@ const useInfo: IUseInfo = (api, categories) => {
 };
 
 // Helper sub-Hook to extract add / remove / edit methods on annotations
-const useCreator: ISubHook<UseCreatorResponse> = (api, data, setData) => {
+const useCreator: ISubHook<UseCreatorResponse> = (data, setData) => {
     const create = useCallback(
         async (imageId: number, categoryId: number) => {
             const idx = data.findIndex(o => o.id === categoryId);
@@ -120,7 +118,6 @@ const useCreator: ISubHook<UseCreatorResponse> = (api, data, setData) => {
             console.log('Info: Create new AnnotationInfo');
 
             const item = await AnnotatorApi.createAnnotation(
-                api,
                 imageId,
                 categoryId,
             );
@@ -142,7 +139,7 @@ const useCreator: ISubHook<UseCreatorResponse> = (api, data, setData) => {
 
             return item;
         },
-        [api, data, setData],
+        [data, setData],
     );
 
     const remove = useCallback(
@@ -155,7 +152,7 @@ const useCreator: ISubHook<UseCreatorResponse> = (api, data, setData) => {
             );
             if (aIdx === -1) return;
 
-            await AnnotatorApi.deleteAnnotation(api, annotationId);
+            await AnnotatorApi.deleteAnnotation(annotationId);
 
             const newArr = [...data];
             newArr[idx].annotations.splice(aIdx, 1);
@@ -163,7 +160,7 @@ const useCreator: ISubHook<UseCreatorResponse> = (api, data, setData) => {
                 newArr[idx].enabled = false;
             setData(newArr);
         },
-        [api, data, setData],
+        [data, setData],
     );
 
     return {
@@ -173,7 +170,7 @@ const useCreator: ISubHook<UseCreatorResponse> = (api, data, setData) => {
 };
 
 // Helper sub-Hook to extract enable method on annotation
-const useEditor: ISubHook<UseEditorResponse> = (api, data, setData) => {
+const useEditor: ISubHook<UseEditorResponse> = (data, setData) => {
     const setCategoriesEnabled = useCallback(
         (isOn: boolean) => {
             const newArr = [...data];

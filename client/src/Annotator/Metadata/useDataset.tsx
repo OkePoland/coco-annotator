@@ -6,12 +6,10 @@ import { useState, useEffect, useCallback } from 'react';
 import { Dataset, Category } from '../annotator.common';
 import { Maybe, ImportObj, Settings } from '../annotator.types';
 
-import AxiosHandler from '../../common/AxiosHandler';
 import * as AnnotatorApi from '../annotator.api';
 
 interface IUseDataset {
     (
-        api: AxiosHandler,
         imageId: number,
         showDialogMsg?: (msg: string, isError?: boolean) => void,
     ): IUseDatasetResponse;
@@ -31,7 +29,7 @@ interface IUseDatasetResponse {
     }) => void;
 }
 
-const useDataset: IUseDataset = (api, imageId, showDialogMsg) => {
+const useDataset: IUseDataset = (imageId, showDialogMsg) => {
     const [generation, moveGeneration] = useState(0);
 
     // datasetdata
@@ -56,11 +54,11 @@ const useDataset: IUseDataset = (api, imageId, showDialogMsg) => {
 
     const saveDataset = useCallback(
         async (obj: Object) => {
-            await AnnotatorApi.saveDataset(api, obj);
+            await AnnotatorApi.saveDataset(obj);
             if (showDialogMsg) showDialogMsg('Image save');
             moveGeneration(c => c + 1);
         },
-        [api, showDialogMsg],
+        [showDialogMsg],
     );
 
     const copyAnnotations = useCallback(
@@ -72,7 +70,6 @@ const useDataset: IUseDataset = (api, imageId, showDialogMsg) => {
             const { imageId, id, categoriesIds } = params;
 
             const { success, message } = await AnnotatorApi.copyAnnotations(
-                api,
                 imageId,
                 id,
                 categoriesIds,
@@ -84,12 +81,12 @@ const useDataset: IUseDataset = (api, imageId, showDialogMsg) => {
                 showDialogMsg(`Copy error (${message || ''})`, true);
             }
         },
-        [api, showDialogMsg],
+        [showDialogMsg],
     );
 
     useEffect(() => {
         const update = async () => {
-            const data: ImportObj = await AnnotatorApi.getDataset(api, imageId);
+            const data: ImportObj = await AnnotatorApi.getDataset(imageId);
             console.log('Info: Dataset loaded');
 
             setDataset(data.dataset);
@@ -108,7 +105,7 @@ const useDataset: IUseDataset = (api, imageId, showDialogMsg) => {
         } catch (error) {
             if (showDialogMsg) showDialogMsg('Loading error', true);
         }
-    }, [api, showDialogMsg, imageId, generation]);
+    }, [showDialogMsg, imageId, generation]);
 
     return {
         dataset,

@@ -12,7 +12,6 @@ import {
     UndoItemTool,
 } from './annotator.types';
 
-import AxiosHandler from '../common/AxiosHandler';
 import * as AnnotatorApi from './annotator.api';
 
 import { useStyles } from './annotator.styles';
@@ -51,17 +50,11 @@ import {
 
 interface Props {
     imageId: number;
-    api: AxiosHandler;
     navigate?: (url: string) => void;
     showDialogMsg?: (msg: string, isError?: boolean) => void;
 }
 
-const Annotator: React.FC<Props> = ({
-    imageId,
-    api,
-    navigate,
-    showDialogMsg,
-}) => {
+const Annotator: React.FC<Props> = ({ imageId, navigate, showDialogMsg }) => {
     const classes = useStyles();
 
     const {
@@ -73,7 +66,7 @@ const Annotator: React.FC<Props> = ({
         initSettings,
         saveDataset,
         copyAnnotations,
-    } = useDataset(api, imageId, showDialogMsg);
+    } = useDataset(imageId, showDialogMsg);
     const {
         segmentMode: [segmentOn, setSegmentOn],
         toolState: [activeTool, setTool],
@@ -81,7 +74,7 @@ const Annotator: React.FC<Props> = ({
         setSelected,
     } = useChoices();
 
-    const info = useInfo(api, categories);
+    const info = useInfo(categories);
     const filter = useFilter(categories);
     const cursor = useCursor(activeTool, selected.annotationId);
     const { shortcuts, setShortcuts, restoreDefaultShortcuts } = useShortcuts(
@@ -167,7 +160,6 @@ const Annotator: React.FC<Props> = ({
         groups.shapeEditor.simplify,
         groups.keypointsEditor.add,
         stashToolEvent,
-        api,
     );
     useTitle(imageInfo.size, filename);
 
@@ -245,13 +237,13 @@ const Annotator: React.FC<Props> = ({
         const url = `/api/image/${imageId}?asAttachment=true`;
         AnnotatorApi.downloadURI(url, filename);
 
-        const data = await AnnotatorApi.downloadCoco(api, imageId);
+        const data = await AnnotatorApi.downloadCoco(imageId);
         const dataUrl =
             'data:text/json;charset=utf-8,' +
             encodeURIComponent(JSON.stringify(data));
         const fileName2 = filename.replace(/\.[^/.]+$/, '') + '.json';
         AnnotatorApi.downloadURI(dataUrl, fileName2);
-    }, [api, imageId, filename, saveAction]);
+    }, [imageId, filename, saveAction]);
 
     const copyAction = useCallback(
         async (id: number, categoriesIds: number[]) => {
