@@ -2,8 +2,8 @@
  * All enabled/ disabled data related
  * with specific categories / annotations
  */
-import { useState, useEffect, useCallback } from 'react';
-import { Dispatch, SetStateAction } from 'react';
+import { useReducer, useEffect, useCallback } from 'react';
+import { Dispatch } from 'react';
 
 import { Category, Annotation } from '../annotator.common';
 import {
@@ -54,51 +54,280 @@ interface UseEditorResponse {
     }) => void;
 }
 interface ISubHook<T> {
-    (
-        data: CategoryInfo[],
-        setData: Dispatch<SetStateAction<CategoryInfo[]>>,
-    ): T;
+    (dispatch: Dispatch<Action>): T;
 }
+enum Type {
+    CATEGORIES_INIT,
+    CATEGORIES_SET_ENABLED,
+    CATEGORY_SET_ENABLED,
+    CATEGORY_SET_EXPANDED,
+    CATEGORY_SET_COLOR,
+    ANNOTATION_ADD,
+    ANNOTATION_REMOVE,
+    ANNOTATION_SET_ENABLED,
+    ANNOTATION_SET_NAME,
+    ANNOTATION_SET_COLOR,
+    ANNOTATION_ADD_METADATA,
+    ANNOTATION_EDIT_METADATA,
+}
+type Action =
+    | { type: Type.CATEGORIES_INIT; payload: { categories: Category[] } }
+    | { type: Type.CATEGORIES_SET_ENABLED; payload: { isOn: boolean } }
+    | { type: Type.CATEGORY_SET_ENABLED; payload: { categoryId: number } }
+    | {
+          type: Type.CATEGORY_SET_EXPANDED;
+          payload: { categoryId: number; isOn?: boolean };
+      }
+    | {
+          type: Type.ANNOTATION_ADD;
+          payload: { categoryId: number; obj: AnnotationInfo };
+      }
+    | {
+          type: Type.ANNOTATION_REMOVE;
+          payload: { categoryId: number; annotationId: number };
+      }
+    | {
+          type: Type.CATEGORY_SET_COLOR;
+          payload: { categoryId: number; color: string };
+      }
+    | {
+          type: Type.ANNOTATION_SET_ENABLED;
+          payload: { categoryId: number; annotationId: number };
+      }
+    | {
+          type: Type.ANNOTATION_SET_NAME;
+          payload: { categoryId: number; annotationId: number; name: string };
+      }
+    | {
+          type: Type.ANNOTATION_SET_COLOR;
+          payload: { categoryId: number; annotationId: number; color: string };
+      }
+    | {
+          type: Type.ANNOTATION_ADD_METADATA;
+          payload: { categoryId: number; annotationId: number };
+      }
+    | {
+          type: Type.ANNOTATION_EDIT_METADATA;
+          payload: {
+              categoryId: number;
+              annotationId: number;
+              index: number;
+              obj: MetadataInfo;
+          };
+      };
+
+const reducer = (state: CategoryInfo[], action: Action): CategoryInfo[] => {
+    switch (action.type) {
+        // INIT
+        case Type.CATEGORIES_INIT: {
+            const { categories } = action.payload;
+            const initialData: CategoryInfo[] = categories.map(cat => {
+                let annotations: AnnotationInfo[] = [];
+                if (cat.annotations != null) {
+                    annotations = cat.annotations.map(a => ({
+                        id: a.id,
+                        name:
+                            a.metadata && a.metadata.name
+                                ? a.metadata.name
+                                : '',
+                        color: a.color,
+                        enabled: true,
+                        metadata: Object.entries(a.metadata || []).reduce(
+                            (
+                                prevArr: MetadataInfo[],
+                                [key, value]: [string, string],
+                            ) => {
+                                if (key !== 'name')
+                                    prevArr.push({ key, value });
+                                return prevArr;
+                            },
+                            [],
+                        ),
+                        _data: a,
+                    }));
+                }
+                return {
+                    id: cat.id,
+                    name: cat.name,
+                    enabled:
+                        cat.annotations != null && cat.annotations.length > 0,
+                    expanded: CONFIG.ANNOTATION_EXPANDED,
+                    color: cat.color,
+                    _data: cat,
+                    annotations,
+                };
+            });
+            return initialData;
+        }
+        //
+        // Category actions
+        //
+        case Type.CATEGORIES_SET_ENABLED:
+            const { isOn } = action.payload;
+            return state.map(item => ({
+                ...item,
+                expanded: false,
+                enabled: isOn,
+            }));
+        case Type.CATEGORY_SET_ENABLED: {
+            const { categoryId } = action.payload;
+            const idx = state.findIndex(o => o.id === categoryId);
+            if (idx === -1) return state;
+
+            return state.map(item =>
+                item.id === categoryId
+                    ? {
+                          ...item,
+                          enabled: !item.enabled,
+                          expanded: item.expanded ? false : item.expanded,
+                      }
+                    : item,
+            );
+        }
+        case Type.CATEGORY_SET_EXPANDED: {
+            const { categoryId, isOn } = action.payload;
+            const idx = state.findIndex(o => o.id === categoryId);
+            if (idx === -1) return state;
+            if (!state[idx].enabled) return state;
+
+            return state.map(item =>
+                item.id === categoryId
+                    ? {
+                          ...item,
+                          expanded: isOn !== undefined ? isOn : !item.expanded,
+                      }
+                    : item,
+            );
+        }
+        case Type.CATEGORY_SET_COLOR: {
+            const { categoryId, color } = action.payload;
+            const idx = state.findIndex(o => o.id === categoryId);
+            if (idx === -1) return state;
+            if (!state[idx].enabled) return state;
+
+            return state.map(item =>
+                item.id === categoryId ? { ...item, color } : item,
+            );
+        }
+        //
+        // Annotation add/remove
+        //
+        case Type.ANNOTATION_ADD: {
+            const { categoryId, obj } = action.payload;
+            const idx = state.findIndex(o => o.id === categoryId);
+            if (idx === -1) return state;
+
+            const arr = [...state];
+            if (arr[idx].annotations.length === 0) arr[idx].enabled = true;
+            arr[idx].annotations.push(obj);
+
+            return arr;
+        }
+        case Type.ANNOTATION_REMOVE: {
+            const { categoryId, annotationId } = action.payload;
+
+            const idx = state.findIndex(o => o.id === categoryId);
+            if (idx === -1) return state;
+
+            const aIdx = state[idx].annotations.findIndex(
+                o => o.id === annotationId,
+            );
+            if (aIdx === -1) return state;
+
+            const arr = [...state];
+            arr[idx].annotations.splice(aIdx, 1);
+            if (arr[idx].annotations.length === 0) arr[idx].enabled = false;
+            return arr;
+        }
+        //
+        // Annotation edit
+        //
+        case Type.ANNOTATION_SET_ENABLED: {
+            const { categoryId, annotationId } = action.payload;
+            const idx = state.findIndex(o => o.id === categoryId);
+            if (idx === -1) return state;
+
+            const aIdx = state[idx].annotations.findIndex(
+                o => o.id === annotationId,
+            );
+            if (aIdx === -1) return state;
+
+            const arr = [...state];
+            arr[idx].annotations[aIdx].enabled = !arr[idx].annotations[aIdx]
+                .enabled;
+            return arr;
+        }
+        case Type.ANNOTATION_SET_NAME: {
+            const { categoryId, annotationId, name } = action.payload;
+            const idx = state.findIndex(o => o.id === categoryId);
+            if (idx === -1) return state;
+
+            const aIdx = state[idx].annotations.findIndex(
+                o => o.id === annotationId,
+            );
+            if (aIdx === -1) return state;
+
+            const arr = [...state];
+            arr[idx].annotations[aIdx].name = name;
+            return arr;
+        }
+        case Type.ANNOTATION_SET_COLOR: {
+            const { categoryId, annotationId, color } = action.payload;
+            const idx = state.findIndex(o => o.id === categoryId);
+            if (idx === -1) return state;
+
+            const aIdx = state[idx].annotations.findIndex(
+                o => o.id === annotationId,
+            );
+            if (aIdx === -1) return state;
+
+            const arr = [...state];
+            arr[idx].annotations[aIdx].color = color;
+            return arr;
+        }
+        case Type.ANNOTATION_ADD_METADATA: {
+            const { categoryId, annotationId } = action.payload;
+            const idx = state.findIndex(o => o.id === categoryId);
+            if (idx === -1) return state;
+
+            const aIdx = state[idx].annotations.findIndex(
+                o => o.id === annotationId,
+            );
+            if (aIdx === -1) return state;
+
+            const arr = [...state];
+            arr[idx].annotations[aIdx].metadata.push({ key: '', value: '' });
+            return arr;
+        }
+        case Type.ANNOTATION_EDIT_METADATA: {
+            const { categoryId, annotationId, index, obj } = action.payload;
+            const idx = state.findIndex(o => o.id === categoryId);
+            if (idx === -1) return state;
+
+            const aIdx = state[idx].annotations.findIndex(
+                o => o.id === annotationId,
+            );
+            if (aIdx === -1) return state;
+
+            const arr = [...state];
+            arr[idx].annotations[aIdx].metadata[index] = obj;
+            return arr;
+        }
+        default:
+            return state;
+    }
+};
 
 const useInfo: IUseInfo = categories => {
-    const [data, _setData] = useState<CategoryInfo[]>([]);
-
-    const creator = useCreator(data, _setData);
-    const editor = useEditor(data, _setData);
+    const [data, dispatch] = useReducer(reducer, []);
+    const creator = useCreator(dispatch);
+    const editor = useEditor(dispatch);
 
     useEffect(() => {
-        const initialData: CategoryInfo[] = categories.map(cat => {
-            let annotations: AnnotationInfo[] = [];
-            if (cat.annotations != null) {
-                annotations = cat.annotations.map(a => ({
-                    id: a.id,
-                    name: a.metadata && a.metadata.name ? a.metadata.name : '',
-                    color: a.color,
-                    enabled: true,
-                    metadata: Object.entries(a.metadata || []).reduce(
-                        (
-                            prevArr: MetadataInfo[],
-                            [key, value]: [string, string],
-                        ) => {
-                            if (key !== 'name') prevArr.push({ key, value });
-                            return prevArr;
-                        },
-                        [],
-                    ),
-                    _data: a,
-                }));
-            }
-            return {
-                id: cat.id,
-                name: cat.name,
-                enabled: cat.annotations != null && cat.annotations.length > 0,
-                expanded: CONFIG.ANNOTATION_EXPANDED,
-                color: cat.color,
-                _data: cat,
-                annotations,
-            };
+        dispatch({
+            type: Type.CATEGORIES_INIT,
+            payload: { categories },
         });
-        _setData(initialData);
     }, [categories]);
 
     return {
@@ -108,21 +337,16 @@ const useInfo: IUseInfo = categories => {
     };
 };
 
-// Helper sub-Hook to extract add / remove / edit methods on annotations
-const useCreator: ISubHook<UseCreatorResponse> = (data, setData) => {
+const useCreator: ISubHook<UseCreatorResponse> = dispatch => {
     const create = useCallback(
         async (imageId: number, categoryId: number) => {
-            const idx = data.findIndex(o => o.id === categoryId);
-            if (idx === -1) return null;
-
             console.log('Info: Create new AnnotationInfo');
 
             const item = await AnnotatorApi.createAnnotation(
                 imageId,
                 categoryId,
             );
-
-            const newInfo = {
+            const obj = {
                 id: item.id,
                 name: '',
                 color: item.color,
@@ -131,36 +355,25 @@ const useCreator: ISubHook<UseCreatorResponse> = (data, setData) => {
                 _data: item,
             };
 
-            const newArr = [...data];
-            if (newArr[idx].annotations.length === 0)
-                newArr[idx].enabled = true;
-            newArr[idx].annotations.push(newInfo);
-            setData(newArr);
+            dispatch({
+                type: Type.ANNOTATION_ADD,
+                payload: { categoryId, obj },
+            });
 
             return item;
         },
-        [data, setData],
+        [dispatch],
     );
 
     const remove = useCallback(
         async (categoryId: number, annotationId: number) => {
-            const idx = data.findIndex(o => o.id === categoryId);
-            if (idx === -1) return;
-
-            const aIdx = data[idx].annotations.findIndex(
-                o => o.id === annotationId,
-            );
-            if (aIdx === -1) return;
-
             await AnnotatorApi.deleteAnnotation(annotationId);
-
-            const newArr = [...data];
-            newArr[idx].annotations.splice(aIdx, 1);
-            if (newArr[idx].annotations.length === 0)
-                newArr[idx].enabled = false;
-            setData(newArr);
+            dispatch({
+                type: Type.ANNOTATION_REMOVE,
+                payload: { categoryId, annotationId },
+            });
         },
-        [data, setData],
+        [dispatch],
     );
 
     return {
@@ -169,143 +382,82 @@ const useCreator: ISubHook<UseCreatorResponse> = (data, setData) => {
     };
 };
 
-// Helper sub-Hook to extract enable method on annotation
-const useEditor: ISubHook<UseEditorResponse> = (data, setData) => {
+const useEditor: ISubHook<UseEditorResponse> = dispatch => {
     const setCategoriesEnabled = useCallback(
         (isOn: boolean) => {
-            const newArr = [...data];
-            newArr.forEach(c => {
-                c.enabled = isOn;
-                c.expanded = false;
-            });
-            setData(newArr);
+            dispatch({ type: Type.CATEGORIES_SET_ENABLED, payload: { isOn } });
         },
-        [data, setData],
+        [dispatch],
     );
 
     const setCategoryEnabled = useCallback(
         (categoryId: number) => {
-            const idx = data.findIndex(o => o.id === categoryId);
-            if (idx === -1) return;
-
-            const newArr = data.map(item =>
-                item.id === categoryId
-                    ? {
-                          ...item,
-                          enabled: !item.enabled,
-                          expanded: item.expanded ? false : item.expanded,
-                      }
-                    : item,
-            );
-            setData(newArr);
+            dispatch({
+                type: Type.CATEGORY_SET_ENABLED,
+                payload: { categoryId },
+            });
         },
-        [data, setData],
+        [dispatch],
     );
 
     const setCategoryExpanded = useCallback(
         (categoryId: number, isOn?: boolean) => {
-            const idx = data.findIndex(o => o.id === categoryId);
-            if (idx === -1) return;
-            if (!data[idx].enabled) return;
-
-            const newArr = data.map(item =>
-                item.id === categoryId
-                    ? {
-                          ...item,
-                          expanded: isOn !== undefined ? isOn : !item.expanded,
-                      }
-                    : item,
-            );
-            setData(newArr);
+            dispatch({
+                type: Type.CATEGORY_SET_EXPANDED,
+                payload: { categoryId, isOn },
+            });
         },
-        [data, setData],
+        [dispatch],
     );
 
     const setCategoryColor = useCallback(
         (categoryId: number, color: string) => {
-            const idx = data.findIndex(o => o.id === categoryId);
-            if (idx === -1) return;
-            if (!data[idx].enabled) return;
-
-            const newArr = data.map(item =>
-                item.id === categoryId ? { ...item, color } : item,
-            );
-            setData(newArr);
+            dispatch({
+                type: Type.CATEGORY_SET_COLOR,
+                payload: { categoryId, color },
+            });
         },
-        [data, setData],
+        [dispatch],
     );
 
     const setAnnotationEnabled = useCallback(
         (categoryId: number, annotationId: number) => {
-            const idx = data.findIndex(o => o.id === categoryId);
-            if (idx === -1) return;
-
-            const aIdx = data[idx].annotations.findIndex(
-                o => o.id === annotationId,
-            );
-            if (aIdx === -1) return;
-
-            const newArr = [...data];
-            newArr[idx].annotations[aIdx].enabled = !newArr[idx].annotations[
-                aIdx
-            ].enabled;
-
-            setData(newArr);
+            dispatch({
+                type: Type.ANNOTATION_SET_ENABLED,
+                payload: { categoryId, annotationId },
+            });
         },
-        [data, setData],
+        [dispatch],
     );
 
     const setAnnotationName = useCallback(
         (categoryId: number, annotationId: number, name: string) => {
-            const idx = data.findIndex(o => o.id === categoryId);
-            if (idx === -1) return;
-
-            const aIdx = data[idx].annotations.findIndex(
-                o => o.id === annotationId,
-            );
-            if (aIdx === -1) return;
-
-            const newArr = [...data];
-            newArr[idx].annotations[aIdx].name = name;
-
-            setData(newArr);
+            dispatch({
+                type: Type.ANNOTATION_SET_NAME,
+                payload: { categoryId, annotationId, name },
+            });
         },
-        [data, setData],
+        [dispatch],
     );
 
     const setAnnotationColor = useCallback(
         (categoryId: number, annotationId: number, color: string) => {
-            const idx = data.findIndex(o => o.id === categoryId);
-            if (idx === -1) return;
-
-            const aIdx = data[idx].annotations.findIndex(
-                o => o.id === annotationId,
-            );
-            if (aIdx === -1) return;
-
-            const newArr = [...data];
-            newArr[idx].annotations[aIdx].color = color;
-
-            setData(newArr);
+            dispatch({
+                type: Type.ANNOTATION_SET_COLOR,
+                payload: { categoryId, annotationId, color },
+            });
         },
-        [data, setData],
+        [dispatch],
     );
 
     const addAnnotationMetadata = useCallback(
         (categoryId: number, annotationId: number) => {
-            const idx = data.findIndex(o => o.id === categoryId);
-            if (idx === -1) return;
-
-            const aIdx = data[idx].annotations.findIndex(
-                o => o.id === annotationId,
-            );
-            if (aIdx === -1) return;
-
-            const newArr = [...data];
-            newArr[idx].annotations[aIdx].metadata.push({ key: '', value: '' });
-            setData(newArr);
+            dispatch({
+                type: Type.ANNOTATION_ADD_METADATA,
+                payload: { categoryId, annotationId },
+            });
         },
-        [data, setData],
+        [dispatch],
     );
 
     const editAnnotationMetadata = useCallback(
@@ -315,22 +467,12 @@ const useEditor: ISubHook<UseEditorResponse> = (data, setData) => {
             index: number;
             obj: MetadataInfo;
         }) => {
-            const { categoryId, annotationId, index, obj } = params;
-
-            const idx = data.findIndex(o => o.id === categoryId);
-            if (idx === -1) return;
-
-            const aIdx = data[idx].annotations.findIndex(
-                o => o.id === annotationId,
-            );
-            if (aIdx === -1) return;
-
-            const newArr = [...data];
-            newArr[idx].annotations[aIdx].metadata[index] = obj;
-
-            setData(newArr);
+            dispatch({
+                type: Type.ANNOTATION_EDIT_METADATA,
+                payload: params,
+            });
         },
-        [data, setData],
+        [dispatch],
     );
 
     return {
@@ -345,5 +487,4 @@ const useEditor: ISubHook<UseEditorResponse> = (data, setData) => {
         editAnnotationMetadata,
     };
 };
-
 export default useInfo;
