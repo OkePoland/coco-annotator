@@ -1,0 +1,22 @@
+{
+  "name": "@coco/core",
+  "version": "1.0.0",
+  "license": "MIT",
+  "main": "./lib/index.js",
+  "module": "./lib-esm/index.js",
+  "types": "./lib/index.d.ts",
+  "devDependencies": {
+    "@material-ui/core": "^4.9.5",
+    "axios": "^0.19.2",
+    "typescript": "^3.8.3"
+  },
+  "peerDependencies": {
+    "@material-ui/core": "^4.9.5",
+    "axios": "^0.19.2",
+    "react": "^16.13.0",
+    "react-dom": "^16.13.0"
+  },
+  "scripts": {
+    "libbuild": "tsc && tsc --build tsconfig.esm.json"
+  }
+}
