@@ -1,15 +1,31 @@
-FROM node:10
+FROM node:10 AS builder
 
-RUN npm install -g --quiet \
-    react-scripts@3.2.0
+# Environment
+
+RUN npm i -g -s \
+    yarn@latest \
+    lerna@3.20.2
 
 WORKDIR /workspace/
 
+# Dependencies
+
 COPY ./client/package.json /workspace/package.json
-RUN npm install
-ENV NODE_PATH=/workspace/node_modules
+COPY ./client/lerna.json /workspace/lerna.json
+COPY ./client/tsconfig.json /workspace/tsconfig.json
+COPY ./client/typings.d.ts /workspace/typings.d.ts
 
-WORKDIR /workspace/client/
+COPY ./client/packages /workspace/packages
 
-EXPOSE 3000
-CMD npm run start
+ENV NODE_ENV production
+
+# Build
+RUN yarn bootstrap
+RUN yarn build
+
+# Serve
+
+FROM nginx
+
+COPY client/nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=builder /workspace/packages/clientapp/build /usr/share/nginx/html
