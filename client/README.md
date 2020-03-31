@@ -1,77 +1,44 @@
-# Multi Annotator Client
+This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
-React App based on [coco-annotator][df1] project with use of
- - Yarn workspaces
- - Lerna
- - Typescript
- - Paper.js
-
-### Packages
-  - `@multi-annotator\core` - library for shared components, methods and utils
-  - `@multi-annotator\annotator` - library with tool for annotating ( use Paper.js )
-  - `@multi-annotator\clientApp` - React app which use core & annotator libraries
----
-### Installation
-
-##### Development ( React Scripts )
-Dev server use proxy configuration for images defined in:
-> packages/clientapp/packages.json  ("proxy": "http://localhost:5000")
-
-In order to run project
-```sh
-yarn add lerna ## ( if not installed ) ##
-yarn bootstrap
-yarn start
-```
-
-##### Production ( Docker )
-Production build use nginx for optimization purposes
-Production server use proxy configuration for images defined in:
-> nginx.conf
-
-Dokcerfile contains following steps:
-- `Build step`
-   - Install lerna + yarn
-    - Copy files
-    - Install packages + bootstrap them via lerna
-    - Comile typescript in `@multi-annotator/core` , `@multi-annotator/annotator` 
-    - Build production package for `@multi-annotator/clientapp` ( use core && annotator compiled code )
-    - Compiled App files are now inside packages/clientapp/build folder
-- `Serve step`
-    - Copy packages/clientapp/build content into nginx folder
-    - Run nginx server
-
-In order to build project
-```sh
-docker-compose -p multi-annotator-react -f docker-compose.dev.yml up --build
-```
----
-### Available Scripts
+## Available Scripts
 
 In the project directory, you can run:
 
-##### `yarn bootstrap`
-- Run lerna bootstrap  
-Bootstrap the packages in the current Lerna repo. 
-Installs all of their dependencies and links any cross-dependencies.
+### `yarn start`
 
-##### `yarn start`
-- Compile libraries (in watch mode) + start React development server
+Runs the app in the development mode.<br />
+Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 
-##### `yarn build`
-- Compile all packages (in dependency order thanks to --stream option)
+The page will reload if you make edits.<br />
+You will also see any lint errors in the console.
 
-##### `clear_libs`
-- Remove `dist` and `build` folders from packages
+### `yarn test`
 
-##### `clear`
-- Run `clear_libs` ant then remove `node_modules` from every packages 
-( After this command another `yarn bootstrap` will be required )
+Launches the test runner in the interactive watch mode.<br />
+See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
 
----
-#### Credits
-Special credits to:
-- `W.B.` for React support
-- `Count A.G.` for help with Docker && nginx configuration
+### `yarn build`
 
-[df1]: <https://github.com/jsbroks/coco-annotator>
+Builds the app for production to the `build` folder.<br />
+It correctly bundles React in production mode and optimizes the build for the best performance.
+
+The build is minified and the filenames include the hashes.<br />
+Your app is ready to be deployed!
+
+See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+
+### `yarn eject`
+
+**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+
+If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+
+Instead, it will copy all the configuration files and the transitive dependencies (Webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+
+You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+
+## Learn More
+
+You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+
+To learn React, check out the [React documentation](https://reactjs.org/).
