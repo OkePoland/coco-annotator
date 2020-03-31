@@ -5,7 +5,7 @@
 import { useReducer, useEffect, useCallback } from 'react';
 import { Dispatch } from 'react';
 
-import { CoreType } from '@multi-annotator/core';
+import { Category, Annotation } from '@multi-annotator/core';
 import {
     CategoryInfo,
     AnnotationInfo,
@@ -18,7 +18,7 @@ import * as CONFIG from '../app.config';
 import * as AnnotatorApi from '../app.api';
 
 interface IUseInfo {
-    (categories: CoreType.Category[]): UseInfoResponse;
+    (categories: Category[]): UseInfoResponse;
 }
 interface UseInfoResponse {
     data: CategoryInfo[];
@@ -26,7 +26,7 @@ interface UseInfoResponse {
     editor: UseEditorResponse;
 }
 interface UseCreatorResponse {
-    create: (imageId: number, categoryId: number) => Promise<Maybe<CoreType.Annotation>>;
+    create: (imageId: number, categoryId: number) => Promise<Maybe<Annotation>>;
     remove: (categoryId: number, annotationId: number) => Promise<void>;
 }
 interface UseEditorResponse {
@@ -71,7 +71,7 @@ enum Type {
     ANNOTATION_EDIT_METADATA,
 }
 type Action =
-    | { type: Type.CATEGORIES_INIT; payload: { categories: CoreType.Category[] } }
+    | { type: Type.CATEGORIES_INIT; payload: { categories: Category[] } }
     | { type: Type.CATEGORIES_SET_ENABLED; payload: { isOn: boolean } }
     | { type: Type.CATEGORY_SET_ENABLED; payload: { categoryId: number } }
     | {

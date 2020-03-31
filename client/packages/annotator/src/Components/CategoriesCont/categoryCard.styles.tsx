@@ -12,9 +12,6 @@ export const useStyles = makeStyles((theme: Theme) => ({
         marginBottom: 5,
         backgroundColor: 'inherit',
     },
-    row: {
-        // backgroundColor: theme.palette.primary.main,
-    },
     iconCell: {
         textAlign: 'center',
     },

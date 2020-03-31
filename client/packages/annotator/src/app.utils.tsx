@@ -3,7 +3,7 @@
  * In most cases there are methods which affect/ get data
  * AnnotationInfo & AnnotationGroups simultaneously
  */
-import { CoreType } from '@multi-annotator/core';
+import { Dataset } from '@multi-annotator/core';
 import {
     Maybe,
     ExportObj,
@@ -29,7 +29,7 @@ import { CategoryGroup, AnnotationGroup } from './Paper/Shape';
  */
 export const createExportObj = (
     imageId: number,
-    dataset: Maybe<CoreType.Dataset>,
+    dataset: Maybe<Dataset>,
     segmentOn: boolean,
     activeTool: Maybe<Tool>,
     selected: SelectedState,

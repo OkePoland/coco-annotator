@@ -2,7 +2,7 @@ import { useRef, useState, useEffect, useCallback } from 'react';
 import { MutableRefObject } from 'react';
 import paper from 'paper';
 
-import { CoreType } from '@multi-annotator/core';
+import { Category, Annotation } from '@multi-annotator/core';
 import { Maybe, SelectedState } from '../app.types';
 
 import { CategoryGroup, AnnotationGroup } from './Shape';
@@ -10,7 +10,7 @@ import { findCategoryGroup, findAnnotationGroup } from './Utils/groupUtils';
 
 // interfaces
 interface IUseGroups {
-    (categories: CoreType.Category[], selected: SelectedState): UseGroupsResponse;
+    (categories: Category[], selected: SelectedState): UseGroupsResponse;
 }
 interface UseGroupsResponse {
     groupsRef: MutableRefObject<CategoryGroup[]>;
@@ -20,7 +20,7 @@ interface UseGroupsResponse {
     generation: number;
 }
 interface UseCreatorResponse {
-    add: (categoryId: number, annotation: CoreType.Annotation) => void;
+    add: (categoryId: number, annotation: Annotation) => void;
     remove: (categoryId: number, annotationId: number) => void;
 }
 interface UseShapeEditorResponse {
@@ -101,7 +101,7 @@ const useGroups: IUseGroups = (categories, selected) => {
 // add/remove Annotations Groups
 const useCreator = (groupsRef: MutableRefObject<CategoryGroup[]>) => {
     const add = useCallback(
-        (categoryId: number, annotation: CoreType.Annotation) => {
+        (categoryId: number, annotation: Annotation) => {
             const categoryGroup = findCategoryGroup(
                 groupsRef.current,
                 categoryId,

@@ -1,4 +1,9 @@
-export { CoreType } from './types';
+export {  
+    Dataset,
+    Image,
+    Category,
+    Annotation,
+} from './types';
 
 export { AxiosHandler } from './api';
 

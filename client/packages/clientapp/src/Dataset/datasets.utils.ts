@@ -49,10 +49,8 @@ export const onCocoDownloadClick = async ({
     removeCallback();
 };
 
-const getDownloadImageURL = () => process.env.REACT_APP_API_BASE_URL;
-
 export const downloadImageAction = async ({ id, name }: IDownloadImage) => {
-    const uri = `${getDownloadImageURL()}/image/${id}?asAttachment=true`;
+    const uri = `${process.env.REACT_APP_API_BASE_URL}/image/${id}?asAttachment=true`;
     downloadURI(uri, name);
 
     const response = await DatasetApi.downloadImage(id);

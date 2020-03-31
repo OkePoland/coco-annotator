@@ -1,5 +1,5 @@
 import paper from 'paper';
-import { CoreType } from '@multi-annotator/core';
+import { Category, Annotation, Dataset, Image } from '@multi-annotator/core';
 
 export type Maybe<T> = T | null | undefined;
 
@@ -39,7 +39,7 @@ export interface CategoryInfo {
     enabled: boolean;
     expanded: boolean;
     color: string;
-    _data: CoreType.Category;
+    _data: Category;
     annotations: AnnotationInfo[];
 }
 
@@ -49,7 +49,7 @@ export interface AnnotationInfo {
     color: string;
     enabled: boolean;
     metadata: Array<MetadataInfo>;
-    _data: CoreType.Annotation;
+    _data: Annotation;
 }
 
 export interface MetadataInfo {
@@ -171,17 +171,17 @@ export interface UndoItemTool {
 
 // Import types
 export interface ImportObj {
-    categories: CoreType.Category[];
-    dataset: CoreType.Dataset;
+    categories: Category[];
+    dataset: Dataset;
     preferences: Settings;
-    image: CoreType.Image;
+    image: Image;
 }
 
 // Export types
 export interface ExportObj {
     mode: string;
     user: Settings;
-    dataset: Maybe<CoreType.Dataset>;
+    dataset: Maybe<Dataset>;
     image: {
         id: number;
         settings: SelectedState;

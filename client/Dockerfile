@@ -3,7 +3,7 @@ FROM node:10 AS builder
 # Environment
 
 RUN npm i -g -s \
-    yarn@latest \
+    yarn@1.10.1 \
     lerna@3.20.2
 
 WORKDIR /workspace/

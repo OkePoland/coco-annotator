@@ -3,7 +3,7 @@
  */
 import { useState, useEffect, useCallback } from 'react';
 
-import { CoreType } from '@multi-annotator/core';
+import { Category, Dataset } from '@multi-annotator/core';
 import { Maybe, ImportObj, Settings } from '../app.types';
 
 import * as AnnotatorApi from '../app.api';
@@ -15,8 +15,8 @@ interface IUseDataset {
     ): IUseDatasetResponse;
 }
 interface IUseDatasetResponse {
-    dataset: Maybe<CoreType.Dataset>;
-    categories: CoreType.Category[];
+    dataset: Maybe<Dataset>;
+    categories: Category[];
     filename: string;
     next: Maybe<number>;
     previous: Maybe<number>;
@@ -33,8 +33,8 @@ const useDataset: IUseDataset = (imageId, showDialogMsg) => {
     const [generation, moveGeneration] = useState(0);
 
     // datasetdata
-    const [dataset, setDataset] = useState<Maybe<CoreType.Dataset>>(null);
-    const [categories, setCategories] = useState<Array<CoreType.Category>>([]);
+    const [dataset, setDataset] = useState<Maybe<Dataset>>(null);
+    const [categories, setCategories] = useState<Array<Category>>([]);
 
     // image data
     const [filename, setFilename] = useState<string>('');

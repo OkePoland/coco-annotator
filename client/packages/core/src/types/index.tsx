@@ -1,3 +1,6 @@
-import * as CoreType from './coreType';
-
-export { CoreType };
+export {  
+    Dataset,
+    Image,
+    Category,
+    Annotation,
+} from './coreType';

@@ -2,23 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { useNavigation } from 'react-navi';
 import { useSnackbar } from 'notistack';
 
-// import { SharedComponent1 } from '@multi-annotator/core';
-import {
-    // AnnotatorTheme,
-    Annotator,
-    AnnotatorApi,
-} from '@multi-annotator/annotator';
+import { Annotator, AnnotatorApi } from '@multi-annotator/annotator';
 
 interface Props {
     imageId: number;
 }
-
-// const overrideTheme: AnnotatorTheme = {
-//     leftPanel: '#4b5162',
-//     middlePanel: '#7c818c',
-//     rightPanel: '#4b5162',
-//     text: '#ff0000',
-// };
 
 const AnnotatorPage: React.FC<Props> = ({ imageId }) => {
     const { navigate } = useNavigation();
@@ -39,7 +27,6 @@ const AnnotatorPage: React.FC<Props> = ({ imageId }) => {
         <Annotator
             key={imageId}
             imageId={imageId}
-            // themeObj={overrideTheme}
             navigate={navigate}
             showDialogMsg={(msg: string, isError?: boolean) => {
                 enqueueSnackbar(msg, {

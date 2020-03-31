@@ -1,9 +1,9 @@
 import { useState, useMemo, useCallback } from 'react';
 
-import { CoreType } from '@multi-annotator/core';
+import { Category } from '@multi-annotator/core';
 
 interface IUseFilter {
-    (categories: CoreType.Category[]): UseFilterResponse;
+    (categories: Category[]): UseFilterResponse;
 }
 interface UseFilterResponse {
     searchText: string;

@@ -90,7 +90,7 @@ export interface Annotation {
     events?: [];
 }
 
-export interface DatasetPermissions {
+interface DatasetPermissions {
     owner?: boolean;
     edit?: boolean;
     share?: boolean;
@@ -99,6 +99,6 @@ export interface DatasetPermissions {
     download?: boolean;
 }
 
-export interface IDict {
+interface IDict {
     [key: string]: any;
 }

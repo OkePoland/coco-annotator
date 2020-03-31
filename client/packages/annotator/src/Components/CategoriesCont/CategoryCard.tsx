@@ -57,12 +57,7 @@ const CategoryCard: React.FC<Props> = ({
 
     return (
         <Card className={clsx(classes.root, isSelected && classes.selected)}>
-            <Grid
-                container
-                justify="center"
-                alignItems="center"
-                className={classes.row}
-            >
+            <Grid container justify="center" alignItems="center">
                 <Grid item xs>
                     <IconButton
                         disabled={annotationCount === 0}
