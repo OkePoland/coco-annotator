@@ -1,0 +1,20 @@
+{
+  "name": "@multi-annotator/core",
+  "version": "1.0.0",
+  "license": "MIT",
+  "main": "./dist/lib/index.js",
+  "types": "./dist/lib/index.d.ts",
+  "module": "./dist/lib-esm/index.js",
+  "dependencies": {
+    "@material-ui/core": "^4.9.5",
+    "axios": "^0.19.2",
+    "react": "^16.13.0",
+    "react-dom": "^16.13.0",
+    "typescript": "^3.8.3"
+  },
+  "scripts": {
+    "prestart": "yarn build",
+    "start": "tsc --build tsconfig.esm.json -w",
+    "build": "tsc && tsc --build tsconfig.esm.json"
+  }
+}
