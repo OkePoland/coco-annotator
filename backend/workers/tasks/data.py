@@ -109,7 +109,7 @@ def collect_coco_annotations(task, categories, dataset, socket):
     task.info("===== Getting COCO annotations =====")
     db_categories = CategoryModel.objects(id__in=categories, deleted=False) \
         .only(*CategoryModel.COCO_PROPERTIES)
-    db_images = ImageModel.objects(deleted=False, annotated=True, dataset_id=dataset.id) \
+    db_images = ImageModel.objects(deleted=False, dataset_id=dataset.id) \
         .only(*ImageModel.COCO_PROPERTIES)
     db_annotations = AnnotationModel.objects(deleted=False, category_id__in=categories)
     total_items = db_categories.count()
