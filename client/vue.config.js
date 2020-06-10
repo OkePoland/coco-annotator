@@ -10,14 +10,14 @@ module.exports = {
           "^/api": ""
         }
       },
-      "/socket.io*": {
-        target: "http://webserver:5000/socket.io",
-        secure: false,
-        changeOrigin: true,
-        pathRewrite: {
-          "^/socket.io": ""
-        }
-      }
+      // "/socket.io*": {
+      //   target: "http://webserver:5000/socket.io",
+      //   secure: false,
+      //   changeOrigin: true,
+      //   pathRewrite: {
+      //     "^/socket.io": ""
+      //   }
+      // }
     }
   },
   lintOnSave: undefined,
