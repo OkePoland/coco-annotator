@@ -95,7 +95,7 @@ const useDataset: IUseDataset = (imageId, showDialogMsg) => {
             setNext(data.image.next !== undefined ? data.image.next : null);
             setPrevious(data.image.previous || null);
 
-            if (data.preferences) {
+            if (data.preferences.tools != null && data.preferences.shortcuts != null) {
                 setInitSettings(data.preferences);
             }
         };
