@@ -1,0 +1,32 @@
+{
+  "name": "@multi-annotator/video-annotator",
+  "version": "1.0.0",
+  "license": "MIT",
+  "main": "./dist/lib/index.js",
+  "types": "./dist/lib/index.d.ts",
+  "module": "./dist/lib-esm/index.js",
+  "dependencies": {
+    "@multi-annotator/core": "^1.0.0",
+    "@material-ui/core": "^4.9.5",
+    "@material-ui/icons": "^4.9.1",
+    "@types/react": "^16.9.0",
+    "clsx": "^1.1.0",
+    "magic-wand-tool": "^1.1.4",
+    "material-ui-color-picker": "^3.4.0",
+    "paper": "^0.12.4",
+    "react": "^16.13.0",
+    "react-dom": "^16.13.0",
+    "typescript": "^3.8.3"
+  },
+  "devDependencies": {
+    "prettier": "^1.19.1",
+    "tslint": "^6.1.0",
+    "tslint-config-prettier": "^1.18.0",
+    "tslint-plugin-prettier": "^2.1.0"
+  },
+  "scripts": {
+    "prestart": "yarn build",
+    "start": "tsc --build tsconfig.esm.json -w",
+    "build": "tsc && tsc --build tsconfig.esm.json"
+  }
+}

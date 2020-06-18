@@ -1,0 +1,13 @@
+{
+  "include": ["src"],
+  "exclude": ["node_modules", "dist"],
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "dist/lib-esm",
+    "module": "esnext",
+    "target": "esnext",
+    "moduleResolution": "node",
+    "lib": ["dom", "esnext"],
+    "declaration": false
+  }
+}
