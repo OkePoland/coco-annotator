@@ -1,5 +1,5 @@
 {
-  "name": "@multi-annotator/annotator",
+  "name": "@multi-annotator/image-annotator",
   "version": "1.0.0",
   "license": "MIT",
   "main": "./dist/lib/index.js",
