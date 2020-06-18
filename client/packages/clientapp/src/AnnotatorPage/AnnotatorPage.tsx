@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigation } from 'react-navi';
 import { useSnackbar } from 'notistack';
 
-import { Annotator, AnnotatorApi } from '@multi-annotator/annotator';
+import { Annotator, AnnotatorApi } from '@multi-annotator/image-annotator';
 
 interface Props {
     imageId: number;
