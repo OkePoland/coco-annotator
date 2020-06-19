@@ -6,7 +6,8 @@ import Layout from './Layout';
 import Auth from '../Auth/Auth';
 import DatasetsList from '../Dataset/List/List';
 import DatasetDetails from '../Dataset/Details/Details';
-import AnnotatorPage from '../AnnotatorPage/AnnotatorPage';
+import ImageEditor from '../Editor/ImageEditor';
+import VideoEditor from '../Editor/VideoEditor';
 
 import {
     withAuthentication,
@@ -76,7 +77,14 @@ export default compose(
         '/annotate/:id': withAuthentication(
             route(async req => {
                 return {
-                    view: <AnnotatorPage imageId={parseInt(req.params.id)} />,
+                    view: <ImageEditor imageId={parseInt(req.params.id)} />,
+                };
+            }),
+        ),
+        '/video/:id': withAuthentication(
+            route(async req => {
+                return {
+                    view: <VideoEditor id={parseInt(req.params.id)} />,
                 };
             }),
         ),

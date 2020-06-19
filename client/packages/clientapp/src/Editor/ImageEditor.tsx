@@ -8,7 +8,7 @@ interface Props {
     imageId: number;
 }
 
-const AnnotatorPage: React.FC<Props> = ({ imageId }) => {
+const ImageEditor: React.FC<Props> = ({ imageId }) => {
     const { navigate } = useNavigation();
     const { enqueueSnackbar } = useSnackbar();
 
@@ -37,4 +37,4 @@ const AnnotatorPage: React.FC<Props> = ({ imageId }) => {
     );
 };
 
-export default AnnotatorPage;
+export default ImageEditor;
