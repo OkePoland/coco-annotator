@@ -4,6 +4,7 @@ module.exports = {
     proxy: {
       "/api/*": {
         target: "http://webserver:5000/api/",
+        secure: false,
         changeOrigin: true,
         pathRewrite: {
           "^/api": ""
@@ -11,6 +12,7 @@ module.exports = {
       },
       "/socket.io*": {
         target: "http://webserver:5000/socket.io",
+        secure: false,
         changeOrigin: true,
         pathRewrite: {
           "^/socket.io": ""

@@ -55,7 +55,6 @@ class DatasetExports(Resource):
     @login_required
     def get(self, export_id):
         """ Returns exports """
-
         export = ExportModel.objects(id=export_id).first()
         if export is None:
             return {"message": "Invalid export ID"}, 400

@@ -30,22 +30,38 @@ export default {
   scan(id) {
     return axios.get(`${baseURL}/${id}/scan`);
   },
-  exportingCOCO(id, categories) {
-    return axios.get(`${baseURL}/${id}/export?categories=${categories}`);
+  exportingCOCO(id, categories, format, validation_size, testing_size, tfrecord_train_num_shards, tfrecord_val_num_shards,
+                tfrecord_test_num_shards) {
+    if (validation_size==="") validation_size = 0;
+    if (testing_size==="") testing_size = 0;
+    if (tfrecord_train_num_shards==null) tfrecord_train_num_shards = 1;
+    if (tfrecord_val_num_shards==null) tfrecord_val_num_shards = 1;
+    if (tfrecord_test_num_shards==null) tfrecord_test_num_shards = 1;
+    return axios.get(`${baseURL}/${id}/export?categories=${categories}&export_format=${format}&validation_size=${validation_size}&testing_size=${testing_size}&tfrecord_train_num_shards=${tfrecord_train_num_shards}&tfrecord_val_num_shards=${tfrecord_val_num_shards}&tfrecord_test_num_shards=${tfrecord_test_num_shards}`);
   },
   getCoco(id) {
     return axios.get(`${baseURL}/${id}/coco`);
   },
-  uploadCoco(id, file) {
-    let form = new FormData();
-    form.append("coco", file);
 
+  uploadCoco(id, files, path_string) {
+
+    let form = new FormData();
+
+    if(files!=null)
+    {
+      for (var i = 0; i < files.length; i++) {
+        let file = files.item(i);
+        form.append('coco', file, file.name);
+      }
+    }
+     form.append('path_string', path_string);
     return axios.post(`${baseURL}/${id}/coco`, form, {
       headers: {
         "Content-Type": "multipart/form-data"
       }
     });
   },
+
   export(id, format) {
     return axios.get(`${baseURL}/${id}/${format}`);
   },
@@ -60,5 +76,8 @@ export default {
   },
   resetMetadata(id) {
     return axios.get(`${baseURL}/${id}/reset/metadata`);
+  },
+  resetAnnotations(id) {
+    return axios.get(`${baseURL}/${id}/reset/annotations`);
   }
 };

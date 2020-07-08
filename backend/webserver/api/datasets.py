@@ -1,14 +1,7 @@
-from flask import request
-from flask_restplus import Namespace, Resource, reqparse
-from flask_login import login_required, current_user
-from werkzeug.datastructures import FileStorage
-from mongoengine.errors import NotUniqueError
+import datetime
+import json
+import os
 from threading import Thread
-
-from google_images_download import google_images_download as gid
-
-from ..util.pagination_util import Pagination
-from ..util import query_util, coco_util, profile
 
 from database import (
     ImageModel,
@@ -17,13 +10,17 @@ from database import (
     AnnotationModel,
     ExportModel
 )
+from flask import request
+from flask_login import login_required, current_user
+from flask_restplus import Namespace, Resource, reqparse
+from google_images_download import google_images_download as gid
+from mongoengine.errors import NotUniqueError
+from werkzeug.datastructures import FileStorage
 
-import datetime
-import json
-import os
+from ..util import query_util, coco_util, profile
+from ..util.pagination_util import Pagination
 
 api = Namespace('dataset', description='Dataset related operations')
-
 
 dataset_create = reqparse.RequestParser()
 dataset_create.add_argument('name', required=True)
@@ -41,15 +38,24 @@ delete_data.add_argument('fully', default=False, type=bool,
                          help="Fully delete dataset (no undo)")
 
 coco_upload = reqparse.RequestParser()
-coco_upload.add_argument('coco', location='files', type=FileStorage, required=True, help='Json coco')
+coco_upload.add_argument('coco', location='files', type=FileStorage, required=False, help='Json coco', action='append')
+
+path_string = reqparse.RequestParser()
+path_string.add_argument('path_string', type=str, required=False, help='Path to labels ')
 
 export = reqparse.RequestParser()
 export.add_argument('categories', type=str, default=None, required=False, help='Ids of categories to export')
+export.add_argument('export_format', type=str, default=None, required=False, help='Format of expected export')
+export.add_argument('validation_size', type=int, default=None, required=False, help='Size of validation dataset')
+export.add_argument('testing_size', type=int, default=None, required=False, help='Size of testing dataset')
+export.add_argument('tfrecord_train_num_shards', type=int, default=1, required=False, help='Size of training dataset')
+export.add_argument('tfrecord_val_num_shards', type=int, default=1, required=False, help='Size of validation dataset')
+export.add_argument('tfrecord_test_num_shards', type=int, default=1, required=False, help='Size of testing dataset')
 
 update_dataset = reqparse.RequestParser()
 update_dataset.add_argument('categories', location='json', type=list, help="New list of categories")
 update_dataset.add_argument('default_annotation_metadata', location='json', type=dict,
-                            help="Default annotation metadata")                            
+                            help="Default annotation metadata")
 
 dataset_generate = reqparse.RequestParser()
 dataset_generate.add_argument('keywords', location='json', type=list, default=[],
@@ -151,11 +157,27 @@ class DatasetCleanMeta(Resource):
         if dataset is None:
             return {"message": "Invalid dataset id"}, 400
 
-        AnnotationModel.objects(dataset_id=dataset.id)\
-            .update(metadata=dataset.default_annotation_metadata)
-        ImageModel.objects(dataset_id=dataset.id)\
-            .update(metadata={})
+        AnnotationModel.objects(dataset_id=dataset.id).update(metadata=dataset.default_annotation_metadata)
+        ImageModel.objects(dataset_id=dataset.id).update(metadata={})
 
+        return {'success': True}
+
+
+@api.route('/<int:dataset_id>/reset/annotations')
+class DatasetCleanAnnotations(Resource):
+
+    @login_required
+    def get(self, dataset_id):
+        args = dataset_generate.parse_args()
+        dataset = current_user.datasets.filter(id=dataset_id, deleted=False).first()
+        if dataset is None:
+            return {"message": "Invalid dataset id"}, 400
+
+        AnnotationModel.objects(dataset_id=dataset.id).delete()
+        ImageModel.objects(dataset_id=dataset.id).update(
+            set__annotated=False,
+            set__num_annotations=0
+        )
         return {'success': True}
 
 
@@ -179,14 +201,15 @@ class DatasetStats(Resource):
         category_count = dict()
         image_category_count = dict()
         for category in dataset.categories:
-
             # Calculate the annotation count in the current category in this dataset
             cat_name = CategoryModel.objects(id=category).first()['name']
             cat_count = AnnotationModel.objects(dataset_id=dataset_id, category_id=category, deleted=False).count()
             category_count.update({str(cat_name): cat_count})
 
             # Calculate the annotated images count in the current category in this dataset
-            image_count = len(AnnotationModel.objects(dataset_id=dataset_id, category_id=category, deleted=False).distinct('image_id'))
+            image_count = len(
+                AnnotationModel.objects(dataset_id=dataset_id, category_id=category, deleted=False).distinct(
+                    'image_id'))
             image_category_count.update({str(cat_name): image_count})
 
         stats = {
@@ -222,7 +245,7 @@ class DatasetId(Resource):
 
         if dataset is None:
             return {"message": "Invalid dataset id"}, 400
-        
+
         if not current_user.can_delete(dataset):
             return {"message": "You do not have permission to delete the dataset"}, 403
 
@@ -254,9 +277,9 @@ class DatasetId(Resource):
                     update[f'set__metadata__{key}'] = value
 
             dataset.default_annotation_metadata = default_annotation_metadata
-            
+
             if len(update.keys()) > 0:
-                AnnotationModel.objects(dataset_id=dataset.id, deleted=False)\
+                AnnotationModel.objects(dataset_id=dataset.id, deleted=False) \
                     .update(**update)
 
         dataset.update(
@@ -310,7 +333,7 @@ class DatasetData(Resource):
             dataset_json['numberImages'] = images.count()
             dataset_json['numberAnnotated'] = images.filter(annotated=True).count()
             dataset_json['permissions'] = dataset.permissions(current_user)
-            
+
             first = images.first()
             if first is not None:
                 dataset_json['first_image_id'] = images.first().id
@@ -322,6 +345,7 @@ class DatasetData(Resource):
             "datasets": datasets_json,
             "categories": query_util.fix_ids(current_user.categories.filter(deleted=False).all())
         }
+
 
 @api.route('/<int:dataset_id>/data')
 class DatasetDataId(Resource):
@@ -344,7 +368,7 @@ class DatasetDataId(Resource):
         dataset = current_user.datasets.filter(id=dataset_id, deleted=False).first()
         if dataset is None:
             return {'message', 'Invalid dataset id'}, 400
-                
+
         # Make sure folder starts with is in proper format
         if len(folder) > 0:
             folder = folder[0].strip('/') + folder[1:]
@@ -359,42 +383,29 @@ class DatasetDataId(Resource):
         # Remove parsed arguments
         for key in parsed_args:
             args.pop(key, None)
-        
+
         # Generate query from remaining arugments
         query = {}
         for key, value in args.items():
             lower = value.lower()
             if lower in ["true", "false"]:
                 value = json.loads(lower)
-            
+
             if len(lower) != 0:
                 query[key] = value
-        
+
         images = current_user.images \
             .filter(dataset_id=dataset_id, path__startswith=directory, deleted=False, **query) \
             .order_by(order).only('id', 'file_name', 'annotating', 'annotated', 'num_annotations')
-        
+
         total = images.count()
-        pages = int(total/per_page) + 1
-        
-        images = images.skip(page*per_page).limit(per_page)
+        pages = int(total / per_page) + 1
+
+        images = images.skip(page * per_page).limit(per_page)
         images_json = query_util.fix_ids(images)
-        # for image in images:
-        #     image_json = query_util.fix_ids(image)
-
-        #     query = AnnotationModel.objects(image_id=image.id, deleted=False)
-        #     category_ids = query.distinct('category_id')
-        #     categories = CategoryModel.objects(id__in=category_ids).only('name', 'color')
-
-        #     image_json['annotations'] = query.count()
-        #     image_json['categories'] = query_util.fix_ids(categories)
-
-        #     images_json.append(image_json)
-
-
         subdirectories = [f for f in sorted(os.listdir(directory))
                           if os.path.isdir(directory + f) and not f.startswith('.')]
-        
+
         categories = CategoryModel.objects(id__in=dataset.categories).only('id', 'name')
 
         return {
@@ -421,20 +432,21 @@ class DatasetExports(Resource):
 
         if dataset is None:
             return {"message": "Invalid dataset ID"}, 400
-        
+
         if not current_user.can_download(dataset):
             return {"message": "You do not have permission to download the dataset's annotations"}, 403
-        
+
         exports = ExportModel.objects(dataset_id=dataset.id).order_by('-created_at').limit(50)
 
         dict_export = []
         for export in exports:
-
+            extension = str(export.path).split(".")[-1]
             time_delta = datetime.datetime.utcnow() - export.created_at
             dict_export.append({
                 'id': export.id,
                 'ago': query_util.td_format(time_delta),
-                'tags': export.tags
+                'tags': export.tags,
+                "extension": extension
             })
 
         return dict_export
@@ -449,32 +461,36 @@ class DatasetExport(Resource):
 
         args = export.parse_args()
         categories = args.get('categories')
-        
+        export_format = args.get('export_format')
+
         if len(categories) == 0:
             categories = []
-
         if len(categories) > 0 or isinstance(categories, str):
             categories = [int(c) for c in categories.split(',')]
 
         dataset = DatasetModel.objects(id=dataset_id).first()
-        
         if not dataset:
             return {'message': 'Invalid dataset ID'}, 400
-        
-        return dataset.export_coco(categories=categories)
-    
+        if export_format == "coco":
+            return dataset.export_coco(categories=categories)
+        elif export_format == "tfrecord":
+            return dataset.export_tf_record(train_shards=args.get('tfrecord_train_num_shards'),
+                                            val_shards=args.get('tfrecord_val_num_shards'),
+                                            test_shards=args.get('tfrecord_test_num_shards'),
+                                            categories=categories, validation_set_size=args.get('validation_size'),
+                                            testing_set_size=args.get('testing_size'))
+
     @api.expect(coco_upload)
     @login_required
     def post(self, dataset_id):
         """ Adds coco formatted annotations to the dataset """
         args = coco_upload.parse_args()
-        coco = args['coco']
 
         dataset = current_user.datasets.filter(id=dataset_id).first()
         if dataset is None:
             return {'message': 'Invalid dataset ID'}, 400
 
-        return dataset.import_coco(json.load(coco))
+        return dataset.import_coco(json.load(args['coco']))
 
 
 @api.route('/<int:dataset_id>/coco')
@@ -487,7 +503,7 @@ class DatasetCoco(Resource):
 
         if dataset is None:
             return {"message": "Invalid dataset ID"}, 400
-        
+
         if not current_user.can_download(dataset):
             return {"message": "You do not have permission to download the dataset's annotations"}, 403
 
@@ -497,14 +513,22 @@ class DatasetCoco(Resource):
     @login_required
     def post(self, dataset_id):
         """ Adds coco formatted annotations to the dataset """
-        args = coco_upload.parse_args()
-        coco = args['coco']
+        coco_files = coco_upload.parse_args()['coco']
+        path_to_dataset = path_string.parse_args()['path_string']
 
         dataset = current_user.datasets.filter(id=dataset_id).first()
         if dataset is None:
             return {'message': 'Invalid dataset ID'}, 400
-
-        return dataset.import_coco(json.load(coco))
+        if coco_files != None:
+            # Decoding from File Storage format to json strings
+            coco_json_files = []
+            for file_storage in coco_files:
+                coco_json_bytes = file_storage.read()
+                coco_json_string = coco_json_bytes.decode('utf-8')
+                coco_json_files.append(coco_json_string)
+            return dataset.import_coco_from_json_files(coco_json_files)
+        elif coco_files == None and path_to_dataset != "":
+            return dataset.import_coco(path_to_dataset)
 
 
 @api.route('/coco/<int:import_id>')
@@ -527,14 +551,12 @@ class DatasetCocoId(Resource):
 
 @api.route('/<int:dataset_id>/scan')
 class DatasetScan(Resource):
-    
+
     @login_required
     def get(self, dataset_id):
-
         dataset = DatasetModel.objects(id=dataset_id).first()
-        
+
         if not dataset:
             return {'message': 'Invalid dataset ID'}, 400
-        
-        return dataset.scan()
 
+        return dataset.scan()

@@ -1,6 +1,7 @@
 {
   "name": "client",
   "version": "0.1.0",
+  "secure": false,
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",

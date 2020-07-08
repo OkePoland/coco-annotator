@@ -1,13 +1,13 @@
+import os
+
+from celery import shared_task
 from database import (
     ImageModel,
     TaskModel,
     DatasetModel
 )
 
-from celery import shared_task
 from ..socket import create_socket
-
-import os
 
 
 @shared_task
@@ -43,8 +43,10 @@ def scan_dataset(task_id, dataset_id):
                 db_image = ImageModel.objects(path=path).first()
 
                 if db_image is not None:
-                    continue
-
+                    if db_image.get_dataset_id() != dataset_id:
+                        db_image.delete()
+                    else:
+                        continue
                 try:
                     ImageModel.create_from_path(path, dataset.id).save()
                     count += 1

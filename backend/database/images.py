@@ -1,13 +1,13 @@
 import os
+
 import imantics as im
-
-
 from PIL import Image
 from mongoengine import *
 
-from .events import Event, SessionEvent
-from .datasets import DatasetModel
 from .annotations import AnnotationModel
+from .datasets import DatasetModel
+from .events import Event, SessionEvent
+
 
 class ImageModel(DynamicDocument):
 
@@ -87,6 +87,9 @@ class ImageModel(DynamicDocument):
         self.thumbnail_delete()
         AnnotationModel.objects(image_id=self.id).delete()
         return super(ImageModel, self).delete(*args, **kwargs)
+
+    def get_dataset_id(self):
+        return self.dataset_id
 
     def thumbnail(self):
         """
