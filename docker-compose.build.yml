@@ -12,7 +12,7 @@ services:
   webserver:
     build:
       context: .
-      dockerfile: ./Dockerfile
+      dockerfile: ./backend/webserver/Dockerfile
     container_name: annotator_webclient
     image: tantael/multi-annotator:webserver-stable
     restart: always
@@ -35,7 +35,7 @@ services:
     image: tantael/multi-annotator:workers-stable
     build:
       context: .
-      dockerfile: ./backend/workers/Dockerfile
+      dockerfile: ./backend/Dockerfile
     volumes:
       - "./backend/config:/workspace/config"
       - "./backend/webserver:/workspace/webserver"
@@ -73,3 +73,17 @@ services:
     command: "mongod --smallfiles --logpath=/dev/null"
     networks:
       - cocoannotator
+  frontend:
+    hostname: frontend
+    container_name: multi_annotator_client
+    build:
+     context: .
+     dockerfile: ./client/Dockerfile
+    ports:
+     - 3000:80
+    volumes:
+     - "./client:/workspace/client"
+    networks:
+     - cocoannotator
+    depends_on:
+     - webserver

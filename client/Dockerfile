@@ -1,10 +1,18 @@
-FROM node:10 AS builder
+FROM node AS builder
 
 # Environment
 
-RUN npm i -g -s \
-    yarn@1.10.1 \
-    lerna@3.20.2
+
+RUN yarn --version
+RUN npm i -g -s lerna
+
+#RUN npm i -g -s \
+#    yarn@1.10.1 \
+#    lerna@3.20.2
+#
+#RUN npm i -g -s \
+#    yarn@1.10.1 \
+#    lerna@3.20.2
 
 WORKDIR /workspace/
 
@@ -16,6 +24,7 @@ COPY ./client/tsconfig.json /workspace/tsconfig.json
 COPY ./client/typings.d.ts /workspace/typings.d.ts
 
 COPY ./client/packages /workspace/packages
+
 
 ENV NODE_ENV production
 
