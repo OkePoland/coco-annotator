@@ -1,4 +1,4 @@
-FROM node AS builder
+FROM node:10 AS builder
 
 # Environment
 
