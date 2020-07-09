@@ -1,13 +1,13 @@
 import os
+
 import imantics as im
-
-
 from PIL import Image
 from mongoengine import *
 
-from .events import Event, SessionEvent
-from .datasets import DatasetModel
 from .annotations import AnnotationModel
+from .datasets import DatasetModel
+from .events import Event, SessionEvent
+
 
 class ImageModel(DynamicDocument):
 
@@ -16,7 +16,10 @@ class ImageModel(DynamicDocument):
 
     # -- Contants
     THUMBNAIL_DIRECTORY = '.thumbnail'
-    PATTERN = (".gif", ".png", ".jpg", ".jpeg", ".bmp", ".GIF", ".PNG", ".JPG", ".JPEG", ".BMP")
+    PATTERN = (".gif", ".png", ".jpg", ".jpeg", ".bmp", ".tif", ".tiff", ".GIF", ".PNG", ".JPG", ".JPEG", ".BMP", ".TIF", ".TIFF")
+
+    # Set maximum thumbnail size (h x w) to use on dataset page
+    MAX_THUMBNAIL_DIM = (1024, 1024)
 
     # -- Private
     _dataset = None
@@ -85,13 +88,13 @@ class ImageModel(DynamicDocument):
         AnnotationModel.objects(image_id=self.id).delete()
         return super(ImageModel, self).delete(*args, **kwargs)
 
+    def get_dataset_id(self):
+        return self.dataset_id
+
     def thumbnail(self):
         """
         Generates (if required) and returns thumbnail
         """
-        if not self.annotated:
-            self.thumbnail_delete()
-            return Image.open(self.path)
         
         thumbnail_path = self.thumbnail_path()
 
@@ -102,7 +105,13 @@ class ImageModel(DynamicDocument):
 
             pil_image = self.generate_thumbnail()
             pil_image = pil_image.convert("RGB")
-            pil_image.save(thumbnail_path)
+
+            # Resize image to fit in MAX_THUMBNAIL_DIM envelope as necessary
+            pil_image.thumbnail((self.MAX_THUMBNAIL_DIM[1], self.MAX_THUMBNAIL_DIM[0]))
+
+            # Save as a jpeg to improve loading time
+            # (note file extension will not match but allows for backwards compatibility)
+            pil_image.save(thumbnail_path, "JPEG", quality=80, optimize=True, progressive=True)
 
             self.update(is_modified=False)
             return pil_image

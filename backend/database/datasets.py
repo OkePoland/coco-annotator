@@ -1,11 +1,10 @@
+import os
 
+from config import Config
 from flask_login import current_user
 from mongoengine import *
-from config import Config
 
 from .tasks import TaskModel
-
-import os
 
 
 class DatasetModel(DynamicDocument):
@@ -46,18 +45,29 @@ class DatasetModel(DynamicDocument):
             .exclude('password', 'id', 'preferences')
 
     def import_coco(self, coco_json):
-
-        from workers.tasks import import_annotations
-
+        from workers.tasks import convert_dataset
         task = TaskModel(
-            name="Import COCO format into {}".format(self.name),
+            name="Convert input dataset",
             dataset_id=self.id,
-            group="Annotation Import"
+            group="Annotation Conversion"
         )
         task.save()
+        cel_task = convert_dataset.delay(task.id, self.id, coco_json, self.name)
+        return {
+            "celery_id": cel_task.id,
+            "id": task.id,
+            "name": task.name
+        }
 
-        cel_task = import_annotations.delay(task.id, self.id, coco_json)
-
+    def import_coco_from_json_files(self, coco_json_strings):
+        from workers.tasks import load_annotation_files
+        task = TaskModel(
+            name="Load annotation files",
+            dataset_id=self.id,
+            group="Annotation Conversion"
+        )
+        task.save()
+        cel_task = load_annotation_files.delay(task.id, self.id, coco_json_strings, self.name)
         return {
             "celery_id": cel_task.id,
             "id": task.id,
@@ -70,16 +80,35 @@ class DatasetModel(DynamicDocument):
 
         if categories is None or len(categories) == 0:
             categories = self.categories
-
         task = TaskModel(
             name=f"Exporting {self.name} into {style} format",
             dataset_id=self.id,
             group="Annotation Export"
         )
         task.save()
-
         cel_task = export_annotations.delay(task.id, self.id, categories)
+        return {
+            "celery_id": cel_task.id,
+            "id": task.id,
+            "name": task.name
+        }
 
+    def export_tf_record(self, *, train_shards, val_shards, test_shards, categories=None, validation_set_size=0,
+                         testing_set_size=0, style="TF Record"):
+
+        from workers.tasks import export_annotations_to_tf_record
+
+        if categories is None or len(categories) == 0:
+            categories = self.categories
+        task = TaskModel(
+            name=f"Exporting {self.name} into {style} format",
+            dataset_id=self.id,
+            group="Annotation Export"
+        )
+        task.save()
+        cel_task = export_annotations_to_tf_record.delay(task.id, self.id, categories, validation_set_size,
+                                                         testing_set_size,
+                                                         train_shards, val_shards, test_shards)
         return {
             "celery_id": cel_task.id,
             "id": task.id,
@@ -96,9 +125,7 @@ class DatasetModel(DynamicDocument):
             group="Directory Image Scan"
         )
         task.save()
-        
         cel_task = scan_dataset.delay(task.id, self.id)
-
         return {
             "celery_id": cel_task.id,
             "id": task.id,

@@ -39,13 +39,15 @@ class Config:
     SECRET_KEY = os.getenv("SECRET_KEY", "<--- CHANGE THIS KEY --->")
 
     LOG_LEVEL = 'debug'
+    WORKER_CONNECTIONS = os.getenv("CELERY_RESULT_BACKEND", 1000)
+
     WORKER_CONNECTIONS = 1000
 
     TESTING = os.getenv("TESTING", False)
 
     ### Workers
-    CELERY_BROKER_URL = r"amqp://user:password@messageq:5672//"
-    CELERY_RESULT_BACKEND = r"mongodb://database/flask"
+    CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", r"amqp://user:password@messageq:5672//")
+    CELERY_RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND", r"mongodb://database/flask")
 
     ### Dataset Options
     DATASET_DIRECTORY = os.getenv("DATASET_DIRECTORY", r"/datasets/")

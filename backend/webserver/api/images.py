@@ -201,8 +201,8 @@ class ImageCoco(Resource):
         if image is None:
             return {"message": "Invalid image ID"}, 400
 
-        if not current_user.can_download(image):
-            return {"message": "You do not have permission to download the images's annotations"}, 403
+        # if not current_user.can_download(image):
+        #     return {"message": "You do not have permission to download the images's annotations"}, 403
 
         return coco_util.get_image_coco(image_id)
 

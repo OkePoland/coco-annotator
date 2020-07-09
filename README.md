@@ -2,35 +2,35 @@
 
 <p align="center">
   <a href="#features">Features</a> •
-  <a href="https://github.com/jsbroks/coco-annotator/wiki">Wiki</a> •
-  <a href="https://github.com/jsbroks/coco-annotator/wiki/Getting-Started">Getting Started</a> •
-  <a href="https://github.com/jsbroks/coco-annotator/issues">Issues</a> •
+  <a href="https://github.com/tantael/multi-annotator/wiki">Wiki</a> •
+  <a href="https://github.com/tantael/multi-annotator/wiki/Getting-Started">Getting Started</a> •
+  <a href="https://github.com/tantael/multi-annotator/issues">Issues</a> •
   <a href="#license">License</a>
 </p>
 
 ---
 
 <p align="center">
-  <a href="/jsbroks/coco-annotator/stargazers">
-    <img src="https://img.shields.io/github/stars/jsbroks/coco-annotator.svg">
+  <a href="/tantael/multi-annotator/stargazers">
+    <img src="https://img.shields.io/github/stars/tantael/multi-annotator.svg">
   </a>
-  <a href="/jsbroks/coco-annotator/issues">
-    <img src="https://img.shields.io/github/issues/jsbroks/coco-annotator.svg">
+  <a href="/tantael/multi-annotator/issues">
+    <img src="https://img.shields.io/github/issues/tantael/multi-annotator.svg">
   </a>
   <a href="https://tldrlegal.com/license/mit-license">
     <img src="https://img.shields.io/github/license/mashape/apistatus.svg">
   </a>
-  <a href="https://lgtm.com/projects/g/jsbroks/coco-annotator/context:javascript">
-    <img src="https://img.shields.io/lgtm/grade/javascript/g/jsbroks/coco-annotator.svg?label=code%20quality">
+  <a href="https://lgtm.com/projects/g/tantael/multi-annotator/context:javascript">
+    <img src="https://img.shields.io/lgtm/grade/javascript/g/tantael/multi-annotator.svg?label=code%20quality">
   </a>
   <a href="https://annotator.justinbrooks.ca/">
     <img src="https://img.shields.io/badge/demo-online-green.svg">
   </a>
-  <a href="https://travis-ci.org/jsbroks/coco-annotator">
-    <img src="https://travis-ci.org/jsbroks/coco-annotator.svg?branch=master">
+  <a href="https://travis-ci.org/tantael/multi-annotator">
+    <img src="https://travis-ci.org/tantael/multi-annotator.svg?branch=master">
   </a>
-  <a href="https://hub.docker.com/r/jsbroks/coco-annotator">
-    <img src="https://img.shields.io/docker/pulls/jsbroks/coco-annotator.svg">
+  <a href="https://hub.docker.com/r/tantael/multi-annotator">
+    <img src="https://img.shields.io/docker/pulls/tantael/multi-annotator.svg">
   </a>
 </p>
 
@@ -65,7 +65,7 @@ Several annotation tools are currently available, with most applications as a de
 - Generate datasets using google images
 - User authentication system
 
-For examples and more information check out the [wiki](https://github.com/jsbroks/coco-annotator/wiki).
+For examples and more information check out the [wiki](https://github.com/tantael/multi-annotator/wiki).
 
 # Demo
 
@@ -121,7 +121,7 @@ Thanks to all these wonderful libaries/frameworks:
   @MISC{cocoannotator,
     author = {Justin Brooks},
     title = {{COCO Annotator}},
-    howpublished = "\url{https://github.com/jsbroks/coco-annotator/}",
+    howpublished = "\url{https://github.com/tantael/multi-annotator/}",
     year = {2019},
   }
 ```

@@ -9,7 +9,7 @@ networks:
 
 services:
   webserver:
-    image: tantael/coco-annotator:webserver-stable
+    image: tantael/multi-annotator:webserver-stable
     container_name: annotator_webclient
     restart: always
     ports:
@@ -18,7 +18,7 @@ services:
       - SECRET_KEY=RandomSecretKeyHere
       - FILE_WATCHER=true
     volumes:
-      - "./datasets:/datasets"
+      - "/storage2/datasets:/datasets"
       - "./models:/models"
     depends_on:
       - database
@@ -27,9 +27,9 @@ services:
       - cocoannotator
   workers:
     container_name: annotator_workers
-    image: tantael/coco-annotator:workers-stable
+    image: tantael/multi-annotator:workers-stable
     volumes:
-      - "./datasets:/datasets"
+      - "/storage2/datasets:/datasets"
     depends_on:
       - messageq
       - database
@@ -46,12 +46,14 @@ services:
   database:
     image: mongo:4.0
     container_name: annotator_mongodb
+    ports:
+      - "27017:27017"
     restart: always
     environment:
       - MONGO_DATA_DIR=/data/db
       - MONGO_LOG_DIR=/dev/null
     volumes:
-      - "mongodb_data:/data/db"
+      - "/var/mongo:/data/db"
     command: "mongod --smallfiles --logpath=/dev/null"
     networks:
       - cocoannotator

@@ -1,6 +1,6 @@
 import json
+import os
 import pytest
-
 from database import CategoryModel
 
 category1_id = 0
@@ -15,25 +15,25 @@ class TestCategory:
         CategoryModel.objects.delete()
 
     @pytest.mark.run(before='test_post_categories')
-    def test_get_empty(self, client):
-        response = client.get("/api/category/")
+    def test_get_empty(self, client, category_url):
+        response = client.get(category_url)
         data = json.loads(response.data)
 
         assert isinstance(data, list)
         assert len(data) == 0
 
-    def test_post_no_data(self, client):
-        response = client.post("/api/category/")
+    def test_post_no_data(self, client, category_url):
+        response = client.post(category_url)
         assert response.status_code == 400
 
     @pytest.mark.run(after="test_get_empty")
-    def test_post_categories(self, client):
+    def test_post_categories(self, client, category_url):
         global category1_id, category2_id, category3_id
         # Category 1 Test
         data = {
             "name": "test1"
         }
-        response = client.post("/api/category/", json=data)
+        response = client.post(category_url, json=data)
 
         r = json.loads(response.data)
         assert response.status_code == 200
@@ -48,7 +48,7 @@ class TestCategory:
             "color": "white",
             "metadata": {"key1": True, "key2": 1, "key3": "value"}
         }
-        response = client.post("/api/category/", json=data)
+        response = client.post(category_url, json=data)
 
         r = json.loads(response.data)
         assert response.status_code == 200
@@ -62,7 +62,7 @@ class TestCategory:
         data = {
             "name": "test3"
         }
-        response = client.post("/api/category/", json=data)
+        response = client.post(category_url, json=data)
 
         r = json.loads(response.data)
         assert response.status_code == 200
@@ -82,80 +82,80 @@ class TestCategory:
 class TestCategoryId:
 
     @pytest.mark.run(after='test_post_categories')
-    def test_get(self, client):
-        response = client.get("/api/category/{}".format(category2_id))
-
+    def test_get(self, client, category_url):
+        url = os.path.join(category_url, str(category2_id))
+        response = client.get(url)
         r = json.loads(response.data)
         assert response.status_code == 200
         assert r.get("name") == "test2"
         assert r.get("color") == "white"
 
-    def test_get_invalid_id(self, client):
-        response = client.get("/api/category/1000")
+    def test_get_invalid_id(self, client, category_url):
+        url = os.path.join(category_url, "1000")
+        response = client.get(url)
         assert response.status_code == 400
 
-    def test_delete_invalid_id(self, client):
-        response = client.delete("/api/category/1000")
+    def test_delete_invalid_id(self, client, category_url):
+        url = os.path.join(category_url, "1000")
+        response = client.delete(url)
         assert response.status_code == 400
 
     @pytest.mark.run(after='test_post_categories')
-    def test_get(self, client):
-        response = client.delete("/api/category/{}".format(category3_id))
+    def test_get(self, client, category_url):
+        url = os.path.join(category_url, str(category3_id))
+        response = client.delete(url)
         assert response.status_code == 200
 
     @pytest.mark.run(after='test_post_categories')
-    def test_put_equal(self, client):
+    def test_put_equal(self, client, category_url):
         """ Test response when the name to update is the same as already stored """
         data = {
             "name": "test1"
         }
-        response = client.put("/api/category/{}".format(category1_id), json=data)
+        url = os.path.join(category_url, str(category1_id))
+        response = client.put(url, json=data)
         assert response.status_code == 200
 
-    def test_put_invalid_id(self, client):
+    def test_put_invalid_id(self, client, category_url):
         """ Test response when id does not exit """
-        response = client.put("/api/category/1000")
+        url = os.path.join(category_url, "1000")
+        response = client.put(url)
         assert response.status_code == 400
 
-    def test_put_not_unique(self, client):
+    def test_put_not_unique(self, client, category_url):
         """ Test response when the name already exits """
         data = {
             "name": "test2"
         }
-        response = client.put("/api/category/{}".format(category1_id), json=data)
+        url = os.path.join(category_url, str(category1_id))
+        response = client.put(url, json=data)
         assert response.status_code == 400
 
-    def test_put_empty(self, client):
+    def test_put_empty(self, client, category_url):
         """ Test response when category name is empty"""
         data = {
             "name": ""
         }
-        response = client.put("/api/category/{}".format(category1_id), json=data)
+        url = os.path.join(category_url, str(category1_id))
+        response = client.put(url, json=data)
         assert response.status_code == 400
 
     @pytest.mark.run(after='test_put_not_unique')
-    def test_put(self, client):
+    def test_put(self, client, category_url):
         """ Test response when update is correct"""
         data = {
             "name": "test1_updated"
         }
-        response = client.put("/api/category/{}".format(category1_id), json=data)
+        url = os.path.join(category_url, str(category1_id))
+        response = client.put(url, json=data)
         assert response.status_code == 200
 
     @pytest.mark.run(after='test_put')
-    def test_put_reset(self, client):
+    def test_put_reset(self, client, category_url):
         """ Reset test after a correct update """
         data = {
             "name": "test1"
         }
-        response = client.put("/api/category/{}".format(category1_id), json=data)
+        url = os.path.join(category_url, str(category1_id))
+        response = client.put("url", json=data)
         assert response.status_code == 200
-
-
-class TestCategoryData:
-
-    # TODO write tests for data
-    def test(self):
-        pass
-
-
