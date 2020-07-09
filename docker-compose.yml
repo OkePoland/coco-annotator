@@ -1,24 +1,23 @@
 version: "3"
+
 volumes:
   mongodb_data:
     external: false
-
 networks:
   cocoannotator:
     external: false
-
 services:
   webserver:
-    image: tantael/multi-annotator:webserver-react
+    hostname: webserver
     container_name: annotator_webclient
+    image: tantael/multi-annotator:webserver-react
     restart: always
-    ports:
-      - "5000:5000"
     environment:
       - SECRET_KEY=RandomSecretKeyHere
       - FILE_WATCHER=true
+      - NAME=Test Annotator
     volumes:
-      - "/storage2/datasets:/datasets"
+      - "./datasets:/datasets"
       - "./models:/models"
     depends_on:
       - database
@@ -27,47 +26,54 @@ services:
       - cocoannotator
   workers:
     container_name: annotator_workers
+    hostname: workers
     image: tantael/multi-annotator:workers-react
     volumes:
-      - "/storage2/datasets:/datasets"
+      - "./datasets:/datasets"
     depends_on:
       - messageq
       - database
+    ports:
+      - 5555:5555
     networks:
       - cocoannotator
   messageq:
     image: rabbitmq:3
+    hostname: messageq
+
     container_name: annotator_message_q
     environment:
       - RABBITMQ_DEFAULT_USER=user
       - RABBITMQ_DEFAULT_PASS=password
+    ports:
+      - 5672:5672
     networks:
       - cocoannotator
   database:
     image: mongo:4.0
     container_name: annotator_mongodb
-    ports:
-      - "27017:27017"
     restart: always
     environment:
       - MONGO_DATA_DIR=/data/db
       - MONGO_LOG_DIR=/dev/null
     volumes:
-      - "/var/mongo:/data/db"
+      - "mongodb_data:/data/db"
+    ports:
+      - "27017:27017"
     command: "mongod --smallfiles --logpath=/dev/null"
     networks:
       - cocoannotator
   frontend:
     hostname: frontend
     image: tantael/multi-annotator:frontend-react
-
     container_name: multi_annotator_client
     build:
      context: .
      dockerfile: ./client/Dockerfile
     ports:
-     - 3000:80
+     - 5000:80
     networks:
      - cocoannotator
     depends_on:
      - webserver
+
