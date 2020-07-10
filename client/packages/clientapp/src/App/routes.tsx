@@ -7,7 +7,6 @@ import Auth from '../Auth/Auth';
 import DatasetsList from '../Dataset/List/List';
 import DatasetDetails from '../Dataset/Details/Details';
 import ImageEditor from '../Editor/ImageEditor';
-import VideoEditor from '../Editor/VideoEditor';
 
 import {
     withAuthentication,
@@ -78,13 +77,6 @@ export default compose(
             route(async req => {
                 return {
                     view: <ImageEditor imageId={parseInt(req.params.id)} />,
-                };
-            }),
-        ),
-        '/video/:id': withAuthentication(
-            route(async req => {
-                return {
-                    view: <VideoEditor id={parseInt(req.params.id)} />,
                 };
             }),
         ),
