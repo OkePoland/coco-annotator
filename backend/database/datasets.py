@@ -140,7 +140,7 @@ class DatasetModel(DynamicDocument):
         return user.username.lower() == self.owner.lower()
 
     def can_download(self, user):
-        return self.is_owner(user)
+        return user.username in self.users or self.is_owner(user)
 
     def can_delete(self, user):
         return self.is_owner(user)
