@@ -56,8 +56,8 @@ class Config:
     ALLOW_REGISTRATION = True
 
     ### Models
-    MASK_RCNN_FILE = os.getenv("MASK_RCNN_FILE", "")
-    MASK_RCNN_CLASSES = os.getenv("MASK_RCNN_CLASSES", "BG")
+    MASK_RCNN_FILE = os.getenv("MASK_RCNN_FILE", "/models/mask_rcnn_coco.h5")
+    MASK_RCNN_CLASSES = os.getenv("MASK_RCNN_CLASSES", "car, person")
     MASK_RCNN_EXCLUDED_LAYERS = os.getenv("MASK_RCNN_EXCLUDED_LAYERS",
                                           "mrcnn_class_logits,mrcnn_bbox_fc,mrcnn_bbox,mrcnn_mask")
     MODEL_DIR = os.getenv("MODEL_DIR", r"/workspace/models")
