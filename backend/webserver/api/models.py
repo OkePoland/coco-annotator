@@ -62,7 +62,7 @@ class MaskRCNN(Resource):
         image = Image.open(image_model.path)
         result = dextr.predict_mask(image, points)
 
-        return { "segmentaiton": Mask(result).polygons().segmentation }
+        return { "segmentation": Mask(result).polygons().segmentation }
 
 
 @api.route('/maskrcnn')
