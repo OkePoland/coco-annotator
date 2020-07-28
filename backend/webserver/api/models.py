@@ -74,8 +74,9 @@ class MaskRCNN(Resource):
         """ COCO data test """
         if not MASKRCNN_LOADED:
             return {"disabled": True, "coco": {}}
-
+        logger.info("Got model loaded")
         args = image_upload.parse_args()
         im = Image.open(args.get('image'))
+        logger.info("Opened image")
         coco = maskrcnn.detect(im)
         return {"coco": coco}

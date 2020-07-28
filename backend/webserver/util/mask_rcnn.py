@@ -48,10 +48,10 @@ class MaskRCNN():
 
 
     def detect(self, image):
-
+        logger.info("Started Detection xd")
         if self.model is None:
             return {}
-
+        logger.info("Started Detection")
         image = image.convert('RGB')
         width, height = image.size
         image.thumbnail((1024, 1024))
