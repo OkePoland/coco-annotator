@@ -40,10 +40,9 @@ services:
       - FLASK_APP=webserver
       - FLASK_ENV=development
       - DEBUG=true
-       - MASK_RCNN_FILE=/models/mask_rcnn_coco.h5
+      - MASK_RCNN_FILE=/models/mask_rcnn_coco.h5
        # Default coco classes (order matters)
-       - MASK_RCNN_CLASSES=
-         BG,person,bicycle,car,motorcycle,airplane,
+      - MASK_RCNN_CLASSES=BG,person,bicycle,car,motorcycle,airplane,
          bus,train,truck,boat,traffic light,
          fire hydrant,stop sign,parking meter,bench,bird,
          cat,dog,horse,sheep,cow,elephant,bear,
