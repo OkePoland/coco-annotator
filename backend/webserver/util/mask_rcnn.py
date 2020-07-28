@@ -58,7 +58,7 @@ class MaskRCNN():
 
         image = img_to_array(image)
         result = self.model.detect([image])[0]
-
+        logger.info(result)
         masks = result.get('masks')
         class_ids = result.get('class_ids')
 
