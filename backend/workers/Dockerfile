@@ -7,6 +7,8 @@ COPY ./backend/ /workspace/
 
 RUN pip install -r requirements.txt
 
+ENV FLASK_ENV=Development
+ENV DEBUG=True
 EXPOSE 5555
 CMD celery -A workers worker -l info
 

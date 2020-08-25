@@ -18,8 +18,8 @@ services:
       - "./client:/workspace/client"
     networks:
       - cocoannotator
-    depends_on:
-      - webserver
+#    depends_on:
+#      - webserver
   webserver:
     container_name: annotator_webserver
     build:
@@ -40,27 +40,15 @@ services:
       - FLASK_APP=webserver
       - FLASK_ENV=development
       - DEBUG=true
-      - MASK_RCNN_FILE=/models/mask_rcnn_coco.h5
+      - MASK_RCNN_FILE=/models/seg1_frozen_inference_graph.pb
        # Default coco classes (order matters)
-      - MASK_RCNN_CLASSES=person,bicycle,car,motorcycle,airplane,
-         bus,train,truck,boat,traffic light,
-         fire hydrant,stop sign,parking meter,bench,bird,
-         cat,dog,horse,sheep,cow,elephant,bear,
-         zebra,giraffe,backpack,umbrella,handbag,tie,
-         suitcase,frisbee,skis,snowboard,sports ball,
-         kite,baseball bat,baseball glove,skateboard,
-         surfboard,tennis racket,bottle,wine glass,cup,
-         fork,knife,spoon,bowl,banana',apple,
-         sandwich,orange,broccoli,carrot,hot dog,pizza,
-         donut,cake,chair,couch,potted plant,bed,
-         dining table,toilet,tv,laptop,mouse,remote,
-         keyboard,cell phone,microwave,oven,toaster,
-         sink,refrigerator,book,clock,vase,scissors,
-         teddy bear,hair drier,toothbrush
+      - MASK_RCNN_CLASSES=car,person,truck,bus,bicycle,motorcycle,Headlight,Tail_light,License_plate
     networks:
       - cocoannotator
     depends_on:
       - database
+      - frontend
+      - messageq
       - workers
   workers:
     container_name: annotator_workers
@@ -74,9 +62,10 @@ services:
       - "./backend/database:/workspace/database"
       - "./backend/tests:/workspace/tests"
       - "./datasets:/datasets"
-    depends_on:
-      - messageq
-      - database
+#    depends_on:
+#      - messageq
+#      - database
+#      - frontend
     ports:
       - 5555:5555
     networks:

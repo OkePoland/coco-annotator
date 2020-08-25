@@ -13,12 +13,15 @@ logger = logging.getLogger('gunicorn.error')
 
 
 MASKRCNN_LOADED = os.path.isfile(Config.MASK_RCNN_FILE)
+logger.info(os.path.isfile(Config.MASK_RCNN_FILE))
+logger.info(Config.MASK_RCNN_FILE)
 if MASKRCNN_LOADED:
     from ..util.mask_rcnn import model as maskrcnn
 else:
     logger.warning("MaskRCNN model is disabled.")
 
-DEXTR_LOADED = os.path.isfile(Config.DEXTR_FILE)
+#DEXTR_LOADED = os.path.isfile(Config.DEXTR_FILE)
+DEXTR_LOADED = False
 if DEXTR_LOADED:
     from ..util.dextr import model as dextr
 else:
@@ -67,12 +70,13 @@ class MaskRCNN(Resource):
 
 @api.route('/maskrcnn')
 class MaskRCNN(Resource):
-
+    logger.info("Test test")
     @login_required
     @api.expect(image_upload)
     def post(self):
         """ COCO data test """
         if not MASKRCNN_LOADED:
+            logger.info("Model not loaded")
             return {"disabled": True, "coco": {}}
         logger.info("Got model loaded")
         args = image_upload.parse_args()

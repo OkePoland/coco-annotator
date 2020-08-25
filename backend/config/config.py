@@ -31,8 +31,10 @@ class Config:
     #       spawned to replace it.
     #
     SWAGGER_UI_JSONEDITOR = True
-    DEBUG = os.getenv("DEBUG", 'false').lower() == 'true'
-    PRELOAD = False
+    # DEBUG = os.getenv("DEBUG", 'false').lower() == 'true'
+    # PRELOAD = False
+    DEBUG = True
+    PRELOAD = True
 
     MAX_CONTENT_LENGTH = os.getenv("MAX_CONTENT_LENGTH", 1 * 1024 * 1024 * 1024)  # 1GB
     MONGODB_HOST = os.getenv("MONGODB_HOST", r"mongodb://database/flask")
@@ -41,7 +43,8 @@ class Config:
     LOG_LEVEL = 'debug'
     WORKER_CONNECTIONS = os.getenv("CELERY_RESULT_BACKEND", 1000)
 
-    TESTING = os.getenv("TESTING", False)
+    # TESTING = os.getenv("TESTING", False)
+    TESTING = True
 
     ### Workers
     CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", r"amqp://user:password@messageq:5672//")
@@ -56,8 +59,9 @@ class Config:
     ALLOW_REGISTRATION = True
 
     ### Models
-    MASK_RCNN_FILE = os.getenv("MASK_RCNN_FILE", "/models/mask_rcnn_coco.h5")
-    MASK_RCNN_CLASSES = os.getenv("MASK_RCNN_CLASSES", "car, person")
+    MASK_RCNN_FILE = os.getenv("MASK_RCNN_FILE", "/models/seg1_frozen_inference_graph.pb")
+    MASK_RCNN_CLASSES = os.getenv("MASK_RCNN_CLASSES",
+                                  "car,person,truck,bus,bicycle,motorcycle,Headlight,Tail_light,License_plate")
     MASK_RCNN_EXCLUDED_LAYERS = os.getenv("MASK_RCNN_EXCLUDED_LAYERS",
                                           "mrcnn_class_logits,mrcnn_bbox_fc,mrcnn_bbox,mrcnn_mask")
     MODEL_DIR = os.getenv("MODEL_DIR", r"/workspace/models")

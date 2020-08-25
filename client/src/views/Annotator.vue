@@ -1,199 +1,199 @@
 <template>
   <div style="display: block; height: inherit;">
-    
+
     <aside v-show="panels.show.left" class="left-panel shadow-lg">
       <div v-show="mode == 'segment'">
-        <hr />
+        <hr/>
 
         <SelectTool
-          v-model="activeTool"
-          :scale="image.scale"
-          @setcursor="setCursor"
-          ref="select"
+            v-model="activeTool"
+            :scale="image.scale"
+            @setcursor="setCursor"
+            ref="select"
         />
-        <hr />
+        <hr/>
 
         <BBoxTool
-          v-model="activeTool"
-          :scale="image.scale"
-          @setcursor="setCursor"
-          ref="bbox"
+            v-model="activeTool"
+            :scale="image.scale"
+            @setcursor="setCursor"
+            ref="bbox"
         />
 
         <PolygonTool
-          v-model="activeTool"
-          :scale="image.scale"
-          @setcursor="setCursor"
-          ref="polygon"
+            v-model="activeTool"
+            :scale="image.scale"
+            @setcursor="setCursor"
+            ref="polygon"
         />
 
         <MagicWandTool
-          v-model="activeTool"
-          :width="image.raster.width"
-          :height="image.raster.height"
-          :image-data="image.data"
-          @setcursor="setCursor"
-          ref="magicwand"
+            v-model="activeTool"
+            :width="image.raster.width"
+            :height="image.raster.height"
+            :image-data="image.data"
+            @setcursor="setCursor"
+            ref="magicwand"
         />
 
         <BrushTool
-          v-model="activeTool"
-          :scale="image.scale"
-          @setcursor="setCursor"
-          ref="brush"
+            v-model="activeTool"
+            :scale="image.scale"
+            @setcursor="setCursor"
+            ref="brush"
         />
         <EraserTool
-          v-model="activeTool"
-          :scale="image.scale"
-          @setcursor="setCursor"
-          ref="eraser"
+            v-model="activeTool"
+            :scale="image.scale"
+            @setcursor="setCursor"
+            ref="eraser"
         />
 
         <KeypointTool
-          v-model="activeTool"
-          @setcursor="setCursor"
-          ref="keypoint"
+            v-model="activeTool"
+            @setcursor="setCursor"
+            ref="keypoint"
         />
         <DEXTRTool
-          v-model="activeTool"
-          :scale="image.scale"
-          @setcursor="setCursor"
-          ref="dextr"
+            v-model="activeTool"
+            :scale="image.scale"
+            @setcursor="setCursor"
+            ref="dextr"
         />
       </div>
-      <hr />
+      <hr/>
 
-      <AnnotateButton :annotate-url="dataset.annotate_url" />
+      <AnnotateButton :annotate-url="dataset.annotate_url"/>
 
       <div v-show="mode == 'segment'">
         <CopyAnnotationsButton
-          :categories="categories"
-          :image-id="image.id"
-          :next="image.next"
-          :previous="image.previous"
+            :categories="categories"
+            :image-id="image.id"
+            :next="image.next"
+            :previous="image.previous"
         />
-        <ShowAllButton />
-        <HideAllButton />
+        <ShowAllButton/>
+        <HideAllButton/>
       </div>
       <hr>
-      <CenterButton />
-      <UndoButton />
+      <CenterButton/>
+      <UndoButton/>
 
-      <hr />
+      <hr/>
 
-      <DownloadButton :image="image" />
-      <SaveButton />
-      <ModeButton v-model="mode" />
+      <DownloadButton :image="image"/>
+      <SaveButton/>
+      <ModeButton v-model="mode"/>
       <SettingsButton
-        :metadata="image.metadata"
-        :commands="commands"
-        ref="settings"
+          :metadata="image.metadata"
+          :commands="commands"
+          ref="settings"
       />
 
-      <hr />
-      <DeleteButton :image="image" />
+      <hr/>
+      <DeleteButton :image="image"/>
     </aside>
 
     <aside v-show="panels.show.right" class="right-panel shadow-lg">
-      <hr />
+      <hr/>
       <FileTitle
-        :previousimage="image.previous"
-        :nextimage="image.next"
-        :filename="image.filename"
-        ref="filetitle"
+          :previousimage="image.previous"
+          :nextimage="image.next"
+          :filename="image.filename"
+          ref="filetitle"
       />
 
       <div v-if="categories.length > 5">
         <div style="padding: 0px 5px">
           <input
-            v-model="search"
-            class="search"
-            placeholder="Category Search"
+              v-model="search"
+              class="search"
+              placeholder="Category Search"
           />
         </div>
       </div>
 
       <div
-        class="sidebar-section"
-        :style="{ 'max-height': mode == 'label' ? '100%' : '57%' }"
+          class="sidebar-section"
+          :style="{ 'max-height': mode == 'label' ? '100%' : '57%' }"
       >
         <p
-          v-if="categories.length == 0"
-          style="color: lightgray; font-size: 12px"
+            v-if="categories.length == 0"
+            style="color: lightgray; font-size: 12px"
         >
           No categories have been enabled for this image.
         </p>
 
         <div
-          v-show="mode == 'segment'"
-          style="overflow: auto; max-height: 100%"
+            v-show="mode == 'segment'"
+            style="overflow: auto; max-height: 100%"
         >
           <Category
-            v-for="(category, index) in categories"
-            :key="category.id + '-category'"
-            :simplify="simplify"
-            :categorysearch="search"
-            :category="category"
-            :all-categories="categories"
-            :opacity="shapeOpacity"
-            :hover="hover"
-            :index="index"
-            @click="onCategoryClick"
-            :current="current"
-            :active-tool="activeTool"
-            :scale="image.scale"
-            ref="category"
+              v-for="(category, index) in categories"
+              :key="category.id + '-category'"
+              :simplify="simplify"
+              :categorysearch="search"
+              :category="category"
+              :all-categories="categories"
+              :opacity="shapeOpacity"
+              :hover="hover"
+              :index="index"
+              @click="onCategoryClick"
+              :current="current"
+              :active-tool="activeTool"
+              :scale="image.scale"
+              ref="category"
           />
         </div>
 
         <div v-show="mode == 'label'" style="overflow: auto; max-height: 100%">
           <CLabel
-            v-for="category in categories"
-            v-model="image.categoryIds"
-            :key="category.id + '-label'"
-            :category="category"
-            :search="search"
+              v-for="category in categories"
+              v-model="image.categoryIds"
+              :key="category.id + '-label'"
+              :category="category"
+              :search="search"
           />
         </div>
       </div>
 
       <div v-show="mode == 'segment'">
-        <hr />
+        <hr/>
         <h6 class="sidebar-title text-center">{{ activeTool }}</h6>
 
         <div class="tool-section" style="max-height: 30%; color: lightgray">
           <div v-if="$refs.bbox != null">
-            <BBoxPanel :bbox="$refs.bbox" />
+            <BBoxPanel :bbox="$refs.bbox"/>
           </div>
           <div v-if="$refs.polygon != null">
-            <PolygonPanel :polygon="$refs.polygon" />
+            <PolygonPanel :polygon="$refs.polygon"/>
           </div>
 
           <div v-if="$refs.select != null">
-            <SelectPanel :select="$refs.select" />
+            <SelectPanel :select="$refs.select"/>
           </div>
 
           <div v-if="$refs.magicwand != null">
-            <MagicWandPanel :magicwand="$refs.magicwand" />
+            <MagicWandPanel :magicwand="$refs.magicwand"/>
           </div>
 
           <div v-if="$refs.brush != null">
-            <BrushPanel :brush="$refs.brush" />
+            <BrushPanel :brush="$refs.brush"/>
           </div>
 
           <div v-if="$refs.eraser != null">
-            <EraserPanel :eraser="$refs.eraser" />
+            <EraserPanel :eraser="$refs.eraser"/>
           </div>
 
           <div v-if="$refs.keypoint != null">
             <KeypointPanel
-              :keypoint="$refs.keypoint"
-              :current-annotation="currentAnnotation"
+                :keypoint="$refs.keypoint"
+                :current-annotation="currentAnnotation"
             />
           </div>
           <div v-if="$refs.dextr != null">
             <DEXTRPanel
-              :dextr="$refs.dextr"
+                :dextr="$refs.dextr"
             />
           </div>
         </div>
@@ -202,7 +202,7 @@
 
     <div class="middle-panel" :style="{ cursor: cursor }">
       <div id="frame" class="frame" @wheel="onwheel">
-        <canvas class="canvas" id="editor" ref="image" resize />
+        <canvas class="canvas" id="editor" ref="image" resize/>
       </div>
     </div>
 
@@ -210,7 +210,7 @@
       <span>
       This image is being annotated by <b>{{ annotating.join(', ') }}</b>.
       </span>
-      
+
       <button type="button" class="close" data-dismiss="alert" aria-label="Close">
         <span aria-hidden="true">&times;</span>
       </button>
@@ -260,7 +260,7 @@ import EraserPanel from "@/components/annotator/panels/EraserPanel";
 import KeypointPanel from "@/components/annotator/panels/KeypointPanel";
 import DEXTRPanel from "@/components/annotator/panels/DEXTRPanel";
 
-import { mapMutations } from "vuex";
+import {mapMutations} from "vuex";
 
 export default {
   name: "Annotator",
@@ -411,12 +411,12 @@ export default {
       data.image.category_ids = this.image.categoryIds;
 
       axios
-        .post("/api/annotator/data", JSON.stringify(data))
-        .then(() => {
-          //TODO: updateUser
-          if (callback != null) callback();
-        })
-        .finally(() => this.removeProcess(process));
+          .post("/api/annotator/data", JSON.stringify(data))
+          .then(() => {
+            //TODO: updateUser
+            if (callback != null) callback();
+          })
+          .finally(() => this.removeProcess(process));
     },
     onwheel(e) {
       e.preventDefault();
@@ -434,7 +434,7 @@ export default {
         this.paper.view.setCenter(view.center.add(delta));
       } else {
         let viewPosition = view.viewToProject(
-          new paper.Point(e.offsetX, e.offsetY)
+            new paper.Point(e.offsetX, e.offsetY)
         );
 
         let transform = this.changeZoom(e.deltaY, viewPosition);
@@ -455,8 +455,8 @@ export default {
       let parentY = this.image.raster.height;
 
       this.paper.view.zoom = Math.min(
-        (canvas.width / parentX) * 0.95,
-        (canvas.height / parentY) * 0.8
+          (canvas.width / parentX) * 0.95,
+          (canvas.height / parentY) * 0.8
       );
 
       this.image.scale = 1 / this.paper.view.zoom;
@@ -472,7 +472,7 @@ export default {
       let pc = p.subtract(c);
       let a = p.subtract(pc.multiply(beta)).subtract(c);
 
-      return { zoom: zoom, offset: a };
+      return {zoom: zoom, offset: a};
     },
 
     initCanvas() {
@@ -507,8 +507,8 @@ export default {
         let fontSize = width * 0.025;
 
         let positionTopLeft = new paper.Point(
-          -width / 2,
-          -height / 2 - fontSize * 0.5
+            -width / 2,
+            -height / 2 - fontSize * 0.5
         );
         this.text.topLeft = new paper.PointText(positionTopLeft);
         this.text.topLeft.fontSize = fontSize;
@@ -516,8 +516,8 @@ export default {
         this.text.topLeft.content = this.image.filename;
 
         let positionTopRight = new paper.Point(
-          width / 2,
-          -height / 2 - fontSize * 0.4
+            width / 2,
+            -height / 2 - fontSize * 0.4
         );
         this.text.topRight = new paper.PointText(positionTopRight);
         this.text.topRight.justification = "right";
@@ -543,49 +543,49 @@ export default {
       this.addProcess(process);
       this.loading.data = true;
       axios
-        .get("/api/annotator/data/" + this.image.id)
-        .then(response => {
-          let data = response.data;
+          .get("/api/annotator/data/" + this.image.id)
+          .then(response => {
+            let data = response.data;
 
-          this.loading.data = false;
-          // Set image data
-          this.image.metadata = data.image.metadata || {};
-          this.image.filename = data.image.file_name;
-          this.image.next = data.image.next;
-          this.image.previous = data.image.previous;
-          this.image.categoryIds = data.image.category_ids || [];
+            this.loading.data = false;
+            // Set image data
+            this.image.metadata = data.image.metadata || {};
+            this.image.filename = data.image.file_name;
+            this.image.next = data.image.next;
+            this.image.previous = data.image.previous;
+            this.image.categoryIds = data.image.category_ids || [];
 
-          this.annotating = data.image.annotating || [];
+            this.annotating = data.image.annotating || [];
 
-          // Set other data
-          this.dataset = data.dataset;
-          this.categories = data.categories;
+            // Set other data
+            this.dataset = data.dataset;
+            this.categories = data.categories;
 
-          // Update status
+            // Update status
 
-          this.setDataset(this.dataset);
+            this.setDataset(this.dataset);
 
-          let preferences = data.preferences;
-          this.setPreferences(preferences);
+            let preferences = data.preferences;
+            this.setPreferences(preferences);
 
-          if (this.text.topLeft != null) {
-            this.text.topLeft.content = this.image.filename;
-          }
+            if (this.text.topLeft != null) {
+              this.text.topLeft.content = this.image.filename;
+            }
 
-          this.$nextTick(() => {
-            this.showAll();
-          });
+            this.$nextTick(() => {
+              this.showAll();
+            });
 
-          if (callback != null) callback();
-        })
-        .catch(() => {
-          this.axiosReqestError(
-            "Could not find requested image",
-            "Redirecting to previous page."
-          );
-          this.$router.go(-1);
-        })
-        .finally(() => this.removeProcess(process));
+            if (callback != null) callback();
+          })
+          .catch(() => {
+            this.axiosReqestError(
+                "Could not find requested image",
+                "Redirecting to previous page."
+            );
+            this.$router.go(-1);
+          })
+          .finally(() => this.removeProcess(process));
     },
     onCategoryClick(indices) {
       this.current.annotation = indices.annotation;
@@ -632,8 +632,8 @@ export default {
             this.current.category -= 1;
             // Check if category is open so we can go to the bottom annotation
             if (
-              this.currentCategory != null &&
-              this.currentCategory.showAnnotations
+                this.currentCategory != null &&
+                this.currentCategory.showAnnotations
             ) {
               this.current.annotation = this.currentAnnotationLength - 1;
             }
@@ -645,8 +645,8 @@ export default {
           // When the new annotation is added, the currentAnnotation
           // is null since the annotations are not instantly loaded in
           if (
-            this.current.annotation !== -1 &&
-            this.current.annotation < this.currentAnnotationLength
+              this.current.annotation !== -1 &&
+              this.current.annotation < this.currentAnnotationLength
           ) {
             this.current.annotation -= 1;
           } else {
@@ -654,8 +654,8 @@ export default {
 
             // Check if category is open so we can go to the bottom annotation
             if (
-              this.currentCategory != null &&
-              this.currentCategory.showAnnotations
+                this.currentCategory != null &&
+                this.currentCategory.showAnnotations
             ) {
               this.current.annotation = this.currentAnnotationLength - 1;
             }
@@ -681,8 +681,8 @@ export default {
             this.current.category += 1;
 
             if (
-              this.currentCategory != null &&
-              this.currentCategory.showAnnotations
+                this.currentCategory != null &&
+                this.currentCategory.showAnnotations
             ) {
               this.current.annotation = 0;
             }
@@ -694,8 +694,8 @@ export default {
           // If at a category which has annotations showing, go through annotations
           this.current.category += 1;
           if (
-            this.currentCategory != null &&
-            this.currentCategory.showAnnotations
+              this.currentCategory != null &&
+              this.currentCategory.showAnnotations
           ) {
             this.current.annotation = 0;
           }
@@ -709,8 +709,8 @@ export default {
         if (!this.currentCategory.isVisible) {
           this.currentCategory.isVisible = true;
         } else if (
-          !this.currentCategory.showAnnotations &&
-          this.currentAnnotationLength > 0
+            !this.currentCategory.showAnnotations &&
+            this.currentAnnotationLength > 0
         ) {
           this.currentCategory.showAnnotations = true;
           this.current.annotation = 0;
@@ -750,8 +750,8 @@ export default {
     },
     findCategoryByName(categoryName) {
       let categoryComponent = this.$refs.category.find(
-        category =>
-          category.category.name.toLowerCase() === categoryName.toLowerCase()
+          category =>
+              category.category.name.toLowerCase() === categoryName.toLowerCase()
       );
       if (!categoryComponent) return null;
       return categoryComponent.category;
@@ -759,9 +759,7 @@ export default {
     addAnnotation(categoryName, segments, keypoints) {
       segments = segments || [];
       keypoints = keypoints || [];
-
       if (keypoints.length == 0 && segments.length == 0) return;
-
       let category = this.findCategoryByName(categoryName);
       if (category == null) return;
 
@@ -780,22 +778,22 @@ export default {
       const newCategory = this.findCategoryByName(newCategoryName);
       if (!newCategory || !annotation) return;
 
-      Annotations.update(annotation.id, { category_id: newCategory.id }).then(
-        response => {
-          let newAnnotation = {
-            ...response.data,
-            ...annotation,
-            metadata: response.data.metadata,
-            category_id: newCategory.id
-          };
+      Annotations.update(annotation.id, {category_id: newCategory.id}).then(
+          response => {
+            let newAnnotation = {
+              ...response.data,
+              ...annotation,
+              metadata: response.data.metadata,
+              category_id: newCategory.id
+            };
 
-          if (newAnnotation) {
-            oldCategory.annotations = oldCategory.annotations.filter(
-              a => a.id !== annotation.id
-            );
-            newCategory.annotations.push(newAnnotation);
+            if (newAnnotation) {
+              oldCategory.annotations = oldCategory.annotations.filter(
+                  a => a.id !== annotation.id
+              );
+              newCategory.annotations.push(newAnnotation);
+            }
           }
-        }
       );
     },
 
@@ -809,11 +807,11 @@ export default {
       }
     },
     nextImage() {
-      if(this.image.next != null)
+      if (this.image.next != null)
         this.$refs.filetitle.route(this.image.next);
     },
     previousImage() {
-      if(this.image.previous != null)
+      if (this.image.previous != null)
         this.$refs.filetitle.route(this.image.previous);
     }
   },
@@ -828,8 +826,8 @@ export default {
     currentCategory() {
       if (this.currentCategory != null) {
         if (
-          this.currentAnnotation == null ||
-          !this.currentCategory.showAnnotations
+            this.currentAnnotation == null ||
+            !this.currentCategory.showAnnotations
         ) {
           let element = this.currentCategory.$el;
           this.scrollElement(element);
@@ -927,7 +925,7 @@ export default {
     this.initCanvas();
     this.getData();
 
-    this.$socket.emit("annotating", { image_id: this.image.id, active: true });
+    this.$socket.emit("annotating", {image_id: this.image.id, active: true});
   },
   created() {
     this.paper = new paper.PaperScope();
