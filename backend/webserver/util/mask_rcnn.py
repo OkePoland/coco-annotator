@@ -61,14 +61,23 @@ class MaskRCNN():
         result = self.parse_result(result)
         logger.info(result)
         bboxes = result["boxes"]
+        segments = result["polygons"]
         class_ids = result["classes"]
+
         coco_image = im.Image(width=width, height=height)
 
-        for bbox, class_id in zip(bboxes, class_ids):
+        for bbox, segment, class_id in zip(bboxes, segments, class_ids):
             x1 = int(round(bbox[1] * width))
             y1 = int(round(bbox[2] * height))
             x2 = int(round(bbox[3] * width))
             y2 = int(round(bbox[0] * height))
+            width_fixed = width/14.0
+            height_fixed = height/14.0
+            for i in range(len(segment)):
+                if i % 2 == 0:
+                    segment[i] *= width_fixed
+                else: segment[i] *= height_fixed
+            fixed_mask = im.Polygons([segment])
             fixed_bbox = im.BBox((x1, y2, x2, y1))
             logger.info(fixed_bbox)
             logger.info(class_id)
@@ -77,19 +86,25 @@ class MaskRCNN():
             logger.info(type(class_name))
             category = im.Category(class_name)
             logger.info(type(category))
-            coco_image.add(fixed_bbox, category=category)
+            coco_image.add(fixed_mask, category=category)
+            #coco_image.add(fixed_bbox, category=category)
+
         return coco_image.coco()
 
+
     def parse_result(self, result):
-        new_result = {"classes": [], "boxes": [], "scores": []}
+        threshold = 0.4
+        new_result = {"classes": [], "boxes": [], "scores": [], "polygons": []}
         classes = np.concatenate([el['detection_classes'] for el in result]).ravel().tolist()
         boxes = np.concatenate([el['detection_boxes'] for el in result]).ravel().tolist()
         scores = np.concatenate([el['detection_scores'] for el in result]).ravel().tolist()
+        bin_masks = [np.where(r['detection_masks'] > threshold, 1, 0) for r in result if 'detection_masks' in r][0]
         for i in range(len(scores)):
-            if scores[i] > 0.4:
+            if scores[i] > threshold:
                 new_result['classes'].append(classes[i])
                 new_result['boxes'].append([boxes[i * 4], boxes[i * 4 + 1], boxes[i * 4 + 2], boxes[i * 4 + 3]])
                 new_result['scores'].append(scores[i])
+                new_result['polygons'].append(im.Mask(bin_masks[i]).polygons().segmentation[0])
         return new_result
 
 
