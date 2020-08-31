@@ -65,32 +65,41 @@ class MaskRCNN():
         class_ids = result["classes"]
 
         coco_image = im.Image(width=width, height=height)
-
-        for bbox, segment, class_id in zip(bboxes, segments, class_ids):
-            x1 = int(round(bbox[1] * width))
-            y1 = int(round(bbox[2] * height))
-            x2 = int(round(bbox[3] * width))
-            y2 = int(round(bbox[0] * height))
-            width_fixed = width/14.0
-            height_fixed = height/14.0
-            for i in range(len(segment)):
-                if i % 2 == 0:
-                    segment[i] *= width_fixed
-                else: segment[i] *= height_fixed
-            fixed_mask = im.Polygons([segment])
-            fixed_bbox = im.BBox((x1, y2, x2, y1))
-            logger.info(fixed_bbox)
-            logger.info(class_id)
-            class_name = CLASS_NAMES[class_id - 1]
-            logger.info(class_name)
-            logger.info(type(class_name))
-            category = im.Category(class_name)
-            logger.info(type(category))
-            coco_image.add(fixed_mask, category=category)
-            #coco_image.add(fixed_bbox, category=category)
+        if len(segments) > 0:
+            for segment, class_id in zip(segments, class_ids):
+                width_fixed = width / 14.0
+                height_fixed = height / 14.0
+                for i in range(len(segment)):
+                    if i % 2 == 0:
+                        segment[i] *= width_fixed
+                    else:
+                        segment[i] *= height_fixed
+                fixed_mask = im.Polygons([segment])
+                logger.info(fixed_mask)
+                logger.info(class_id)
+                class_name = CLASS_NAMES[class_id - 1]
+                logger.info(class_name)
+                logger.info(type(class_name))
+                category = im.Category(class_name)
+                logger.info(type(category))
+                coco_image.add(fixed_mask, category=category)
+        else:
+            for bbox, class_id in zip(bboxes, class_ids):
+                x1 = int(round(bbox[1] * width))
+                y1 = int(round(bbox[2] * height))
+                x2 = int(round(bbox[3] * width))
+                y2 = int(round(bbox[0] * height))
+                fixed_bbox = im.BBox((x1, y2, x2, y1))
+                logger.info(fixed_bbox)
+                logger.info(class_id)
+                class_name = CLASS_NAMES[class_id - 1]
+                logger.info(class_name)
+                logger.info(type(class_name))
+                category = im.Category(class_name)
+                logger.info(type(category))
+                coco_image.add(fixed_bbox, category=category)
 
         return coco_image.coco()
-
 
     def parse_result(self, result):
         threshold = 0.4
@@ -104,7 +113,8 @@ class MaskRCNN():
                 new_result['classes'].append(classes[i])
                 new_result['boxes'].append([boxes[i * 4], boxes[i * 4 + 1], boxes[i * 4 + 2], boxes[i * 4 + 3]])
                 new_result['scores'].append(scores[i])
-                new_result['polygons'].append(im.Mask(bin_masks[i]).polygons().segmentation[0])
+                if len(bin_masks) > i-1:
+                    new_result['polygons'].append(im.Mask(bin_masks[i]).polygons().segmentation[0])
         return new_result
 
 
