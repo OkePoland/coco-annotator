@@ -2,6 +2,7 @@ from config import Config as AnnotatorConfig
 from skimage.transform import resize
 import imantics as im
 import numpy as np
+import cv2
 from scipy.interpolate import interp1d
 from scipy.ndimage import gaussian_filter
 from keras.preprocessing.image import img_to_array
@@ -60,7 +61,7 @@ class MaskRCNN():
         image = img_to_array(image)
         result = [self.model.predict(image, with_padding=False)]
         logger.info(result)
-        result = self.parse_result(result)
+        result = self.parse_result(result, width, height)
         logger.info(result)
         bboxes = result["boxes"]
         segments = result["polygons"]
@@ -73,14 +74,13 @@ class MaskRCNN():
             y1 = int(round(bbox[2] * height))
             x2 = int(round(bbox[3] * width))
             y2 = int(round(bbox[0] * height))
-            #TODO hardcoded values of scaled mask dimensions
-            width_fixed = (x2-x1)/29.0
-            height_fixed = (y1-y2)/29.0
+            width_offset = x1
+            height_offset = y2
             segment = self.points_interpolation(segment)
             for i in range(len(segment)):
                 if i % 2 == 0:
-                    segment[i] = segment[i]*width_fixed+x1
-                else: segment[i] = height_fixed*segment[i]+y2
+                    segment[i] = segment[i]+width_offset
+                else: segment[i] = height_offset + segment[i]
             fixed_mask = im.Polygons([segment])
             fixed_bbox = im.BBox((x1, y2, x2, y1))
             logger.info(fixed_bbox)
@@ -92,29 +92,32 @@ class MaskRCNN():
             logger.info(type(category))
             coco_image.add(fixed_mask, category=category)
             # comment this for no bbox label
-            coco_image.add(fixed_bbox, category=category)
+            #coco_image.add(fixed_bbox, category=category)
 
         return coco_image.coco()
 
-    def parse_result(self, result):
+    def parse_result(self, result, width, height):
         threshold = 0.4
         new_result = {"classes": [], "boxes": [], "scores": [], "polygons": []}
         classes = np.concatenate([el['detection_classes'] for el in result]).ravel().tolist()
         boxes = np.concatenate([el['detection_boxes'] for el in result]).ravel().tolist()
         scores = np.concatenate([el['detection_scores'] for el in result]).ravel().tolist()
         bin_masks = [np.where(r['detection_masks'] > threshold, 1, 0) for r in result if 'detection_masks' in r][0]
-        bin_masks = np.kron(bin_masks, np.ones((2, 2)))
-        # bin_masks = self.gauss_blur(bin_masks)
+
         for i in range(len(scores)):
             if scores[i] > threshold:
                 new_result['classes'].append(classes[i])
                 new_result['boxes'].append([boxes[i * 4], boxes[i * 4 + 1], boxes[i * 4 + 2], boxes[i * 4 + 3]])
+                mask = cv2.resize(bin_masks[i].astype('float32'), (int((boxes[i*4+3]-boxes[i*4+1])*width),
+                                                                   int((boxes[i*4+2]-boxes[i*4])*height)),
+                                  interpolation=cv2.INTER_NEAREST)
                 new_result['scores'].append(scores[i])
                 if len(bin_masks) > i-1:
-                    new_result['polygons'].append(im.Mask(bin_masks[i]).polygons().segmentation[0])
+                    new_result['polygons'].append(im.Mask(mask).polygons().segmentation[0])
         return new_result
 
-    def points_interpolation(self, segment):
+    @staticmethod
+    def points_interpolation(segment):
         points = [[], []]
         for n in range(0, len(segment), 2):
             points[0].append(segment[n])
@@ -129,12 +132,6 @@ class MaskRCNN():
         interpolated_points = interpolator(alpha)
         interpolated_points = interpolated_points.flatten().tolist()
         return interpolated_points
-
-    def gauss_blur(self, bin_masks):
-        bin_masks = np.kron(bin_masks, np.ones((4, 4)))
-        bin_masks = gaussian_filter(bin_masks, sigma=1)
-        bin_masks = [(np.where(n > 0.35, 1, 0)) for n in bin_masks]
-        return bin_masks
 
 
 model = MaskRCNN()
