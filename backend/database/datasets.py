@@ -132,6 +132,24 @@ class DatasetModel(DynamicDocument):
             "name": task.name
         }
 
+    def label(self):
+
+        from workers.tasks import label_dataset
+
+        task = TaskModel(
+            name=f"Labelling images in {self.name}",
+            dataset_id=self.id,
+            group="Directory Image Labelling"
+        )
+        task.save()
+        cel_task = label_dataset.delay(task.id, self.id)
+        return {
+            "celery_id": cel_task.id,
+            "id": task.id,
+            "name": task.name
+        }
+
+
     def is_owner(self, user):
 
         if user.is_admin:

@@ -178,6 +178,14 @@
                         >
                             Reset All Annotations
                         </button>
+
+                       <button
+                                class="btn btn-sm btn-block btn-danger"
+                                @click="labelWithSegments"
+                        >
+                            Label whole dataset with segment annotations
+                        </button>
+
                     </div>
                 </div>
 
@@ -551,6 +559,10 @@
                     progress: 0,
                     id: null
                 },
+                labelling: {
+                    progress: 0,
+                    id: null
+                },
                 exporting: {
                     validation_set_size: '',
                     test_set_size: '',
@@ -651,6 +663,13 @@
                     Dataset.resetAnnotations(this.dataset.id);
                 }
             },
+          labelWithSegments() {
+              let r = confirm("Are you sure you want to add annotations to whole Dataset?");
+
+                if (r) {
+                    Dataset.labelWithSegments(this.dataset.id)
+                }
+          },
             getStats() {
                 Dataset.getStats(this.dataset.id).then(response => {
                     this.stats = response.data;
@@ -857,6 +876,14 @@
                         this.getExports();
                     }, 1000);
                 }
+            },
+            "labelling.progress"(progress) {
+              if (progress >= 100) {
+                setTimeout(() => {
+                  this.labelling.progress = 0;
+                  this.labelling.id = null;
+                }, 1000);
+              }
             }
         },
         beforeRouteUpdate() {

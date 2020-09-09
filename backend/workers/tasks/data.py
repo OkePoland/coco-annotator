@@ -445,5 +445,27 @@ def convert_dataset(task_id, dataset_id, coco_json, dataset_name):
     task.info("===== Finished =====")
 
 
+@shared_task
+def label_dataset(task_id, dataset_id):
+    task = TaskModel.objects.get(id=task_id)
+    dataset = DatasetModel.objects.get(id=dataset_id)
+    images = ImageModel.objects(dataset_id=dataset.id)
+    categories = CategoryModel.objects
+
+    task.update(status="PROGRESS")
+    socket = create_socket()
+    # TODO everything below import maskrcnn correctly
+    #import sys
+    #sys.path.insert(0, '/workspace/webserver/util')
+    #from mask_rcnn import model as maskrcnn
+
+    #for im in images:
+    #    coco = maskrcnn.detect(im())
+    #    print(im())
+       # big_coco.append(coco)
+    task.set_progress(100, socket=socket)
+    task.info("===== Finished =====")
+
+
 __all__ = ["export_annotations", "import_annotations", "convert_dataset", "export_annotations_to_tf_record",
-           "load_annotation_files"]
+           "load_annotation_files", "label_dataset"]

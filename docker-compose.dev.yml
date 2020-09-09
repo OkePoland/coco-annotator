@@ -40,7 +40,7 @@ services:
       - FLASK_APP=webserver
       - FLASK_ENV=development
       - DEBUG=true
-      - MASK_RCNN_FILE=/models/seg1_frozen_inference_graph.pb
+      - MASK_RCNN_FILE=/models/shark_50x50.pb
        # Default coco classes (order matters)
       - MASK_RCNN_CLASSES=car,person,truck,bus,bicycle,motorcycle,Headlight,Tail_light,License_plate
     networks:

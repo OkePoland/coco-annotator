@@ -79,5 +79,8 @@ export default {
   },
   resetAnnotations(id) {
     return axios.get(`${baseURL}/${id}/reset/annotations`);
+  },
+  labelWithSegments(id) {
+    return axios.get(`${baseURL}/${id}/label/withSegments`)
   }
 };

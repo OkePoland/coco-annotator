@@ -56,7 +56,9 @@ class MaskRCNN():
         image = image.convert('RGB')
         width, height = image.size
         logger.info(width)
-        image.thumbnail((1024, 1024))
+
+        #FOR DEBUG ONLY
+        #image.thumbnail((1024, 1024))
 
         image = img_to_array(image)
         result = [self.model.predict(image, with_padding=False)]

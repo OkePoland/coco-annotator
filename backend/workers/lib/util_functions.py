@@ -6,10 +6,10 @@ from .messenger import messenger
 from .vod_converter import converter
 
 INGESTORS = [
+    "coco",  # tested and working
     "mio",  # NOT tested
     "pedx",  # tested and working
     "citycam",  # tested and working
-    "coco",  # tested and working
     "kitti",  # tested and working
     "kitti-tracking",  # NOT tested
     "voc",  # tested and working
@@ -55,3 +55,4 @@ def convert_to_coco(ann_file, current_task):
             messenger.message(f"Failed to convert from {from_key} to {to_key}")
 
     return None, False
+

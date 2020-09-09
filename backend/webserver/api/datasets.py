@@ -181,6 +181,20 @@ class DatasetCleanAnnotations(Resource):
         return {'success': True}
 
 
+@api.route('/<int:dataset_id>/label/withSegments')
+class DatasetSegmantationLabelling(Resource):
+
+    @login_required
+    def get(self, dataset_id):
+        args = dataset_generate.parse_args()
+        dataset = current_user.datasets.filter(id=dataset_id, deleted=False).first()
+        if dataset is None:
+            return {"message": "Invalid dataset id"}, 400
+
+        dataset.label()
+        return {'success': True}
+
+
 @api.route('/<int:dataset_id>/stats')
 class DatasetStats(Resource):
 

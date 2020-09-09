@@ -10,7 +10,6 @@ from database import (
     ImageModel,
     create_from_json
 )
-
 from flask import Flask
 from flask_cors import CORS
 from flask_socketio import SocketIO
@@ -70,7 +69,7 @@ if Config.INITIALIZE_FROM_FILE:
     create_from_json(Config.INITIALIZE_FROM_FILE)
 
 #FOR DEBUG ONLY
-socketio.run(app, host="0.0.0.0")
+#socketio.run(app, host="0.0.0.0")
 
 
 @app.route('/', defaults={'path': ''})
