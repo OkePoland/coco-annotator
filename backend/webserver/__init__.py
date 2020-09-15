@@ -2,7 +2,7 @@ import eventlet
 eventlet.monkey_patch(thread=False)
 
 import sys
-import workers
+# import workers # imported only for single test, commented out because there were looped imports
 
 from config import Config
 from database import (

@@ -1,14 +1,12 @@
 eventlet==0.24.1
-werkzeug==0.15.6
 opencv-python==4.0.0.21
 flask==1.0.2
 flask-cors==3.0.7
 flask-login==0.4.1
 flask-restplus==0.12.1
 flask-mongoengine==0.9.5
-numpy==1.18.5
-pandas==0.25.3
-contextlib2
+numpy==1.15.4
+pandas
 cython
 scikit-image
 requests
@@ -16,9 +14,6 @@ google_images_download==2.5.0
 watchdog==0.8.3
 pytest==3.9.3
 pytest-ordering==0.6
-imantics==0.1.12
+imantics==0.1.9
 flask-socketio==3.3.2
 celery==4.2.2
-tensorflow-gpu==1.14
-
-

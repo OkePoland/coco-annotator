@@ -3,9 +3,13 @@ import os
 import sys
 import zipfile
 from datetime import datetime
-
+from config import Config
 import numpy as np
 from celery import shared_task
+import os
+
+
+
 from database import (
     fix_ids,
     ImageModel,
@@ -19,7 +23,9 @@ from workers.lib import convert_to_coco
 from workers.lib.tf_models.create_tf_record_from_coco import convert_coco_to_tfrecord
 from workers.lib.vod_converter.split_labels_from_json_string import split_coco_labels
 
+
 from ..socket import create_socket
+from workers.lib.inference.mask_rcnn import model as maskrcnn
 
 
 @shared_task
@@ -451,17 +457,17 @@ def label_dataset(task_id, dataset_id):
     dataset = DatasetModel.objects.get(id=dataset_id)
     images = ImageModel.objects(dataset_id=dataset.id)
     categories = CategoryModel.objects
+    #MASKRCNN_LOADED = os.path.isfile(Config.MASK_RCNN_FILE)
 
     task.update(status="PROGRESS")
     socket = create_socket()
     # TODO everything below import maskrcnn correctly
-    #import sys
-    #sys.path.insert(0, '/workspace/webserver/util')
-    #from mask_rcnn import model as maskrcnn
 
-    #for im in images:
-    #    coco = maskrcnn.detect(im())
-    #    print(im())
+    for im in images:
+        # task.info(maskrcnn.model)
+        coco = maskrcnn.detect(im.generate_thumbnail())
+        # print(coco)
+        print("log")
        # big_coco.append(coco)
     task.set_progress(100, socket=socket)
     task.info("===== Finished =====")

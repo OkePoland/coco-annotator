@@ -4,7 +4,10 @@ WORKDIR /workspace/
 
 # Install python package dependices
 COPY ./backend/ /workspace/
+COPY ./models/ /workspace/
+RUN python set_path.py
 
+COPY ./backend/requirements.txt /workspace/
 RUN pip install -r requirements.txt
 
 ENV FLASK_ENV=Development

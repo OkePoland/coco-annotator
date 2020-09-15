@@ -1,6 +1,5 @@
 from flask_restplus import Namespace, Resource
 
-from workers.tasks import long_task
 from config import Config
 from database import UserModel, TaskModel
 
@@ -30,6 +29,8 @@ class Info(Resource):
 @api.route('/long_task')
 class TaskTest(Resource):
     def get(self):
+        from workers.tasks import long_task
+
         """ Returns information about current version """
         task_model = TaskModel(group="test", name="Testing Celery")
         task_model.save()

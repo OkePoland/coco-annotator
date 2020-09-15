@@ -59,7 +59,7 @@ class Config:
     ALLOW_REGISTRATION = True
 
     ### Models
-    MASK_RCNN_FILE = os.getenv("MASK_RCNN_FILE", "/models/seg1_frozen_inference_graph.pb")
+    MASK_RCNN_FILE = os.getenv("MASK_RCNN_FILE", "/models/shark_15x15.pb")
     MASK_RCNN_CLASSES = os.getenv("MASK_RCNN_CLASSES",
                                   "car,person,truck,bus,bicycle,motorcycle,Headlight,Tail_light,License_plate")
     MASK_RCNN_EXCLUDED_LAYERS = os.getenv("MASK_RCNN_EXCLUDED_LAYERS",
