@@ -275,6 +275,8 @@ def import_annotations(task_id, dataset_id, encoded_coco_json):
         image_id = annotation.get('image_id')
         category_id = annotation.get('category_id')
         segmentation = annotation.get('segmentation', [])
+        if segmentation is None:
+            segmentation = []
         keypoints = annotation.get('keypoints', [])
         # is_crowd = annotation.get('iscrowed', False)
         area = annotation.get('area', 0)
