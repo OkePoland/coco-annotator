@@ -282,8 +282,8 @@ def import_annotations(task_id, dataset_id, encoded_coco_json):
         isbbox = annotation.get('isbbox', False)
 
         if (segmentation is None or segmentation == []) and isbbox:
-            segmentation = [[bbox[2] - bbox[0], bbox[1], bbox[2] - bbox[0], bbox[3] - bbox[1],
-                            bbox[0], bbox[3] - bbox[1], bbox[0], bbox[1]]]
+            segmentation = [[bbox[0] + bbox[2], bbox[1], bbox[0] + bbox[2], bbox[1] + bbox[3],
+                            bbox[0], bbox[1] + bbox[3], bbox[0], bbox[1]]]
 
         progress += 1
         task.set_progress((progress / total_items) * 100, socket=socket)
