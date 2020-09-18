@@ -275,13 +275,15 @@ def import_annotations(task_id, dataset_id, encoded_coco_json):
         image_id = annotation.get('image_id')
         category_id = annotation.get('category_id')
         segmentation = annotation.get('segmentation', [])
-        if segmentation is None:
-            segmentation = []
         keypoints = annotation.get('keypoints', [])
         # is_crowd = annotation.get('iscrowed', False)
         area = annotation.get('area', 0)
         bbox = annotation.get('bbox', [0, 0, 0, 0])
         isbbox = annotation.get('isbbox', False)
+
+        if (segmentation is None or segmentation == []) and isbbox:
+            segmentation = [[bbox[2] - bbox[0], bbox[1], bbox[2] - bbox[0], bbox[3] - bbox[1],
+                            bbox[0], bbox[3] - bbox[1], bbox[0], bbox[1]]]
 
         progress += 1
         task.set_progress((progress / total_items) * 100, socket=socket)
