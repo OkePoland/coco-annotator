@@ -179,6 +179,13 @@
                             Reset All Annotations
                         </button>
 
+                        <button
+                                class="btn btn-sm btn-block btn-danger"
+                                @click="resetTasksInfo"
+                        >
+                            Stops nad deletes Tasks
+                        </button>
+
                        <button
                                 class="btn btn-sm btn-block btn-danger"
                                 @click="labelWithSegments"
@@ -661,6 +668,13 @@
 
                 if (r) {
                     Dataset.resetAnnotations(this.dataset.id);
+                }
+            },
+            resetTasksInfo() {
+                let r = confirm("You can not undo resetting of all Tasks info");
+
+                if (r) {
+                    Dataset.resetTasks(this.dataset.id);
                 }
             },
           labelWithSegments() {

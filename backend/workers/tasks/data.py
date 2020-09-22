@@ -456,21 +456,46 @@ def label_dataset(task_id, dataset_id):
     task = TaskModel.objects.get(id=task_id)
     dataset = DatasetModel.objects.get(id=dataset_id)
     images = ImageModel.objects(dataset_id=dataset.id)
-    categories = CategoryModel.objects
+    categories = CategoryModel.objects(dataset_id=dataset_id)
     #MASKRCNN_LOADED = os.path.isfile(Config.MASK_RCNN_FILE)
 
     task.update(status="PROGRESS")
     socket = create_socket()
-    # TODO everything below import maskrcnn correctly
-
+    # TODO categories have wrong numeration, this isn't run parallel (run() instead of delay())
+    big_coco = {
+        'images': [],
+        'categories': [],
+        'annotations': []
+    }
     for im in images:
-        # task.info(maskrcnn.model)
-        coco = maskrcnn.detect(im.generate_thumbnail())
-        # print(coco)
-        print("log")
-       # big_coco.append(coco)
+        task.set_progress(50, socket=socket)
+        coco = maskrcnn.detect(im.generate_thumbnail(), im)
+        task.info(coco)
+        for coco_images in coco['images']:
+            big_coco['images'].append(coco_images)
+        for coco_annotations in coco['annotations']:
+            big_coco['annotations'].append(coco_annotations)
+        for coco_categories in coco['categories']:
+            big_coco['categories'].append(coco_categories)
+    big_coco = json.dumps(big_coco)
+
+
+    import_task = TaskModel(
+        name="Import labels",
+        dataset_id=dataset_id,
+        group="Annotation Import"
+    )
+    import_task.save()
+    task.info("importing json to dataset")
+    cel_test_task = import_annotations.delay(import_task.id, dataset_id, big_coco)
+
+    import_task.set_progress(100, socket=socket)
+    import_task.info("===== Finished =====")
+
+    task.info(big_coco)
     task.set_progress(100, socket=socket)
     task.info("===== Finished =====")
+
 
 
 __all__ = ["export_annotations", "import_annotations", "convert_dataset", "export_annotations_to_tf_record",

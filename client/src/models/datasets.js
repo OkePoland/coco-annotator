@@ -80,6 +80,9 @@ export default {
   resetAnnotations(id) {
     return axios.get(`${baseURL}/${id}/reset/annotations`);
   },
+  resetTasks(id) {
+    return axios.get(`${baseURL}/${id}/reset/tasks`);
+  },
   labelWithSegments(id) {
     return axios.get(`${baseURL}/${id}/label/withSegments`)
   }

@@ -142,11 +142,13 @@ class DatasetModel(DynamicDocument):
             group="Directory Image Labelling"
         )
         task.save()
-        cel_task = label_dataset.delay(task.id, self.id)
+        #cel_task = label_dataset(task.id, self.id)
+        cel_task = label_dataset.run(task.id, self.id)
+
         return {
-            "celery_id": cel_task.id,
-            "id": task.id,
-            "name": task.name
+             "celery_id": cel_task.id,
+             "id": task.id,
+             "name": task.name
         }
 
 

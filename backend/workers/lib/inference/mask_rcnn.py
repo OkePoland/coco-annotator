@@ -50,31 +50,34 @@ class MaskRCNN():
             logger.error(f"Could not load MaskRCNN model (place '{COCO_MODEL_PATH}' in the {MODEL_DIR} directory)")
             self.model = None
 
-    def detect(self, image):
+    def detect(self, image, image_model):
         logger.info("Started Detection xd")
         logger.info("New Log test")
-        #self.model = ModelInferenceHandler(frozen_model_path=COCO_MODEL_PATH, output_type=0, max_batch_size=1)
         logger.info(COCO_MODEL_PATH)
         if self.model is None:
             return {}
         logger.info("Started Detection")
         image = image.convert('RGB')
+        logger.info(image)
         width, height = image.size
         logger.info(width)
 
-        #FOR DEBUG ONLY
-        image.thumbnail((1024, 1024))
-        logger.info(image.size)
+        # FOR DEBUG ONLY
+        # image.thumbnail((1024, 1024))
+
         image = img_to_array(image)
         result = [self.model.predict(image, with_padding=False)]
-        logger.info(result)
         result = self.parse_result(result, width, height)
-        logger.info(result)
         bboxes = result["boxes"]
         segments = result["polygons"]
         class_ids = result["classes"]
 
-        coco_image = im.Image(width=width, height=height)
+        coco_image = im.Image(
+            width=width, height=height,
+            path=image_model.path,
+            id=image_model.id,
+            dataset=image_model.dataset_id
+        )
 
         for bbox, segment, class_id in zip(bboxes, segments, class_ids):
             x1 = int(round(bbox[1] * width))
@@ -90,17 +93,12 @@ class MaskRCNN():
                 else: segment[i] = height_offset + segment[i]
             fixed_mask = im.Polygons([segment])
             fixed_bbox = im.BBox((x1, y2, x2, y1))
-            logger.info(fixed_bbox)
-            logger.info(class_id)
             class_name = CLASS_NAMES[class_id - 1]
-            logger.info(class_name)
-            logger.info(type(class_name))
             category = im.Category(class_name)
-            logger.info(type(category))
             coco_image.add(fixed_mask, category=category)
             # comment this for no bbox label
             #coco_image.add(fixed_bbox, category=category)
-        logger.info()
+        logger.info(coco_image.coco())
         return coco_image.coco()
 
     def parse_result(self, result, width, height):
