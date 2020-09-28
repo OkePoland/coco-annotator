@@ -453,32 +453,54 @@ def convert_dataset(task_id, dataset_id, coco_json, dataset_name):
 
 @shared_task
 def label_dataset(task_id, dataset_id):
+    """
+        Task annotates all images in whole given dataset.
+        Create one coco dict, changes to json format and calls import_annotations task.
+    """
     task = TaskModel.objects.get(id=task_id)
     dataset = DatasetModel.objects.get(id=dataset_id)
     images = ImageModel.objects(dataset_id=dataset.id)
-    categories = CategoryModel.objects(dataset_id=dataset_id)
+    categories = CategoryModel.objects
     #MASKRCNN_LOADED = os.path.isfile(Config.MASK_RCNN_FILE)
 
     task.update(status="PROGRESS")
     socket = create_socket()
-    # TODO categories have wrong numeration, this isn't run parallel (run() instead of delay())
+    # TODO this isn't run parallel (run() instead of delay()) when starting this task
     big_coco = {
         'images': [],
         'categories': [],
         'annotations': []
     }
-    for im in images:
-        task.set_progress(50, socket=socket)
+    total_images = len(images)
+    for im_index, im in enumerate(images):
+        task.set_progress((im_index + 1) * 100 / total_images, socket=socket)
         coco = maskrcnn.detect(im.generate_thumbnail(), im)
         task.info(coco)
+
+        # append big coco dict, changes categories ids for correct ones
         for coco_images in coco['images']:
             big_coco['images'].append(coco_images)
+        for coco_categories in coco['categories']:
+            category_model = categories.filter(name__iexact=coco_categories.get('name')).first()
+            if category_model is not None:
+                old_id = coco_categories['id']
+                coco_categories['id'] = category_model.id
+                new_id = coco_categories['id']
+                task.info(category_model.id)
+                task.info(category_model.name)
+                # changes annotations ids
+                for coco_annotations in coco['annotations']:
+                    if coco_annotations['category_id'] == old_id:
+                        coco_annotations['category_id'] = new_id
+            # if category exist don't add the same
+            if not any(d['name'] == coco_categories['name'] for d in big_coco['categories']):
+                big_coco['categories'].append(coco_categories)
+        # add annotations to big coco dict
         for coco_annotations in coco['annotations']:
             big_coco['annotations'].append(coco_annotations)
-        for coco_categories in coco['categories']:
-            big_coco['categories'].append(coco_categories)
     big_coco = json.dumps(big_coco)
 
+    task.info(dataset.categories)
 
     import_task = TaskModel(
         name="Import labels",
@@ -495,7 +517,6 @@ def label_dataset(task_id, dataset_id):
     task.info(big_coco)
     task.set_progress(100, socket=socket)
     task.info("===== Finished =====")
-
 
 
 __all__ = ["export_annotations", "import_annotations", "convert_dataset", "export_annotations_to_tf_record",
