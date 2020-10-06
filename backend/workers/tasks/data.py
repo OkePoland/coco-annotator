@@ -152,8 +152,14 @@ def collect_coco_annotations(task, categories, dataset, socket):
         annotations = fix_ids(annotations)
         num_annotations = 0
         for annotation in annotations:
-            has_keypoints = len(annotation.get('keypoints', [])) > 0
+            task.info(f"{annotation}")
+            if not annotation.get('keypoints', []):
+                has_keypoints = False
+            else:
+                has_keypoints = len(annotation.get('keypoints')["keypoints"]) > 0
+            # has_keypoints = len(annotation.get('keypoints', [])) > 0
             has_segmentation = len(annotation.get('segmentation', [])) > 0
+            task.info(f"has_keypoints = {has_keypoints},  has_segmentation = {has_segmentation}")
 
             if has_keypoints or has_segmentation:
                 if not has_keypoints:

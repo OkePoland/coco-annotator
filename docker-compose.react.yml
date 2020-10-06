@@ -11,8 +11,10 @@ networks:
 services:
   webserver:
     hostname: webserver
+    build:
+      context: .
+      dockerfile: ./backend/webserver/Dockerfile
     container_name: annotator_webclient
-    image: tantael/multi-annotator:webserver-react
     restart: always
     environment:
       - SECRET_KEY=RandomSecretKeyHere
@@ -28,8 +30,10 @@ services:
       - cocoannotator
   workers:
     container_name: annotator_workers
+    build:
+      context: .
+      dockerfile: ./backend/workers/Dockerfile
     hostname: workers
-    image: tantael/multi-annotator:workers-react
     volumes:
       - "./datasets:/datasets"
     depends_on:
@@ -69,6 +73,9 @@ services:
       - cocoannotator
   frontend:
     hostname: frontend
+    build:
+      context: .
+      dockerfile: ./client/Dockerfile
     image: tantael/multi-annotator:frontend-react
     container_name: multi_annotator_client
     ports:
