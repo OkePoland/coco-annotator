@@ -465,13 +465,14 @@ def label_dataset(task_id, dataset_id):
 
     task.update(status="PROGRESS")
     socket = create_socket()
-    # TODO this isn't run parallel (run() instead of delay()) when starting this task
-    big_coco = {
+
+    big_coco_def = {
         'images': [],
         'categories': [],
         'annotations': []
     }
     total_images = len(images)
+    big_coco = big_coco_def.copy()
     for im_index, im in enumerate(images):
         task.set_progress((im_index + 1) * 100 / total_images, socket=socket)
         coco = maskrcnn.detect(im.generate_thumbnail(), im)
@@ -498,25 +499,26 @@ def label_dataset(task_id, dataset_id):
         # add annotations to big coco dict
         for coco_annotations in coco['annotations']:
             big_coco['annotations'].append(coco_annotations)
-    big_coco = json.dumps(big_coco)
 
-    task.info(dataset.categories)
+        if im_index and im_index % 50 == 0 or im_index == total_images-1:
+            big_coco = json.dumps(big_coco)
 
-    import_task = TaskModel(
-        name="Import labels",
-        dataset_id=dataset_id,
-        group="Annotation Import"
-    )
-    import_task.save()
-    task.info("importing json to dataset")
-    cel_test_task = import_annotations.delay(import_task.id, dataset_id, big_coco)
+            import_task = TaskModel(
+                name="Import labels",
+                dataset_id=dataset_id,
+                group="Annotation Import"
+            )
+            import_task.save()
+            task.info("importing json to dataset")
+            cel_test_task = import_annotations.delay(import_task.id, dataset_id, big_coco)
 
-    import_task.set_progress(100, socket=socket)
-    import_task.info("===== Finished =====")
+            import_task.set_progress(100, socket=socket)
+            import_task.info("===== Finished =====")
 
-    task.info(big_coco)
-    task.set_progress(100, socket=socket)
-    task.info("===== Finished =====")
+            task.info(big_coco)
+            task.set_progress(100, socket=socket)
+            task.info("===== Finished =====")
+            big_coco = big_coco_def.copy()
 
 
 __all__ = ["export_annotations", "import_annotations", "convert_dataset", "export_annotations_to_tf_record",

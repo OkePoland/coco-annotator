@@ -142,6 +142,7 @@ class DatasetModel(DynamicDocument):
             group="Directory Image Labelling"
         )
         task.save()
+        # TODO this isn't run parallel (run() instead of delay()) when starting this task
         #cel_task = label_dataset(task.id, self.id)
         cel_task = label_dataset.run(task.id, self.id)
 
