@@ -1,6 +1,6 @@
 eventlet==0.24.1
 werkzeug==0.15.6
-opencv-python==4.0.0.21
+#opencv-python==4.0.0.21
 flask==1.0.2
 flask-cors==3.0.7
 flask-login==0.4.1
@@ -11,14 +11,22 @@ pandas==0.25.3
 contextlib2
 cython
 scikit-image
+tornado
 requests
 google_images_download==2.5.0
 watchdog==0.8.3
 pytest==3.9.3
 pytest-ordering==0.6
 imantics==0.1.12
+scipy
+#keras==2.3.1
+h5py
+imgaug
+IPython[all]
+jupyter
 flask-socketio==3.3.2
 celery==4.2.2
-tensorflow-gpu==1.14
+#tensorflow==1.14
+#tensorflow-gpu==1.14
 
 
