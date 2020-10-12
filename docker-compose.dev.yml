@@ -36,8 +36,6 @@ services:
       - "./datasets:/datasets"
       - "./models:/models"
     environment:
-      - NVIDIA_VISIBLE_DEVICES=2
-      - NVIDIA_DRIVER_CAPABILITIES=all
       - FILE_WATCHER=true
       - FLASK_APP=webserver
       - FLASK_ENV=development
