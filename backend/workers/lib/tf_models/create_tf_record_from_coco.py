@@ -201,14 +201,17 @@ def _create_tf_record_from_coco_annotations(
             image_id = image["id"]
             if image_id not in annotations_index:
                 missing_annotation_count += 1
-                annotations_index[image_id] = []
+                #annotations_index[image_id] = []
         task.info(f"{missing_annotation_count} images are missing annotations.")
 
         total_num_annotations_skipped = 0
         for idx, image in enumerate(images):
             if idx % 100 == 0:
                 task.info(f"On image {idx} of {len(images)}")
-            annotations_list = annotations_index[image["id"]]
+            try:
+                annotations_list = annotations_index[image['id']]
+            except:
+                continue
             _, tf_example, num_annotations_skipped = create_tf_example(
                 image, annotations_list, dataset_dir, category_index, include_masks)
             total_num_annotations_skipped += num_annotations_skipped
